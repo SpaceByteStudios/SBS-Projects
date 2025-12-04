@@ -2,11 +2,14 @@
 
 int main()
 {
-  auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "CMake SFML Project");
-  window.setFramerateLimit(144);
+  sf::RenderWindow window = sf::RenderWindow(sf::VideoMode({540u, 540u}), "Falling Sand Simulation");
+  window.setFramerateLimit(60);
+
+  window.setPosition(sf::Vector2i(1280, 100));
 
   while (window.isOpen())
   {
+
     while (const std::optional event = window.pollEvent())
     {
       if (event->is<sf::Event::Closed>())
