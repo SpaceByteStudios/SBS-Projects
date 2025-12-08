@@ -21,6 +21,7 @@ class Simulation {
 
  private:
   sf::Vector2u size;
+  sf::Vector2f cell_size;
 
   std::vector<Particle> front_grid;
   std::vector<Particle> back_grid;
