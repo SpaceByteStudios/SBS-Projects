@@ -7,6 +7,9 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <cmath>
+#include <iostream>
+#include <ostream>
 
 #include "elementType.hh"
 #include "particle.hh"
@@ -94,6 +97,9 @@ void Simulation::draw() {
   }
 
   window.draw(vertices);
+
+  showPlaceRadius();
+
   window.display();
 }
 
@@ -108,16 +114,38 @@ void Simulation::processInput() {
         window.close();
       }
     }
+  }
 
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-      sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
-      sf::Vector2u pos(mouse_pos.x / cell_size.x, mouse_pos.y / cell_size.y);
-      addParticle(Particle(ElementType::Sand, sf::Color(255, 255, 0)), pos);
+  if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+    sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+    sf::Vector2u pos(mouse_pos.x / cell_size.x, mouse_pos.y / cell_size.y);
+    addParticle(Particle(place_type, sf::Color(255, 255, 0)), pos);
+  }
+
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Add)) {
+    place_radius += 0.1;
+    std::cout << place_radius << std::endl;
+  }
+
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Subtract)) {
+    place_radius -= 0.1;
+    std::cout << place_radius << std::endl;
+
+    if (place_radius < 1.0f) {
+      place_radius = 1.0f;
     }
   }
 }
 
 void Simulation::addParticle(const Particle& particle, const sf::Vector2u& pos) {
+  int index = pos.y * size.y + pos.x;
+
+  if (index < front_grid.size() && front_grid[index].type == ElementType::Empty) {
+    front_grid[index] = particle;
+  }
+}
+
+void Simulation::setParticle(const Particle& particle, const sf::Vector2u& pos) {
   int index = pos.y * size.y + pos.x;
 
   if (index < front_grid.size()) {
@@ -158,4 +186,43 @@ void Simulation::updateSand(int x, int y) {
   }
 
   back_grid[index] = front_grid[index];
+}
+
+void Simulation::showPlaceRadius() {
+  int max_cells = (place_radius * 2) * (place_radius * 2);
+  sf::VertexArray vertices(sf::PrimitiveType::Triangles, max_cells * 6);
+
+  sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+
+  sf::Color color(128, 128, 128, 32);
+
+  int currentVertex = 0;
+
+  for (int x = -place_radius; x < place_radius; x++) {
+    for (int y = -place_radius; y < place_radius; y++) {
+      sf::Vector2i place_pos(mouse_pos.x + x, mouse_pos.y + y);
+      sf::Vector2i pos(place_pos.x / cell_size.x, place_pos.y / cell_size.y);
+
+      if (pos.x < 0 || pos.x >= size.x || pos.y < 0 || pos.y >= size.y) {
+        continue;
+      }
+
+      sf::Vector2f pos_f(pos.x * cell_size.x, pos.y * cell_size.y);
+      vertices[currentVertex + 0].position = pos_f;
+      vertices[currentVertex + 1].position = pos_f + sf::Vector2f(cell_size.x, 0);
+      vertices[currentVertex + 2].position = pos_f + sf::Vector2f(cell_size.x, cell_size.y);
+
+      vertices[currentVertex + 3].position = pos_f;
+      vertices[currentVertex + 4].position = pos_f + sf::Vector2f(cell_size.x, cell_size.y);
+      vertices[currentVertex + 5].position = pos_f + sf::Vector2f(0, cell_size.y);
+
+      for (int i = 0; i < 6; i++) {
+        vertices[currentVertex + i].color = color;
+      }
+
+      currentVertex += 6;
+    }
+  }
+
+  window.draw(vertices);
 }

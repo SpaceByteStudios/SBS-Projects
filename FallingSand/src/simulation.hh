@@ -4,6 +4,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <vector>
 
+#include "elementType.hh"
 #include "particle.hh"
 
 class Simulation {
@@ -16,6 +17,7 @@ class Simulation {
   void processInput();
 
   void addParticle(const Particle& particle, const sf::Vector2u& pos);
+  void setParticle(const Particle& particle, const sf::Vector2u& pos);
 
   bool isRunning;
 
@@ -28,5 +30,10 @@ class Simulation {
 
   sf::RenderWindow window;
 
+  ElementType place_type = ElementType::Sand;
+  int place_radius = 3;
+
   void updateSand(int x, int y);
+
+  void showPlaceRadius();
 };
