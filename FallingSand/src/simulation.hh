@@ -30,10 +30,14 @@ class Simulation {
 
   sf::RenderWindow window;
 
+  std::vector<sf::Vector2i> place_positions;
   ElementType place_type = ElementType::Sand;
-  int place_radius = 3;
+  float place_radius = 10;
 
+  void updateParticles();
+  void drawParticles();
   void updateSand(int x, int y);
 
+  void calculatePlacePositions();
   void showPlaceRadius();
 };
