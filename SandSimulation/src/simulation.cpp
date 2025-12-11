@@ -1,5 +1,6 @@
 #include "simulation.hh"
 
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
@@ -7,13 +8,16 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
+#include <random>
 
 #include "elementType.hh"
 #include "particle.hh"
 
-Simulation::Simulation() {
+Simulation::Simulation() : rng(std::random_device{}()) {
   isRunning = true;
 
   size = sf::Vector2u(10, 10);
@@ -24,10 +28,11 @@ Simulation::Simulation() {
   window.setFramerateLimit(60);
   window.setPosition({1320, 100});
 
-  cell_size = sf::Vector2f((float)window.getSize().x / size.x, (float)window.getSize().y / size.y);
+  cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
+                           static_cast<float>(window.getSize().y) / size.y);
 }
 
-Simulation::Simulation(int width, int height) {
+Simulation::Simulation(int width, int height) : rng(std::random_device{}()) {
   isRunning = true;
 
   size = sf::Vector2u(width, height);
@@ -38,7 +43,8 @@ Simulation::Simulation(int width, int height) {
   window.setFramerateLimit(60);
   window.setPosition({1320, 100});
 
-  cell_size = sf::Vector2f((float)window.getSize().x / size.x, (float)window.getSize().y / size.y);
+  cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
+                           static_cast<float>(window.getSize().y) / size.y);
 }
 
 void Simulation::run() {
@@ -51,7 +57,6 @@ void Simulation::draw() {
   window.clear();
 
   drawParticles();
-
   showPlaceRadius();
 
   window.display();
@@ -151,34 +156,44 @@ void Simulation::setParticle(const Particle& particle, const sf::Vector2u& pos) 
 }
 
 void Simulation::updateParticles() {
-  std::cout << grid.size() << std::endl;
   for (int i = 0; i < grid.size(); i++) {
-    std::cout << i << std::endl;
-    grid[i].hasUpdated = true;
+    grid[i].hasUpdated = false;
   }
 
   for (int y = size.y - 1; y >= 0; y--) {
+    int reverse = rand() % 2;
+
+    std::vector<int> xOrder(size.x);
     for (int x = 0; x < size.x; x++) {
-      int index = pos_index(x, y);
+      xOrder[x] = x;
+    }
+
+    std::shuffle(xOrder.begin(), xOrder.end(), rng);
+
+    for (int x = 0; x < size.x; x++) {
+      int new_x = xOrder[x];
+
+      int index = pos_index(new_x, y);
 
       if (grid[index].hasUpdated) {
-        std::cout << "Skip Particle: " << index << std::endl;
         continue;
       }
 
       switch (grid[index].type) {
         case ElementType::Empty:
+          grid[index].hasUpdated = true;
           break;
 
         case ElementType::Sand:
-          updateSand(x, y);
+          updateSand(new_x, y);
           break;
 
         case ElementType::Water:
-          updateWater(x, y);
+          updateWater(new_x, y);
           break;
 
         default:
+          grid[index].hasUpdated = true;
           break;
       }
     }
@@ -186,36 +201,43 @@ void Simulation::updateParticles() {
 }
 
 void Simulation::updateSand(int x, int y) {
+  int dir = rand() % 2 ? 1 : -1;
+
   int index = pos_index(x, y);
   int below_index = pos_index(x, y + 1);
-  int below_left_index = pos_index(x - 1, y + 1);
-  int below_right_index = pos_index(x + 1, y + 1);
+  int below_left_index = pos_index(x - 1 * dir, y + 1);
+  int below_right_index = pos_index(x + 1 * dir, y + 1);
 
   grid[index].hasUpdated = true;
 
-  if (is_inside(x, y + 1) && grid[below_index].type == ElementType::Empty) {
+  if (is_inside(x, y + 1) && (grid[below_index].type == ElementType::Empty ||
+                              grid[below_index].type == ElementType::Water)) {
     std::swap(grid[index], grid[below_index]);
     return;
   }
 
-  if (is_inside(x - 1, y + 1) && grid[below_left_index].type == ElementType::Empty) {
+  if (is_inside(x - 1 * dir, y + 1) && (grid[below_left_index].type == ElementType::Empty ||
+                                        grid[below_left_index].type == ElementType::Water)) {
     std::swap(grid[index], grid[below_left_index]);
     return;
   }
 
-  if (is_inside(x + 1, y + 1) && grid[below_right_index].type == ElementType::Empty) {
+  if (is_inside(x + 1 * dir, y + 1) && (grid[below_right_index].type == ElementType::Empty ||
+                                        grid[below_right_index].type == ElementType::Empty)) {
     std::swap(grid[index], grid[below_right_index]);
     return;
   }
 }
 
 void Simulation::updateWater(int x, int y) {
+  int dir = rand() % 2 ? 1 : -1;
+
   int index = pos_index(x, y);
-  int left_index = pos_index(x - 1, y);
-  int right_index = pos_index(x + 1, y);
+  int left_index = pos_index(x - 1 * dir, y);
+  int right_index = pos_index(x + 1 * dir, y);
   int below_index = pos_index(x, y + 1);
-  int below_left_index = pos_index(x - 1, y + 1);
-  int below_right_index = pos_index(x + 1, y + 1);
+  int below_left_index = pos_index(x - 1 * dir, y + 1);
+  int below_right_index = pos_index(x + 1 * dir, y + 1);
 
   grid[index].hasUpdated = true;
 
@@ -224,22 +246,22 @@ void Simulation::updateWater(int x, int y) {
     return;
   }
 
-  if (is_inside(x - 1, y + 1) && grid[below_left_index].type == ElementType::Empty) {
+  if (is_inside(x - 1 * dir, y + 1) && grid[below_left_index].type == ElementType::Empty) {
     std::swap(grid[index], grid[below_left_index]);
     return;
   }
 
-  if (is_inside(x + 1, y + 1) && grid[below_left_index].type == ElementType::Empty) {
-    std::swap(grid[index], grid[below_left_index]);
+  if (is_inside(x + 1 * dir, y + 1) && grid[below_right_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_right_index]);
     return;
   }
 
-  if (is_inside(x - 1, y) && grid[left_index].type == ElementType::Empty) {
+  if (is_inside(x - 1 * dir, y) && grid[left_index].type == ElementType::Empty) {
     std::swap(grid[index], grid[left_index]);
     return;
   }
 
-  if (is_inside(x + 1, y) && grid[right_index].type == ElementType::Empty) {
+  if (is_inside(x + 1 * dir, y) && grid[right_index].type == ElementType::Empty) {
     std::swap(grid[index], grid[right_index]);
     return;
   }
@@ -250,7 +272,8 @@ void Simulation::drawParticles() {
 
   for (int y = 0; y < size.y; y++) {
     for (int x = 0; x < size.x; x++) {
-      int index = y * size.x + x;
+      int index = pos_index(x, y);
+
       sf::Color color = getAttributes(grid[index].type).color;
 
       int vertexIndex = index * 6;
@@ -284,7 +307,7 @@ void Simulation::calculatePlacePositions() {
     for (int y = -place_radius; y <= place_radius; y++) {
       sf::Vector2i place_pos(cell_pos.x + x, cell_pos.y + y);
 
-      if (is_inside(place_pos.x, place_pos.y)) {
+      if (!is_inside(place_pos.x, place_pos.y)) {
         continue;
       }
 

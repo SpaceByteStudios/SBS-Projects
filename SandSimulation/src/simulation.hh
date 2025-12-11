@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <random>
 #include <vector>
 
 #include "elementType.hh"
@@ -32,6 +33,8 @@ class Simulation {
   std::vector<sf::Vector2i> place_positions;
   ElementType place_type = ElementType::Sand;
   float place_radius = 2.0;
+
+  std::mt19937 rng;
 
   void updateParticles();
   void drawParticles();
