@@ -32,11 +32,12 @@ class Simulation {
 
   std::vector<sf::Vector2i> place_positions;
   ElementType place_type = ElementType::Sand;
-  float place_radius = 10;
+  float place_radius = 2.0;
 
   void updateParticles();
   void drawParticles();
   void updateSand(int x, int y);
+  void updateWater(int x, int y);
 
   void calculatePlacePositions();
   void showPlaceRadius();

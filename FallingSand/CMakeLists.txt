@@ -13,7 +13,7 @@ FetchContent_Declare(SFML
       SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(simulation src/main.cpp src/simulation.cpp)
+add_executable(simulation src/main.cpp src/simulation.cpp src/elementType.cpp)
 target_include_directories(simulation PRIVATE ${CMAKE_SOURCE_DIR}/src) 
 target_compile_features(simulation PRIVATE cxx_std_17)
 target_link_libraries(simulation PRIVATE SFML::Graphics)

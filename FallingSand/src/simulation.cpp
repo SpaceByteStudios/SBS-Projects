@@ -9,7 +9,6 @@
 #include <SFML/Window/Mouse.hpp>
 #include <cmath>
 #include <iostream>
-#include <ostream>
 
 #include "elementType.hh"
 #include "particle.hh"
@@ -83,6 +82,24 @@ void Simulation::processInput() {
           place_radius = 0;
         }
       }
+
+      if (key == sf::Keyboard::Key::S) {
+        place_type = ElementType::Sand;
+      }
+
+      if (key == sf::Keyboard::Key::W) {
+        place_type = ElementType::Water;
+      }
+    }
+
+    if (event->is<sf::Event::MouseWheelScrolled>()) {
+      auto scroll = event->getIf<sf::Event::MouseWheelScrolled>()->delta;
+
+      if (scroll > 0) {
+        place_radius += 0.5;
+      } else if (scroll < 0) {
+        place_radius -= 0.5;
+      }
     }
   }
 
@@ -98,7 +115,8 @@ void Simulation::processInput() {
         continue;
       }
 
-      addParticle(Particle(place_type, sf::Color(255, 255, 0)), sf::Vector2u(pos.x, pos.y));
+      ElementAttributes particle_attr = getAttributes(place_type);
+      addParticle(Particle(place_type, particle_attr.color), sf::Vector2u(pos.x, pos.y));
     }
   }
 
@@ -139,7 +157,7 @@ void Simulation::updateParticles() {
   std::fill(back_grid.begin(), back_grid.end(), Particle());
 
   for (int y = size.y - 1; y >= 0; y--) {
-    for (int x = size.x - 1; x >= 0; x--) {
+    for (int x = 0; x < size.x; x++) {
       int index = y * size.x + x;
 
       switch (front_grid[index].type) {
@@ -148,6 +166,10 @@ void Simulation::updateParticles() {
 
         case ElementType::Sand:
           updateSand(x, y);
+          break;
+
+        case ElementType::Water:
+          updateWater(x, y);
           break;
 
         default:
@@ -169,22 +191,63 @@ void Simulation::updateSand(int x, int y) {
 
   int below_index = (y + 1) * size.x + x;
 
-  if (back_grid[below_index].type == ElementType::Empty) {
+  if (front_grid[below_index].type == ElementType::Empty) {
     back_grid[below_index] = front_grid[index];
     return;
   }
 
   int below_left_index = (y + 1) * size.x + (x - 1);
 
-  if (x - 1 >= 0 && back_grid[below_left_index].type == ElementType::Empty) {
+  if (x - 1 >= 0 && front_grid[below_left_index].type == ElementType::Empty) {
     back_grid[below_left_index] = front_grid[index];
     return;
   }
 
   int below_right_index = (y + 1) * size.x + (x + 1);
 
+  if (x + 1 < size.x && front_grid[below_right_index].type == ElementType::Empty) {
+    back_grid[below_right_index] = front_grid[index];
+    return;
+  }
+
+  back_grid[index] = front_grid[index];
+}
+
+void Simulation::updateWater(int x, int y) {
+  int index = y * size.x + x;
+
+  if (y + 1 >= size.y) {
+    back_grid[index] = front_grid[index];
+    return;
+  }
+
+  int below_index = (y + 1) * size.x + x;
+  if (back_grid[below_index].type == ElementType::Empty) {
+    back_grid[below_index] = front_grid[index];
+    return;
+  }
+
+  int below_left_index = (y + 1) * size.x + (x - 1);
+  if (x - 1 >= 0 && back_grid[below_left_index].type == ElementType::Empty) {
+    back_grid[below_left_index] = front_grid[index];
+    return;
+  }
+
+  int below_right_index = (y + 1) * size.x + (x + 1);
   if (x + 1 < size.x && back_grid[below_right_index].type == ElementType::Empty) {
     back_grid[below_right_index] = front_grid[index];
+    return;
+  }
+
+  int left_index = y * size.x + (x - 1);
+  if (back_grid[left_index].type == ElementType::Empty) {
+    back_grid[left_index] = front_grid[index];
+    return;
+  }
+
+  int right_index = y * size.x + (x + 1);
+  if (back_grid[right_index].type == ElementType::Empty) {
+    back_grid[right_index] = front_grid[index];
     return;
   }
 
