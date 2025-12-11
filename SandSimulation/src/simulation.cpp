@@ -1,0 +1,344 @@
+#include "simulation.hh"
+
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Mouse.hpp>
+#include <cmath>
+#include <iostream>
+
+#include "elementType.hh"
+#include "particle.hh"
+
+Simulation::Simulation() {
+  isRunning = true;
+
+  size = sf::Vector2u(10, 10);
+
+  grid.resize(size.x * size.y);
+
+  window = sf::RenderWindow(sf::VideoMode({500u, 500u}), "Falling Sand Simulation");
+  window.setFramerateLimit(60);
+  window.setPosition({1320, 100});
+
+  cell_size = sf::Vector2f((float)window.getSize().x / size.x, (float)window.getSize().y / size.y);
+}
+
+Simulation::Simulation(int width, int height) {
+  isRunning = true;
+
+  size = sf::Vector2u(width, height);
+
+  grid.resize(size.x * size.y);
+
+  window = sf::RenderWindow(sf::VideoMode({500u, 500u}), "Falling Sand Simulation");
+  window.setFramerateLimit(60);
+  window.setPosition({1320, 100});
+
+  cell_size = sf::Vector2f((float)window.getSize().x / size.x, (float)window.getSize().y / size.y);
+}
+
+void Simulation::run() {
+  updateParticles();
+
+  calculatePlacePositions();
+}
+
+void Simulation::draw() {
+  window.clear();
+
+  drawParticles();
+
+  showPlaceRadius();
+
+  window.display();
+}
+
+void Simulation::processInput() {
+  while (const std::optional event = window.pollEvent()) {
+    if (event->is<sf::Event::Closed>()) {
+      window.close();
+    }
+
+    if (event->is<sf::Event::KeyPressed>()) {
+      auto key = event->getIf<sf::Event::KeyPressed>()->code;
+      if (key == sf::Keyboard::Key::Escape) {
+        window.close();
+      }
+
+      if (key == sf::Keyboard::Key::Add || key == sf::Keyboard::Key::Equal) {
+        place_radius += 0.5;
+      }
+
+      if (key == sf::Keyboard::Key::Subtract || key == sf::Keyboard::Key::Hyphen) {
+        place_radius -= 0.5;
+
+        if (place_radius < 0) {
+          place_radius = 0;
+        }
+      }
+
+      if (key == sf::Keyboard::Key::S) {
+        place_type = ElementType::Sand;
+      }
+
+      if (key == sf::Keyboard::Key::W) {
+        place_type = ElementType::Water;
+      }
+    }
+
+    if (event->is<sf::Event::MouseWheelScrolled>()) {
+      auto scroll = event->getIf<sf::Event::MouseWheelScrolled>()->delta;
+
+      if (scroll > 0) {
+        place_radius += 0.5;
+      } else if (scroll < 0) {
+        place_radius -= 0.5;
+      }
+    }
+  }
+
+  if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+    sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+    sf::Vector2u cell_pos(mouse_pos.x / cell_size.x, mouse_pos.y / cell_size.y);
+
+    for (sf::Vector2i& pos : place_positions) {
+      float dist = std::sqrt((pos.x - cell_pos.x) * (pos.x - cell_pos.x) +
+                             (pos.y - cell_pos.y) * (pos.y - cell_pos.y));
+
+      if (dist > place_radius) {
+        continue;
+      }
+
+      addParticle(Particle(place_type), sf::Vector2u(pos.x, pos.y));
+    }
+  }
+
+  if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+    sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+    sf::Vector2u cell_pos(mouse_pos.x / cell_size.x, mouse_pos.y / cell_size.y);
+
+    for (sf::Vector2i& pos : place_positions) {
+      float dist = std::sqrt((pos.x - cell_pos.x) * (pos.x - cell_pos.x) +
+                             (pos.y - cell_pos.y) * (pos.y - cell_pos.y));
+
+      if (dist > place_radius) {
+        continue;
+      }
+
+      setParticle(Particle(ElementType::Empty), sf::Vector2u(pos.x, pos.y));
+    }
+  }
+}
+
+void Simulation::addParticle(const Particle& particle, const sf::Vector2u& pos) {
+  int index = pos_index(pos.x, pos.y);
+
+  if (index < grid.size() && grid[index].type == ElementType::Empty) {
+    grid[index] = particle;
+  }
+}
+
+void Simulation::setParticle(const Particle& particle, const sf::Vector2u& pos) {
+  int index = pos_index(pos.x, pos.y);
+
+  if (index < grid.size()) {
+    grid[index] = particle;
+  }
+}
+
+void Simulation::updateParticles() {
+  std::cout << grid.size() << std::endl;
+  for (int i = 0; i < grid.size(); i++) {
+    std::cout << i << std::endl;
+    grid[i].hasUpdated = true;
+  }
+
+  for (int y = size.y - 1; y >= 0; y--) {
+    for (int x = 0; x < size.x; x++) {
+      int index = pos_index(x, y);
+
+      if (grid[index].hasUpdated) {
+        std::cout << "Skip Particle: " << index << std::endl;
+        continue;
+      }
+
+      switch (grid[index].type) {
+        case ElementType::Empty:
+          break;
+
+        case ElementType::Sand:
+          updateSand(x, y);
+          break;
+
+        case ElementType::Water:
+          updateWater(x, y);
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+}
+
+void Simulation::updateSand(int x, int y) {
+  int index = pos_index(x, y);
+  int below_index = pos_index(x, y + 1);
+  int below_left_index = pos_index(x - 1, y + 1);
+  int below_right_index = pos_index(x + 1, y + 1);
+
+  grid[index].hasUpdated = true;
+
+  if (is_inside(x, y + 1) && grid[below_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_index]);
+    return;
+  }
+
+  if (is_inside(x - 1, y + 1) && grid[below_left_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_left_index]);
+    return;
+  }
+
+  if (is_inside(x + 1, y + 1) && grid[below_right_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_right_index]);
+    return;
+  }
+}
+
+void Simulation::updateWater(int x, int y) {
+  int index = pos_index(x, y);
+  int left_index = pos_index(x - 1, y);
+  int right_index = pos_index(x + 1, y);
+  int below_index = pos_index(x, y + 1);
+  int below_left_index = pos_index(x - 1, y + 1);
+  int below_right_index = pos_index(x + 1, y + 1);
+
+  grid[index].hasUpdated = true;
+
+  if (is_inside(x, y + 1) && grid[below_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_index]);
+    return;
+  }
+
+  if (is_inside(x - 1, y + 1) && grid[below_left_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_left_index]);
+    return;
+  }
+
+  if (is_inside(x + 1, y + 1) && grid[below_left_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[below_left_index]);
+    return;
+  }
+
+  if (is_inside(x - 1, y) && grid[left_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[left_index]);
+    return;
+  }
+
+  if (is_inside(x + 1, y) && grid[right_index].type == ElementType::Empty) {
+    std::swap(grid[index], grid[right_index]);
+    return;
+  }
+}
+
+void Simulation::drawParticles() {
+  sf::VertexArray vertices(sf::PrimitiveType::Triangles, size.x * size.y * 6);
+
+  for (int y = 0; y < size.y; y++) {
+    for (int x = 0; x < size.x; x++) {
+      int index = y * size.x + x;
+      sf::Color color = getAttributes(grid[index].type).color;
+
+      int vertexIndex = index * 6;
+
+      sf::Vector2f pos(x * cell_size.x, y * cell_size.y);
+
+      vertices[vertexIndex + 0].position = pos;
+      vertices[vertexIndex + 1].position = pos + sf::Vector2f(cell_size.x, 0);
+      vertices[vertexIndex + 2].position = pos + sf::Vector2f(cell_size.x, cell_size.y);
+
+      vertices[vertexIndex + 3].position = pos;
+      vertices[vertexIndex + 4].position = pos + sf::Vector2f(cell_size.x, cell_size.y);
+      vertices[vertexIndex + 5].position = pos + sf::Vector2f(0, cell_size.y);
+
+      for (int i = 0; i < 6; i++) {
+        vertices[vertexIndex + i].color = color;
+      }
+    }
+  }
+
+  window.draw(vertices);
+}
+
+void Simulation::calculatePlacePositions() {
+  place_positions.clear();
+
+  sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+  sf::Vector2u cell_pos(mouse_pos.x / cell_size.x, mouse_pos.y / cell_size.y);
+
+  for (int x = -place_radius; x <= place_radius; x++) {
+    for (int y = -place_radius; y <= place_radius; y++) {
+      sf::Vector2i place_pos(cell_pos.x + x, cell_pos.y + y);
+
+      if (is_inside(place_pos.x, place_pos.y)) {
+        continue;
+      }
+
+      place_positions.push_back(place_pos);
+    }
+  }
+}
+
+void Simulation::showPlaceRadius() {
+  int max_cells = (2 * place_radius + 1) * (2 * place_radius + 1);
+  sf::VertexArray vertices(sf::PrimitiveType::Triangles, max_cells * 6);
+
+  sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+  sf::Vector2u cell_pos(mouse_pos.x / cell_size.x, mouse_pos.y / cell_size.y);
+
+  sf::Color color(128, 128, 128, 32);
+
+  int currentVertex = 0;
+
+  for (sf::Vector2i& pos : place_positions) {
+    float dist = std::sqrt((pos.x - cell_pos.x) * (pos.x - cell_pos.x) +
+                           (pos.y - cell_pos.y) * (pos.y - cell_pos.y));
+
+    if (dist > place_radius) {
+      continue;
+    }
+
+    sf::Vector2f pos_f(pos.x * cell_size.x, pos.y * cell_size.y);
+    vertices[currentVertex + 0].position = pos_f;
+    vertices[currentVertex + 1].position = pos_f + sf::Vector2f(cell_size.x, 0);
+    vertices[currentVertex + 2].position = pos_f + sf::Vector2f(cell_size.x, cell_size.y);
+
+    vertices[currentVertex + 3].position = pos_f;
+    vertices[currentVertex + 4].position = pos_f + sf::Vector2f(cell_size.x, cell_size.y);
+    vertices[currentVertex + 5].position = pos_f + sf::Vector2f(0, cell_size.y);
+
+    for (int i = 0; i < 6; i++) {
+      vertices[currentVertex + i].color = color;
+    }
+
+    currentVertex += 6;
+  }
+
+  window.draw(vertices);
+}
+
+bool Simulation::is_inside(int x, int y) {
+  if (x < 0 || x >= size.x || y < 0 || y >= size.y) {
+    return false;
+  }
+
+  return true;
+}
+
+int Simulation::pos_index(int x, int y) {
+  return y * size.x + x;
+}
