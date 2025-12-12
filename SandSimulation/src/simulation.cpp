@@ -32,6 +32,8 @@ Simulation::Simulation() : rng(std::random_device{}()) {
 
   cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
                            static_cast<float>(window.getSize().y) / size.y);
+
+  std::srand(std::time(nullptr));
 }
 
 Simulation::Simulation(int width, int height) : rng(std::random_device{}()) {
@@ -238,9 +240,18 @@ void Simulation::updateSand(int x, int y) {
     int pos_i = pos_index(pos.x, pos.y);
 
     if (is_inside(pos.x, pos.y)) {
-      if (grid[pos_i].type == ElementType::Empty || getAttributes(grid[pos_i].type).is_fluid) {
+      if (grid[pos_i].type == ElementType::Empty) {
         std::swap(grid[index], grid[pos_i]);
         return;
+      }
+
+      if (getAttributes(grid[pos_i].type).is_fluid) {
+        int flip_rate = rand() % 100;
+
+        if (flip_rate < 75) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
       }
     }
   }
@@ -301,7 +312,7 @@ void Simulation::updateFire(int x, int y) {
         int fire_spread = rand() % 100;
 
         if (fire_spread < getAttributes(grid[pos_i].type).flammabilaty) {
-          grid[pos_i] = grid[index];
+          grid[pos_i] = Particle(ElementType::Fire);
         }
       }
     }
@@ -309,7 +320,7 @@ void Simulation::updateFire(int x, int y) {
 
   int life_rate = rand() % 100;
 
-  if (life_rate > 95) {
+  if (life_rate > 100 - getAttributes(grid[index].type).decay) {
     grid[index] = Particle(ElementType::Empty);
   }
 }
@@ -321,7 +332,7 @@ void Simulation::drawParticles() {
     for (int x = 0; x < size.x; x++) {
       int index = pos_index(x, y);
 
-      sf::Color color = getAttributes(grid[index].type).color;
+      sf::Color color = grid[index].color;
 
       int vertexIndex = index * 6;
 

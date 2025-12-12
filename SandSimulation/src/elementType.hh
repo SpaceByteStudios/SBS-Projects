@@ -12,3 +12,5 @@ struct ElementAttributes {
 };
 
 ElementAttributes getAttributes(ElementType type);
+
+sf::Color mapColor(const sf::Color& a, const sf::Color& b, float t);
