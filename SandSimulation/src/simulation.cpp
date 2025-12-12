@@ -13,6 +13,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <random>
+#include <utility>
+#include <vector>
 
 #include "elementType.hh"
 #include "particle.hh"
@@ -93,6 +95,18 @@ void Simulation::processInput() {
       if (key == sf::Keyboard::Key::W) {
         place_type = ElementType::Water;
       }
+
+      if (key == sf::Keyboard::Key::Q) {
+        place_type = ElementType::Stone;
+      }
+
+      if (key == sf::Keyboard::Key::A) {
+        place_type = ElementType::Wood;
+      }
+
+      if (key == sf::Keyboard::Key::F) {
+        place_type = ElementType::Fire;
+      }
     }
 
     if (event->is<sf::Event::MouseWheelScrolled>()) {
@@ -170,10 +184,10 @@ void Simulation::updateParticles() {
 
     std::shuffle(xOrder.begin(), xOrder.end(), rng);
 
-    for (int x = 0; x < size.x; x++) {
-      int new_x = xOrder[x];
+    for (int i = 0; i < size.x; i++) {
+      int x = xOrder[i];
 
-      int index = pos_index(new_x, y);
+      int index = pos_index(x, y);
 
       if (grid[index].hasUpdated) {
         continue;
@@ -185,11 +199,23 @@ void Simulation::updateParticles() {
           break;
 
         case ElementType::Sand:
-          updateSand(new_x, y);
+          updateSand(x, y);
           break;
 
         case ElementType::Water:
-          updateWater(new_x, y);
+          updateWater(x, y);
+          break;
+
+        case ElementType::Stone:
+          updateStone(x, y);
+          break;
+
+        case ElementType::Wood:
+          updateWood(x, y);
+          break;
+
+        case ElementType::Fire:
+          updateFire(x, y);
           break;
 
         default:
@@ -204,28 +230,19 @@ void Simulation::updateSand(int x, int y) {
   int dir = rand() % 2 ? 1 : -1;
 
   int index = pos_index(x, y);
-  int below_index = pos_index(x, y + 1);
-  int below_left_index = pos_index(x - 1 * dir, y + 1);
-  int below_right_index = pos_index(x + 1 * dir, y + 1);
-
   grid[index].hasUpdated = true;
 
-  if (is_inside(x, y + 1) && (grid[below_index].type == ElementType::Empty ||
-                              grid[below_index].type == ElementType::Water)) {
-    std::swap(grid[index], grid[below_index]);
-    return;
-  }
+  std::vector<sf::Vector2i> positions = {{x, y + 1}, {x - 1 * dir, y + 1}, {x + 1 * dir, y + 1}};
 
-  if (is_inside(x - 1 * dir, y + 1) && (grid[below_left_index].type == ElementType::Empty ||
-                                        grid[below_left_index].type == ElementType::Water)) {
-    std::swap(grid[index], grid[below_left_index]);
-    return;
-  }
+  for (sf::Vector2i pos : positions) {
+    int pos_i = pos_index(pos.x, pos.y);
 
-  if (is_inside(x + 1 * dir, y + 1) && (grid[below_right_index].type == ElementType::Empty ||
-                                        grid[below_right_index].type == ElementType::Empty)) {
-    std::swap(grid[index], grid[below_right_index]);
-    return;
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty || getAttributes(grid[pos_i].type).is_fluid) {
+        std::swap(grid[index], grid[pos_i]);
+        return;
+      }
+    }
   }
 }
 
@@ -233,37 +250,67 @@ void Simulation::updateWater(int x, int y) {
   int dir = rand() % 2 ? 1 : -1;
 
   int index = pos_index(x, y);
-  int left_index = pos_index(x - 1 * dir, y);
-  int right_index = pos_index(x + 1 * dir, y);
-  int below_index = pos_index(x, y + 1);
-  int below_left_index = pos_index(x - 1 * dir, y + 1);
-  int below_right_index = pos_index(x + 1 * dir, y + 1);
-
   grid[index].hasUpdated = true;
 
-  if (is_inside(x, y + 1) && grid[below_index].type == ElementType::Empty) {
-    std::swap(grid[index], grid[below_index]);
-    return;
+  std::vector<sf::Vector2i> positions = {
+      {x, y + 1}, {x - 1 * dir, y + 1}, {x + 1 * dir, y + 1}, {x - 1 * dir, y}, {x + 1 * dir, y}};
+
+  for (sf::Vector2i pos : positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty) {
+        std::swap(grid[index], grid[pos_i]);
+        return;
+      }
+    }
+  }
+}
+
+void Simulation::updateStone(int x, int y) {
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+}
+
+void Simulation::updateWood(int x, int y) {
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+}
+
+void Simulation::updateFire(int x, int y) {
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+
+  std::vector<sf::Vector2i> positions = {{x, y + 1},     {x - 1, y + 1}, {x + 1, y + 1},
+                                         {x - 1, y},     {x + 1, y},     {x, y - 1},
+                                         {x - 1, y - 1}, {x + 1, y - 1}};
+
+  for (sf::Vector2i pos : positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty) {
+        int move_spread = rand() % 100;
+
+        if (move_spread < 5) {
+          std::swap(grid[index], grid[pos_i]);
+        }
+      }
+
+      if (getAttributes(grid[pos_i].type).flammabilaty) {
+        int fire_spread = rand() % 100;
+
+        if (fire_spread < getAttributes(grid[pos_i].type).flammabilaty) {
+          grid[pos_i] = grid[index];
+        }
+      }
+    }
   }
 
-  if (is_inside(x - 1 * dir, y + 1) && grid[below_left_index].type == ElementType::Empty) {
-    std::swap(grid[index], grid[below_left_index]);
-    return;
-  }
+  int life_rate = rand() % 100;
 
-  if (is_inside(x + 1 * dir, y + 1) && grid[below_right_index].type == ElementType::Empty) {
-    std::swap(grid[index], grid[below_right_index]);
-    return;
-  }
-
-  if (is_inside(x - 1 * dir, y) && grid[left_index].type == ElementType::Empty) {
-    std::swap(grid[index], grid[left_index]);
-    return;
-  }
-
-  if (is_inside(x + 1 * dir, y) && grid[right_index].type == ElementType::Empty) {
-    std::swap(grid[index], grid[right_index]);
-    return;
+  if (life_rate > 95) {
+    grid[index] = Particle(ElementType::Empty);
   }
 }
 
