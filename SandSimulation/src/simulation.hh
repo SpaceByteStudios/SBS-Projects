@@ -43,6 +43,8 @@ class Simulation {
   void updateStone(int x, int y);
   void updateWood(int x, int y);
   void updateFire(int x, int y);
+  void updateOil(int x, int y);
+  void updateSteam(int x, int y);
 
   void calculatePlacePositions();
   void showPlaceRadius();

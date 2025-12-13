@@ -94,20 +94,24 @@ void Simulation::processInput() {
         place_type = ElementType::Sand;
       }
 
-      if (key == sf::Keyboard::Key::W) {
+      if (key == sf::Keyboard::Key::A) {
         place_type = ElementType::Water;
       }
 
-      if (key == sf::Keyboard::Key::Q) {
+      if (key == sf::Keyboard::Key::E) {
         place_type = ElementType::Stone;
       }
 
-      if (key == sf::Keyboard::Key::A) {
+      if (key == sf::Keyboard::Key::W) {
         place_type = ElementType::Wood;
       }
 
       if (key == sf::Keyboard::Key::F) {
         place_type = ElementType::Fire;
+      }
+
+      if (key == sf::Keyboard::Key::O) {
+        place_type = ElementType::Oil;
       }
     }
 
@@ -208,6 +212,10 @@ void Simulation::updateParticles() {
           updateWater(x, y);
           break;
 
+        case ElementType::Steam:
+          updateSteam(x, y);
+          break;
+
         case ElementType::Stone:
           updateStone(x, y);
           break;
@@ -218,6 +226,10 @@ void Simulation::updateParticles() {
 
         case ElementType::Fire:
           updateFire(x, y);
+          break;
+
+        case ElementType::Oil:
+          updateOil(x, y);
           break;
 
         default:
@@ -274,6 +286,15 @@ void Simulation::updateWater(int x, int y) {
         std::swap(grid[index], grid[pos_i]);
         return;
       }
+
+      if (grid[pos_i].type == ElementType::Oil) {
+        int flip_rate = 75;
+
+        if (rand() % 100 < flip_rate) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
+      }
     }
   }
 }
@@ -308,6 +329,15 @@ void Simulation::updateFire(int x, int y) {
         }
       }
 
+      if (grid[pos_i].type == ElementType::Water) {
+        int boil_rate = rand() % 100;
+
+        if (boil_rate < 20) {
+          grid[pos_i] = Particle(ElementType::Steam);
+          grid[index] = Particle(ElementType::Empty);
+        }
+      }
+
       if (getAttributes(grid[pos_i].type).flammabilaty) {
         int fire_spread = rand() % 100;
 
@@ -318,10 +348,68 @@ void Simulation::updateFire(int x, int y) {
     }
   }
 
-  int life_rate = rand() % 100;
+  int life_rate = getAttributes(grid[index].type).decay;
 
-  if (life_rate > 100 - getAttributes(grid[index].type).decay) {
+  if (rand() % 100 < life_rate) {
     grid[index] = Particle(ElementType::Empty);
+  }
+}
+
+void Simulation::updateOil(int x, int y) {
+  int dir = rand() % 2 ? 1 : -1;
+
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+
+  std::vector<sf::Vector2i> positions = {
+      {x, y + 1}, {x - 1 * dir, y + 1}, {x + 1 * dir, y + 1}, {x - 1 * dir, y}, {x + 1 * dir, y}};
+
+  for (sf::Vector2i pos : positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty) {
+        std::swap(grid[index], grid[pos_i]);
+        return;
+      }
+    }
+  }
+}
+
+void Simulation::updateSteam(int x, int y) {
+  int dir = rand() % 2 ? 1 : -1;
+
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+
+  int condense_rate = 1;
+
+  if (rand() % 1000 < condense_rate) {
+    grid[index] = Particle(ElementType::Water);
+    return;
+  }
+
+  std::vector<sf::Vector2i> positions = {
+      {x, y - 1}, {x - 1 * dir, y - 1}, {x + 1 * dir, y - 1}, {x - 1 * dir, y}, {x + 1 * dir, y}};
+
+  for (sf::Vector2i pos : positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty) {
+        std::swap(grid[index], grid[pos_i]);
+        return;
+      }
+
+      if (getAttributes(grid[pos_i].type).is_fluid) {
+        int flip_rate = 75;
+
+        if (rand() % 100 < flip_rate) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
+      }
+    }
   }
 }
 

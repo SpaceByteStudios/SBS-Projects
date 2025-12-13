@@ -27,6 +27,12 @@ ElementAttributes getAttributes(ElementType type) {
       return ElementAttributes{color, true};
     }
 
+    case ElementType::Steam: {
+      float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+      sf::Color color = mapColor(sf::Color(128, 160, 255), sf::Color(160, 176, 255), t);
+      return ElementAttributes{color, false};
+    }
+
     case ElementType::Stone: {
       float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       sf::Color color = mapColor(sf::Color(100, 100, 100), sf::Color(156, 156, 156), t);
@@ -36,13 +42,19 @@ ElementAttributes getAttributes(ElementType type) {
     case ElementType::Wood: {
       float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       sf::Color color = mapColor(sf::Color(128, 48, 0), sf::Color(128, 80, 0), t);
-      return ElementAttributes{color, false, 10};
+      return ElementAttributes{color, false, 7};
     }
 
     case ElementType::Fire: {
       float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       sf::Color color = mapColor(sf::Color(255, 64, 0), sf::Color(255, 192, 0), t);
       return ElementAttributes{color, false, 0, 5};
+    }
+
+    case ElementType::Oil: {
+      float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+      sf::Color color = mapColor(sf::Color(160, 128, 64), sf::Color(192, 144, 64), t);
+      return ElementAttributes{color, true, 50};
     }
   }
 }
