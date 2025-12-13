@@ -98,12 +98,12 @@ void Simulation::processInput() {
         place_type = ElementType::Water;
       }
 
-      if (key == sf::Keyboard::Key::E) {
-        place_type = ElementType::Stone;
-      }
-
       if (key == sf::Keyboard::Key::W) {
         place_type = ElementType::Wood;
+      }
+
+      if (key == sf::Keyboard::Key::Q) {
+        place_type = ElementType::Stone;
       }
 
       if (key == sf::Keyboard::Key::F) {
@@ -113,15 +113,27 @@ void Simulation::processInput() {
       if (key == sf::Keyboard::Key::O) {
         place_type = ElementType::Oil;
       }
+
+      if (key == sf::Keyboard::Key::I) {
+        place_type = ElementType::Steam;
+      }
+
+      if (key == sf::Keyboard::Key::L) {
+        place_type = ElementType::Acid;
+      }
     }
 
     if (event->is<sf::Event::MouseWheelScrolled>()) {
       auto scroll = event->getIf<sf::Event::MouseWheelScrolled>()->delta;
 
       if (scroll > 0) {
-        place_radius += 0.5;
+        place_radius += 0.5 + 0.05 * place_radius;
       } else if (scroll < 0) {
-        place_radius -= 0.5;
+        place_radius -= 0.5 + 0.05 * place_radius;
+
+        if (place_radius < 0) {
+          place_radius = 0;
+        }
       }
     }
   }
@@ -232,8 +244,8 @@ void Simulation::updateParticles() {
           updateOil(x, y);
           break;
 
-        default:
-          grid[index].hasUpdated = true;
+        case ElementType::Acid:
+          updateAcid(x, y);
           break;
       }
     }
@@ -407,6 +419,56 @@ void Simulation::updateSteam(int x, int y) {
         if (rand() % 100 < flip_rate) {
           std::swap(grid[index], grid[pos_i]);
           return;
+        }
+      }
+    }
+  }
+}
+
+void Simulation::updateAcid(int x, int y) {
+  int dir = rand() % 2 ? 1 : -1;
+
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+
+  std::vector<sf::Vector2i> move_positions = {
+      {x, y + 1}, {x - 1 * dir, y + 1}, {x + 1 * dir, y + 1}, {x - 1 * dir, y}, {x + 1 * dir, y}};
+
+  std::vector<sf::Vector2i> acid_positions = {{x, y + 1},     {x - 1, y + 1}, {x + 1, y + 1},
+                                              {x - 1, y},     {x + 1, y},     {x, y - 1},
+                                              {x - 1, y - 1}, {x + 1, y - 1}};
+
+  for (sf::Vector2i& pos : move_positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty) {
+        std::swap(grid[index], grid[pos_i]);
+        return;
+      }
+    }
+  }
+
+  for (sf::Vector2i& pos : acid_positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      ElementType grid_type = grid[pos_i].type;
+      if (grid_type == ElementType::Acid || grid_type == ElementType::Empty) {
+        continue;
+      } else if (grid_type == ElementType::Stone) {
+        int corrode_rate = 1;
+
+        if (rand() % 1000 < corrode_rate) {
+          grid[index] = Particle(ElementType::Empty);
+          grid[pos_i] = Particle(ElementType::Empty);
+        }
+      } else {
+        int corrode_rate = 1;
+
+        if (rand() % 100 < corrode_rate) {
+          grid[index] = Particle(ElementType::Empty);
+          grid[pos_i] = Particle(ElementType::Empty);
         }
       }
     }

@@ -56,5 +56,11 @@ ElementAttributes getAttributes(ElementType type) {
       sf::Color color = mapColor(sf::Color(160, 128, 64), sf::Color(192, 144, 64), t);
       return ElementAttributes{color, true, 50};
     }
+
+    case ElementType::Acid: {
+      float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+      sf::Color color = mapColor(sf::Color(32, 192, 32), sf::Color(80, 255, 80), t);
+      return ElementAttributes{color, true, 15};
+    }
   }
 }
