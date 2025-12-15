@@ -62,5 +62,11 @@ ElementAttributes getAttributes(ElementType type) {
       sf::Color color = mapColor(sf::Color(32, 192, 32), sf::Color(80, 255, 80), t);
       return ElementAttributes{color, true, 15};
     }
+
+    case ElementType::Lava: {
+      float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+      sf::Color color = mapColor(sf::Color(255, 128, 0), sf::Color(255, 160, 0), t);
+      return ElementAttributes{color, true};
+    }
   }
 }

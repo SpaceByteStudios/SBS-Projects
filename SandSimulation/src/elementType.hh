@@ -2,7 +2,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 
-enum class ElementType { Empty, Sand, Water, Steam, Stone, Wood, Fire, Oil, Acid };
+enum class ElementType { Empty, Sand, Water, Steam, Stone, Wood, Fire, Oil, Acid, Lava };
 
 struct ElementAttributes {
   sf::Color color;

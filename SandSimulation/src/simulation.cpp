@@ -28,7 +28,7 @@ Simulation::Simulation() : rng(std::random_device{}()) {
 
   window = sf::RenderWindow(sf::VideoMode({500u, 500u}), "Falling Sand Simulation");
   window.setFramerateLimit(60);
-  window.setPosition({1320, 100});
+  window.setPosition({1370, 50});
 
   cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
                            static_cast<float>(window.getSize().y) / size.y);
@@ -45,7 +45,7 @@ Simulation::Simulation(int width, int height) : rng(std::random_device{}()) {
 
   window = sf::RenderWindow(sf::VideoMode({500u, 500u}), "Falling Sand Simulation");
   window.setFramerateLimit(60);
-  window.setPosition({1320, 100});
+  window.setPosition({1370, 50});
 
   cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
                            static_cast<float>(window.getSize().y) / size.y);
@@ -118,8 +118,12 @@ void Simulation::processInput() {
         place_type = ElementType::Steam;
       }
 
-      if (key == sf::Keyboard::Key::L) {
+      if (key == sf::Keyboard::Key::K) {
         place_type = ElementType::Acid;
+      }
+
+      if (key == sf::Keyboard::Key::L) {
+        place_type = ElementType::Lava;
       }
     }
 
@@ -247,6 +251,10 @@ void Simulation::updateParticles() {
         case ElementType::Acid:
           updateAcid(x, y);
           break;
+
+        case ElementType::Lava:
+          updateLava(x, y);
+          break;
       }
     }
   }
@@ -297,6 +305,13 @@ void Simulation::updateWater(int x, int y) {
       if (grid[pos_i].type == ElementType::Empty) {
         std::swap(grid[index], grid[pos_i]);
         return;
+      }
+
+      if (grid[pos_i].type == ElementType::Water) {
+        if (rand() % 100 < 1) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
       }
 
       if (grid[pos_i].type == ElementType::Oil) {
@@ -384,6 +399,13 @@ void Simulation::updateOil(int x, int y) {
         std::swap(grid[index], grid[pos_i]);
         return;
       }
+
+      if (grid[pos_i].type == ElementType::Oil) {
+        if (rand() % 100 < 1) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
+      }
     }
   }
 }
@@ -446,6 +468,13 @@ void Simulation::updateAcid(int x, int y) {
         std::swap(grid[index], grid[pos_i]);
         return;
       }
+
+      if (grid[pos_i].type == ElementType::Acid) {
+        if (rand() % 100 < 1) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
+      }
     }
   }
 
@@ -469,6 +498,57 @@ void Simulation::updateAcid(int x, int y) {
         if (rand() % 100 < corrode_rate) {
           grid[index] = Particle(ElementType::Empty);
           grid[pos_i] = Particle(ElementType::Empty);
+        }
+      }
+    }
+  }
+}
+
+void Simulation::updateLava(int x, int y) {
+  int dir = rand() % 2 ? 1 : -1;
+
+  int index = pos_index(x, y);
+  grid[index].hasUpdated = true;
+
+  std::vector<sf::Vector2i> move_positions = {
+      {x, y + 1}, {x - 1 * dir, y + 1}, {x + 1 * dir, y + 1}, {x - 1 * dir, y}, {x + 1 * dir, y}};
+
+  std::vector<sf::Vector2i> lava_positions = {{x, y + 1},     {x - 1, y + 1}, {x + 1, y + 1},
+                                              {x - 1, y},     {x + 1, y},     {x, y - 1},
+                                              {x - 1, y - 1}, {x + 1, y - 1}};
+
+  for (sf::Vector2i pos : move_positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Empty) {
+        std::swap(grid[index], grid[pos_i]);
+        return;
+      }
+
+      if (grid[pos_i].type == ElementType::Lava) {
+        if (rand() % 100 < 1) {
+          std::swap(grid[index], grid[pos_i]);
+          return;
+        }
+      }
+    }
+  }
+
+  for (sf::Vector2i& pos : lava_positions) {
+    int pos_i = pos_index(pos.x, pos.y);
+
+    if (is_inside(pos.x, pos.y)) {
+      if (grid[pos_i].type == ElementType::Water) {
+        grid[pos_i] = Particle(ElementType::Steam);
+        grid[index] = Particle(ElementType::Stone);
+      }
+
+      if (getAttributes(grid[pos_i].type).flammabilaty) {
+        int fire_spread = rand() % 100;
+
+        if (fire_spread < getAttributes(grid[pos_i].type).flammabilaty) {
+          grid[pos_i] = Particle(ElementType::Fire);
         }
       }
     }
