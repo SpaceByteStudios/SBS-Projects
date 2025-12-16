@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <random>
 #include <utility>
 #include <vector>
@@ -21,14 +20,16 @@
 
 Simulation::Simulation() : rng(std::random_device{}()) {
   isRunning = true;
+  is_paused = false;
 
   size = sf::Vector2u(10, 10);
 
   grid.resize(size.x * size.y);
 
-  window = sf::RenderWindow(sf::VideoMode({500u, 500u}), "Falling Sand Simulation");
+  window = sf::RenderWindow(sf::VideoMode({640u, 360u}), "Falling Sand Simulation");
   window.setFramerateLimit(60);
-  window.setPosition({1370, 50});
+  sf::Vector2i window_pos = {1920 - (int)window.getSize().x - 50, 50};
+  window.setPosition(window_pos);
 
   cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
                            static_cast<float>(window.getSize().y) / size.y);
@@ -38,14 +39,16 @@ Simulation::Simulation() : rng(std::random_device{}()) {
 
 Simulation::Simulation(int width, int height) : rng(std::random_device{}()) {
   isRunning = true;
+  is_paused = false;
 
   size = sf::Vector2u(width, height);
 
   grid.resize(size.x * size.y);
 
-  window = sf::RenderWindow(sf::VideoMode({500u, 500u}), "Falling Sand Simulation");
+  window = sf::RenderWindow(sf::VideoMode({640u, 360u}), "Falling Sand Simulation");
   window.setFramerateLimit(60);
-  window.setPosition({1370, 50});
+  sf::Vector2i window_pos = {1920 - (int)window.getSize().x - 50, 50};
+  window.setPosition(window_pos);
 
   cell_size = sf::Vector2f(static_cast<float>(window.getSize().x) / size.x,
                            static_cast<float>(window.getSize().y) / size.y);
@@ -76,6 +79,10 @@ void Simulation::processInput() {
       auto key = event->getIf<sf::Event::KeyPressed>()->code;
       if (key == sf::Keyboard::Key::Escape) {
         window.close();
+      }
+
+      if (key == sf::Keyboard::Key::Space) {
+        is_paused = !is_paused;
       }
 
       if (key == sf::Keyboard::Key::Add || key == sf::Keyboard::Key::Equal) {
@@ -192,6 +199,10 @@ void Simulation::setParticle(const Particle& particle, const sf::Vector2u& pos) 
 }
 
 void Simulation::updateParticles() {
+  if (is_paused) {
+    return;
+  }
+
   for (int i = 0; i < grid.size(); i++) {
     grid[i].hasUpdated = false;
   }

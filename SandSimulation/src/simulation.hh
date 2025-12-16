@@ -36,6 +36,8 @@ class Simulation {
 
   std::mt19937 rng;
 
+  bool is_paused;
+
   void updateParticles();
   void drawParticles();
   void updateSand(int x, int y);
