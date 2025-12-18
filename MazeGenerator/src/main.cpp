@@ -7,12 +7,14 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <vector>
 
 #include "cell.hh"
 
-sf::Vector2u grid_size = {20, 20};
+sf::Vector2u grid_size = {100, 100};
 sf::Vector2f cell_size = {0, 0};
 
 std::vector<Cell> grid;
@@ -36,30 +38,26 @@ int index_at_pos(int x, int y) {
   return -1;
 }
 
-sf::Vector2u pos_at_index(int index) {
-  return {index % grid_size.x, index / grid_size.x};
-}
-
-std::vector<int> get_neighbour_cells(int index, std::vector<Cell> &grid) {
-  sf::Vector2u cell_pos = pos_at_index(index);
+std::vector<sf::Vector2u> get_next_cells(sf::Vector2u cell_pos,
+                                         std::vector<Cell> &grid) {
 
   std::vector<sf::Vector2u> cells_pos = {{cell_pos.x, cell_pos.y - 1},
                                          {cell_pos.x, cell_pos.y + 1},
                                          {cell_pos.x - 1, cell_pos.y},
                                          {cell_pos.x + 1, cell_pos.y}};
 
-  std::vector<int> neighbour_cells;
+  std::vector<sf::Vector2u> next_cells;
 
   for (int i = 0; i < 4; i++) {
     if (is_inside(cells_pos[i].x, cells_pos[i].y)) {
-      neighbour_cells.push_back(index_at_pos(cells_pos[i].x, cells_pos[i].y));
+      next_cells.push_back({cells_pos[i].x, cells_pos[i].y});
     }
   }
 
-  return neighbour_cells;
+  return next_cells;
 }
 
-void generate_maze(std::vector<Cell> &grid) {
+void generate_maze(sf::RenderWindow &window, std::vector<Cell> &grid) {
   // Just set to all Wall
   for (int y = 0; y < grid_size.y; y++) {
     for (int x = 0; x < grid_size.x; x++) {
@@ -71,26 +69,62 @@ void generate_maze(std::vector<Cell> &grid) {
   }
 
   // Randomized Depth First Search
-  std::vector<int> maze_stack(0);
-  sf::Vector2u cell_pos = {rand() % grid_size.x, rand() % grid_size.y};
-  int rand_index = index_at_pos(cell_pos.x, cell_pos.y);
-  maze_stack.push_back(rand_index);
-
+  std::vector<sf::Vector2u> maze_stack(0);
   std::vector<bool> visited_cells(grid_size.x * grid_size.y);
-  visited_cells[rand_index] = true;
+
+  sf::Vector2u cell_pos = {rand() % grid_size.x, rand() % grid_size.y};
+
+  maze_stack.push_back(cell_pos);
+  visited_cells[index_at_pos(cell_pos.x, cell_pos.y)] = true;
 
   while (!maze_stack.empty()) {
-    std::vector<int> neighbour_cells =
-        get_neighbour_cells(maze_stack.back(), grid);
+    std::vector<sf::Vector2u> next_cells =
+        get_next_cells(maze_stack.back(), grid);
 
-    for (int i = 0; i < neighbour_cells.size(); i++) {
-      if (!visited_cells[neighbour_cells[i]]) {
+    for (int i = 0; i < next_cells.size(); i++) {
+      int next_index = index_at_pos(next_cells[i].x, next_cells[i].y);
+
+      if (visited_cells[next_index]) {
+        next_cells.erase(next_cells.begin() + i);
+        i -= 1;
       }
     }
 
-    if (neighbour_cells.size()) {
-      int rand_cell = neighbour_cells[rand() % neighbour_cells.size()];
+    if (next_cells.size() > 0) {
+      sf::Vector2u rand_cell = next_cells[rand() % next_cells.size()];
 
+      int rand_cell_index = index_at_pos(rand_cell.x, rand_cell.y);
+      int curr_cell_index =
+          index_at_pos(maze_stack.back().x, maze_stack.back().y);
+
+      sf::Vector2i dir =
+          static_cast<sf::Vector2i>(rand_cell - maze_stack.back());
+
+      int &rand_cell_bitmap = grid[rand_cell_index].walls_bitmap;
+      int &curr_cell_bitmap = grid[curr_cell_index].walls_bitmap;
+
+      if (dir == sf::Vector2i(0, -1)) {
+        curr_cell_bitmap &= ~(1 << 0);
+        rand_cell_bitmap &= ~(1 << 2);
+      }
+
+      if (dir == sf::Vector2i(1, 0)) {
+        curr_cell_bitmap &= ~(1 << 1);
+        rand_cell_bitmap &= ~(1 << 3);
+      }
+
+      if (dir == sf::Vector2i(0, 1)) {
+        curr_cell_bitmap &= ~(1 << 2);
+        rand_cell_bitmap &= ~(1 << 0);
+      }
+
+      if (dir == sf::Vector2i(-1, 0)) {
+        curr_cell_bitmap &= ~(1 << 3);
+        rand_cell_bitmap &= ~(1 << 1);
+      }
+
+      maze_stack.push_back(rand_cell);
+      visited_cells[index_at_pos(rand_cell.x, rand_cell.y)] = true;
     } else {
       maze_stack.pop_back();
     }
@@ -98,14 +132,14 @@ void generate_maze(std::vector<Cell> &grid) {
 }
 
 void draw_grid(sf::RenderWindow &window, std::vector<Cell> &grid) {
-  sf::RectangleShape start_rect(cell_size);
-  start_rect.setPosition(
+  sf::CircleShape start_circle(cell_size.x / 2);
+  start_circle.setPosition(
       {start_cell.x * cell_size.x, start_cell.y * cell_size.y});
-  start_rect.setFillColor(sf::Color(0, 128, 255));
+  start_circle.setFillColor(sf::Color(0, 128, 255));
 
-  sf::RectangleShape end_rect(cell_size);
-  end_rect.setPosition({end_cell.x * cell_size.x, end_cell.y * cell_size.y});
-  end_rect.setFillColor(sf::Color(255, 128, 0));
+  sf::CircleShape end_circle(cell_size.x / 2);
+  end_circle.setPosition({end_cell.x * cell_size.x, end_cell.y * cell_size.y});
+  end_circle.setFillColor(sf::Color(255, 128, 0));
 
   sf::VertexArray lines(sf::PrimitiveType::Lines,
                         (grid_size.x + 1) * (grid_size.y + 1) * 8);
@@ -122,9 +156,6 @@ void draw_grid(sf::RenderWindow &window, std::vector<Cell> &grid) {
           {(x + 1) * cell_size.x, (y + 1) * cell_size.y},
           {x * cell_size.x, (y + 1) * cell_size.y}};
 
-      std::vector<sf::Color> debug_col = {
-          {255, 0, 0}, {255, 255, 0}, {0, 255, 0}, {0, 0, 255}};
-
       for (int i = 0; i < 4; i++) {
         if (grid[index].walls_bitmap & (1 << i)) {
           int point1 = i * 2;
@@ -134,9 +165,6 @@ void draw_grid(sf::RenderWindow &window, std::vector<Cell> &grid) {
 
           lines[cell_vertex + point1].color = sf::Color(255, 255, 255);
           lines[cell_vertex + point1 + 1].color = sf::Color(255, 255, 255);
-
-          lines[cell_vertex + point1].color = debug_col[i];
-          lines[cell_vertex + point1 + 1].color = debug_col[i];
         }
       }
 
@@ -144,14 +172,16 @@ void draw_grid(sf::RenderWindow &window, std::vector<Cell> &grid) {
     }
   }
 
-  window.draw(start_rect);
-  window.draw(end_rect);
+  window.draw(start_circle);
+  window.draw(end_circle);
 
   window.draw(lines);
 }
 
 int main() {
-  sf::RenderWindow window(sf::VideoMode({500, 500}), "Maze Generator");
+  srand(time(nullptr));
+
+  sf::RenderWindow window(sf::VideoMode({1000, 1000}), "Maze Generator");
 
   window.setPosition({1920 - (int)window.getSize().x - 50, 50});
 
@@ -160,11 +190,11 @@ int main() {
 
   grid.resize(grid_size.x * grid_size.y);
 
-  sf::Vector2u test_pos = {10, 10};
+  generate_maze(window, grid);
 
-  // assert(test_pos == pos_at_index(index_at_pos(test_pos.x, test_pos.y));
+  draw_grid(window, grid);
 
-  // generate_maze(grid);
+  window.display();
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -172,10 +202,10 @@ int main() {
         window.close();
     }
 
-    window.clear();
+    // window.clear();
 
-    draw_grid(window, grid);
+    // draw_grid(window, grid);
 
-    window.display();
+    // window.display();
   }
 }
