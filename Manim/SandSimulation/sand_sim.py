@@ -1,5 +1,8 @@
 from manim import *
 
+config.max_files_cached = 200
+config.quality = "high_quality"
+
 class SandSim(Scene):
     def construct(self):
         self.camera.background_color = "#14141B"
@@ -675,4 +678,202 @@ class SandSimAction(Scene):
         )
 
         self.wait(0.25)
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GridSim(Scene):
+    def construct(self):
+        self.camera.background_color = "#14141B"
+
+        grid = VGroup()
+
+        for y in range(-2, 3):
+            for x in range(-2, 3):
+                square = Square(1.2)
+                square.move_to(DOWN * y * 1.2 + RIGHT * x * 1.2)
+
+                grid.add(square)
+        
+        self.add(grid)
+
+        self.wait(0.5)
+
+        width = Text(
+            "5",
+            font = "0xProto Nerd Font",
+            font_size = 36,
+            color = WHITE
+        )
+
+        height = Text(
+            "5",
+            font = "0xProto Nerd Font",
+            font_size = 36,
+            color = WHITE
+        )
+
+        width.next_to(grid, DOWN, buff = 0.3)
+        height.next_to(grid, RIGHT, buff = 0.3)
+
+        self.play(Write(width), Write(height))
+
+        self.wait(0.25)
+
+        self.play(Unwrite(width, run_time = 0.5), Unwrite(height, run_time = 0.5))
+
+        self.wait(0.5)
+
+        red_square = Square(1.2, color = RED)
+        red_square.move_to(DOWN * 2 * 1.2 + RIGHT * 2 * 1.2)
+
+        self.play(Create(red_square))
+        self.wait(0.25)
+
+        for f in range(3):
+            for i in range(5):
+                for j in range(4):
+                    red_square.shift(LEFT * 1.2)
+                    self.wait(0.07)
+                
+                if(i < 4):
+                    red_square.shift(UP * 1.2 + RIGHT * 4 * 1.2)
+                    self.wait(0.07)
+                else:
+                    if f < 2:
+                        red_square.shift(DOWN * 4 * 1.2 + RIGHT * 4 * 1.2)
+                        self.wait(0.07)
+        
+        red_square.set_opacity(0.0)
+        self.wait(0.5)
+
+        bool_grid = VGroup()
+
+        for cell in grid:
+            update_bool = Text(
+                "false",
+                font = "0xProto Nerd Font",
+                font_size = 18,
+                color = RED
+            )
+
+            update_bool.move_to(cell.get_center())
+
+            bool_grid.add(update_bool)
+        
+        self.play(
+            LaggedStart(
+                *[FadeIn(text, run_time = 0.5) for text in bool_grid],
+                lag_ratio = 0.1
+            )
+        )
+
+        self.wait(0.5)
+
+        new_bool_grid = VGroup()
+
+        new_text_bool = Text(
+            "true",
+            font = "0xProto Nerd Font",
+            font_size = 18,
+            color = BLUE
+        )
+
+        index = len(bool_grid) - 1
+
+        new_text_bool.move_to(bool_grid[index].get_center())
+        bool_grid[index].set_opacity(0.0)
+        
+        new_bool_grid.add(new_text_bool)
+        self.add(new_text_bool)
+
+        index -= 1
+
+        red_square.move_to(DOWN * 2 * 1.2 + RIGHT * 2 * 1.2)
+        red_square.set_stroke(opacity = 1.0)
+        self.wait(0.25)
+
+        for i in range(5):
+            for j in range(4):
+                red_square.shift(LEFT * 1.2)
+                self.wait(0.07)
+
+                new_update_bool = Text(
+                    "true",
+                    font = "0xProto Nerd Font",
+                    font_size = 18,
+                    color = BLUE
+                )
+
+                new_update_bool.move_to(bool_grid[index].get_center())
+                bool_grid[index].set_opacity(0.0)
+                
+                new_bool_grid.add(new_update_bool)
+                self.add(new_update_bool)
+
+                index -= 1
+                
+            if(i < 4):
+                red_square.shift(UP * 1.2 + RIGHT * 4 * 1.2)
+                self.wait(0.07)
+
+                new_update_bool = Text(
+                    "true",
+                    font = "0xProto Nerd Font",
+                    font_size = 18,
+                    color = BLUE
+                )
+
+                new_update_bool.move_to(bool_grid[index].get_center())
+                bool_grid[index].set_opacity(0.0)
+                
+                new_bool_grid.add(new_update_bool)
+                self.add(new_update_bool)
+
+                index -= 1
+        
+        red_square.set_opacity(0.0)
+        self.wait(0.5)
+
+        for new_text in new_bool_grid:
+            new_text.set_opacity(0.0)
+        
+        for text in bool_grid:
+            text.set_opacity(1.0)
+        
+        self.wait(0.5)
+        
+        self.play(
+            LaggedStart(
+                *[FadeOut(text, run_time = 0.5) for text in reversed(bool_grid)],
+                lag_ratio = 0.1
+            )
+        )
+        
+        self.wait(0.5)
+
+        red_square.move_to(DOWN * 2 * 1.2 + RIGHT * 2 * 1.2)
+        red_square.set_stroke(opacity = 1.0)
+        self.wait(0.25)
+
+        for i in range(5):
+            for j in range(4):
+                red_square.shift(LEFT * 1.2)
+                self.wait(0.07)
+                
+            if(i < 4):
+                red_square.shift(UP * 1.2 + RIGHT * 4 * 1.2)
+                self.wait(0.07)
+        
+        red_square.set_opacity(0.0)
+        self.wait(0.5)
 
