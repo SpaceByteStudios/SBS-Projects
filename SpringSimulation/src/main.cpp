@@ -7,12 +7,15 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
-int main() {
-  srand(time(nullptr));
+#include "ball.hh"
 
-  sf::RenderWindow window(sf::VideoMode({500, 500}), "Maze Generator");
+int main() {
+  sf::RenderWindow window(sf::VideoMode({500, 500}), "Simulation");
 
   window.setPosition({1920 - (int)window.getSize().x - 50, 50});
+  window.setFramerateLimit(60);
+
+  Ball ball1(10.0);
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -25,5 +28,10 @@ int main() {
         }
       }
     }
+
+    ball1.update(1.0 / 60.0);
+
+    window.clear();
+    ball1.draw(window);
   }
 }
