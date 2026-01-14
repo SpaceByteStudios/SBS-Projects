@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
-project(SpringSimulation LANGUAGES CXX)
+project(Simulation LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -23,7 +25,7 @@ else()
     message(STATUS "Using system-installed SFML")
 endif()
 
-add_executable(simulation src/main.cpp)
+add_executable(simulation src/main.cpp src/ball.cpp)
 target_compile_features(simulation PRIVATE cxx_std_17)
 
 target_link_libraries(simulation PRIVATE SFML::Graphics)
