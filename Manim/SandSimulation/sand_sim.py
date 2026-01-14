@@ -1,8 +1,5 @@
 from manim import *
 
-config.max_files_cached = 200
-config.quality = "high_quality"
-
 class SandSim(Scene):
     def construct(self):
         self.camera.background_color = "#14141B"
@@ -877,3 +874,58 @@ class GridSim(Scene):
         red_square.set_opacity(0.0)
         self.wait(0.5)
 
+
+class DrawCalls(Scene):
+    def construct(self):
+        self.camera.background_color = "#14141B"
+
+        cells_amount = 25
+        grid_size = 4
+        
+        cells = VGroup()
+        cell_size = grid_size / cells_amount
+        top_left_pos = UP * 2 + LEFT * 6
+
+        max_manh_dist = (cells_amount - 1) * (cells_amount - 1)
+
+        for i in range(max_manh_dist):
+            x = i
+            y = 0
+
+            while(y < i):
+                if x > cells_amount or y > cells_amount - 1:
+                    x -= 1
+                    y += 1
+                    continue
+                
+                new_cell = Square(cell_size, color = WHITE)
+                new_cell.set_fill(WHITE, 1.0)
+                new_cell.move_to(top_left_pos + RIGHT * x * cell_size + DOWN * y * cell_size)
+                cells.add(new_cell)
+
+                x -= 1
+                y += 1
+        
+
+        self.play(
+            LaggedStart(
+                *[GrowFromCenter(cell, run_time = 0.4) for cell in cells],
+                lag_ratio = 0.01
+            )
+        )
+
+        self.wait(0.5)
+
+        cpu = SVGMobject("cpu-icon.svg").scale(0.75)
+        gpu = SVGMobject("gpu-icon.svg").scale(0.75)
+
+        cpu.shift(RIGHT * 0.5)
+        gpu.shift(RIGHT * 5)
+
+        cpu.set_color(WHITE)
+        gpu.set_color(WHITE)
+
+        self.play(Write(cpu))
+        self.play(Write(gpu))
+
+        self.wait(1.0)
