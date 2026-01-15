@@ -1,4 +1,5 @@
 from manim import *
+import random
 
 class SandSim(Scene):
     def construct(self):
@@ -875,6 +876,12 @@ class GridSim(Scene):
         self.wait(0.5)
 
 
+
+
+
+
+
+
 class DrawCalls(Scene):
     def construct(self):
         self.camera.background_color = "#14141B"
@@ -885,47 +892,266 @@ class DrawCalls(Scene):
         cells = VGroup()
         cell_size = grid_size / cells_amount
         top_left_pos = UP * 2 + LEFT * 6
-
-        max_manh_dist = (cells_amount - 1) * (cells_amount - 1)
-
-        for i in range(max_manh_dist):
-            x = i
-            y = 0
-
-            while(y < i):
-                if x > cells_amount or y > cells_amount - 1:
-                    x -= 1
-                    y += 1
-                    continue
-                
-                new_cell = Square(cell_size, color = WHITE)
-                new_cell.set_fill(WHITE, 1.0)
+        
+        for y in range(cells_amount):
+            for x in range(cells_amount):
+                new_cell = Square(cell_size * 1.2)
+                new_cell.set_stroke(width = 0.0)
+                new_cell.set_fill(YELLOW_D, 1.0)
                 new_cell.move_to(top_left_pos + RIGHT * x * cell_size + DOWN * y * cell_size)
                 cells.add(new_cell)
-
-                x -= 1
-                y += 1
-        
-
-        self.play(
-            LaggedStart(
-                *[GrowFromCenter(cell, run_time = 0.4) for cell in cells],
-                lag_ratio = 0.01
-            )
-        )
 
         self.wait(0.5)
 
         cpu = SVGMobject("cpu-icon.svg").scale(0.75)
         gpu = SVGMobject("gpu-icon.svg").scale(0.75)
 
-        cpu.shift(RIGHT * 0.5)
-        gpu.shift(RIGHT * 5)
+        gpu.shift(RIGHT * 5.5)
 
         cpu.set_color(WHITE)
         gpu.set_color(WHITE)
 
         self.play(Write(cpu))
         self.play(Write(gpu))
+        self.wait(0.5)
+
+        self.play(GrowFromCenter(cells[0]))
+        self.wait(0.5)
+
+        arrow = Arrow(
+            start = cpu.get_center(),
+            end = gpu.get_center(),
+            buff = 1.25,
+            stroke_width = 14.0
+        )
+        arrow.set_color(WHITE)
+        self.play(Write(arrow))
+        self.wait(0.5)
+
+        file = SVGMobject("file-icon.svg").set_color(WHITE).scale(0.65)
+        offset = gpu.get_center() - cpu.get_center()
+
+        for i in range(1, 3):
+            file.next_to(cpu, UP)
+            self.play(FadeIn(file, run_time = 0.5))
+            self.play(file.animate.shift(offset), run_time = 0.5)
+            self.play(FadeOut(file, run_time = 0.5))
+            self.wait(0.5)
+
+            self.play(GrowFromCenter(cells[i], run_time = 0.5))
+            self.wait(0.5)
+        
+        file.next_to(cpu, UP)
+        self.play(FadeIn(file, run_time = 0.5))
+        self.play(file.animate.shift(offset), run_time = 0.5)
+        self.play(FadeOut(file, run_time = 0.5))
+        self.wait(0.5)
+
+        files = VGroup()
+        files_amount = 50
+
+        for f in range(files_amount):
+            new_file = SVGMobject("file-icon.svg").set_color(WHITE).scale(0.3)
+            new_file.next_to(cpu, UP, buff = 0.75)
+            new_file.shift(UP * random.uniform(-0.75, 0.75) + RIGHT * random.uniform(-0.5, 0.5))
+
+            files.add(new_file)
+
+        self.play(
+            AnimationGroup(
+                LaggedStart(
+                    *[
+                        Succession(
+                            FadeIn(f, run_time = 0.2),
+                            f.animate.shift(offset),
+                            FadeOut(f, run_time = 0.2)
+                        )
+                        for f in files
+                    ],
+                    lag_ratio = 0.05
+                ),
+
+                LaggedStart(
+                    *[GrowFromCenter(cell, run_time = 0.5) for cell in cells[3:]],
+                    lag_ratio=0.01
+                )
+            )
+        )
 
         self.wait(1.0)
+
+        self.play(
+            LaggedStart(
+                *[ShrinkToCenter(cell, run_time = 0.5) for cell in cells],
+                lag_ratio=0.005
+            )
+        )
+
+        self.wait(0.5)
+
+        triangle_cells = VGroup()
+        h_cell_size = cell_size / 2.0
+
+        for cell in cells:
+            triangle_cell = VGroup()
+
+            p_1 = cell.get_center() + UP * h_cell_size + LEFT * h_cell_size
+            p_2 = cell.get_center() + UP * h_cell_size + RIGHT * h_cell_size
+            p_3 = cell.get_center() + DOWN * h_cell_size + LEFT * h_cell_size
+            p_4 = cell.get_center() + DOWN * h_cell_size + RIGHT * h_cell_size
+
+            up_triangle = Polygon(p_1, p_2, p_3)
+            down_triangle = Polygon(p_4, p_3, p_2)
+
+            up_triangle.set_stroke(WHITE, 0.75)
+            down_triangle.set_stroke(WHITE, 0.75)
+
+            triangle_cell.add(up_triangle, down_triangle)
+
+            triangle_cells.add(triangle_cell)
+        
+        self.play(
+            LaggedStart(
+                *[Create(triangles, run_time = 0.5) for triangles in triangle_cells],
+                lag_ratio=0.005
+            ),
+
+            FadeOut(cpu),
+            FadeOut(arrow),
+            FadeOut(gpu)
+        )
+
+        self.wait(0.5)
+
+        small_red_square = Square(cell_size * 1.75)
+        small_red_square.set_color(RED)
+        small_red_square.move_to(cells[0].get_center())
+
+        big_red_square = Square(5)
+        big_red_square.set_color(RED)
+        big_red_square.shift(RIGHT * 3.5)
+
+        line1 = Line(
+            start = cells[0].get_center() + UP * h_cell_size * 1.75 + RIGHT * h_cell_size * 1.75,
+            end = big_red_square.get_center() + LEFT * 2.5 + UP * 2.5
+        )
+
+        line2 = Line(
+            start = cells[0].get_center() + DOWN * h_cell_size * 1.75 + RIGHT * h_cell_size * 1.75,
+            end = big_red_square.get_center() + LEFT * 2.5 + DOWN * 2.5
+        )
+
+        line1.set_color(RED)
+        line2.set_color(RED)
+
+        self.play(Create(small_red_square), Create(big_red_square), Create(line1), Create(line2))
+
+        self.wait(0.5)
+
+        p1_dot = Dot(big_red_square.get_center() + UP * 1.5 + LEFT * 1.5, 0.13)
+        p2_dot = Dot(big_red_square.get_center() + UP * 1.5 + RIGHT * 1.5, 0.13)
+        p3_dot = Dot(big_red_square.get_center() + DOWN * 1.5 + LEFT * 1.5, 0.13)
+        p4_dot = Dot(big_red_square.get_center() + DOWN * 1.5 + RIGHT * 1.5, 0.13)
+
+        p2_dot2 = Dot(big_red_square.get_center() + UP * 1.5 + RIGHT * 1.5, 0.13)
+        p3_dot2 = Dot(big_red_square.get_center() + DOWN * 1.5 + LEFT * 1.5, 0.13)
+
+        self.play(
+            GrowFromCenter(p1_dot), GrowFromCenter(p2_dot), 
+            GrowFromCenter(p3_dot), GrowFromCenter(p4_dot)
+        )
+
+        self.wait(0.5)
+
+        line_up = Line(p1_dot.get_center(), p2_dot.get_center()).set_stroke(width = 6.0)
+        line_right = Line(p2_dot.get_center(), p4_dot.get_center()).set_stroke(width = 6.0)
+        line_down = Line(p4_dot.get_center(), p3_dot.get_center()).set_stroke(width = 6.0)
+        line_left = Line(p3_dot.get_center(), p1_dot.get_center()).set_stroke(width = 6.0)
+        line_diag = Line(p3_dot.get_center(), p2_dot.get_center()).set_stroke(width = 6.0)
+        line_diag2 = Line(p3_dot.get_center(), p2_dot.get_center()).set_stroke(width = 6.0)
+
+        self.play(
+            Create(line_up), Create(line_right), 
+            Create(line_down), Create(line_left), 
+            Create(line_diag), Create(line_diag2)
+        )
+
+        triangle1 = VGroup(p1_dot, p2_dot, p3_dot, line_up, line_diag, line_left)
+        triangle2 = VGroup(p2_dot2, p3_dot2, p4_dot, line_right, line_diag2, line_down)
+
+        triangle1.z_index = 1
+        triangle2.z_index = 1
+
+        self.play(
+            triangle1.animate.shift(UP * 0.5 + LEFT * 0.5),
+            triangle2.animate.shift(DOWN * 0.5 + RIGHT * 0.5),
+            rate_func = rate_functions.ease_out_quart
+        )
+
+        self.play(
+            triangle1.animate.shift(DOWN * 0.5 + RIGHT * 0.5),
+            triangle2.animate.shift(UP * 0.5 + LEFT * 0.5),
+            run_time = 0.2
+        )
+
+        self.wait(0.5)
+
+        tri_poly1 = Polygon(p1_dot.get_center(), p2_dot.get_center(), p3_dot.get_center())
+        tri_poly2 = Polygon(p2_dot.get_center(), p4_dot.get_center(), p3_dot.get_center())
+
+        tri_poly1.set_stroke(opacity = 0.0).set_fill(YELLOW_D, 1.0)
+        tri_poly2.set_stroke(opacity = 0.0).set_fill(YELLOW_D, 1.0)
+
+        self.play(
+            FadeIn(tri_poly1),
+            FadeIn(tri_poly2)
+        )
+
+        self.wait(0.5)
+
+        self.play(
+            FadeOut(p1_dot), FadeOut(p2_dot),
+            FadeOut(p3_dot), FadeOut(p4_dot),
+            FadeOut(p2_dot2), FadeOut(p3_dot2),
+            FadeOut(line_up), FadeOut(line_right),
+            FadeOut(line_down), FadeOut(line_left),
+            FadeOut(line_diag), FadeOut(line_diag2),
+            FadeOut(tri_poly1), FadeOut(tri_poly2)
+        )
+
+        self.play(
+            Uncreate(small_red_square),
+            Uncreate(big_red_square),
+            Uncreate(line1),
+            Uncreate(line2)
+        )
+
+        self.wait(0.5)
+
+        self.play(
+            FadeIn(cpu),
+            FadeIn(arrow),
+            FadeIn(gpu)
+        )
+
+        self.wait(0.5)
+
+        file.next_to(cpu, UP)
+        self.play(FadeIn(file, run_time = 0.5))
+        self.play(file.animate.shift(offset), run_time = 0.5)
+        self.play(FadeOut(file, run_time = 0.5))
+        self.wait(0.5)
+
+        self.play(
+            LaggedStart(
+                *[Uncreate(triangles, run_time = 0.5) for triangles in reversed(triangle_cells)],
+                lag_ratio=0.005
+            ),
+
+            FadeOut(cpu),
+            FadeOut(arrow),
+            FadeOut(gpu)
+        )
+
+        self.wait(0.5)
+        
