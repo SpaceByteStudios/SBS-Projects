@@ -980,6 +980,9 @@ class DrawCalls(Scene):
 
         self.wait(1.0)
 
+        for cell in cells:
+            cell.save_state()
+
         self.play(
             LaggedStart(
                 *[ShrinkToCenter(cell, run_time = 0.5) for cell in cells],
@@ -1136,6 +1139,24 @@ class DrawCalls(Scene):
 
         self.wait(0.5)
 
+        for cell in cells:
+            cell.restore()
+            cell.scale(0.01)
+
+        self.play(
+            LaggedStart(
+                *[cell.animate.scale(1.0 / 0.01) for cell in cells],
+                lag_ratio=0.005
+            ),
+
+            LaggedStart(
+                *[Uncreate(triangles) for triangles in triangle_cells],
+                lag_ratio=0.005
+            )
+        )
+
+        self.wait(0.5)
+
         file.next_to(cpu, UP)
         self.play(FadeIn(file, run_time = 0.5))
         self.play(file.animate.shift(offset), run_time = 0.5)
@@ -1144,7 +1165,7 @@ class DrawCalls(Scene):
 
         self.play(
             LaggedStart(
-                *[Uncreate(triangles, run_time = 0.5) for triangles in reversed(triangle_cells)],
+                *[ShrinkToCenter(cell, run_time = 0.5) for cell in cells],
                 lag_ratio=0.005
             ),
 
@@ -1155,3 +1176,23 @@ class DrawCalls(Scene):
 
         self.wait(0.5)
         
+
+
+
+
+
+class TestScale(Scene):
+    def construct(self):
+        square = Square(2)
+        square.save_state()
+
+        self.play(GrowFromCenter(square))
+        self.wait(0.5)
+
+        self.play(ShrinkToCenter(square))
+        self.wait(0.5)
+
+        square.restore()
+
+        self.play(GrowFromCenter(square))
+        self.wait(0.5)
