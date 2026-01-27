@@ -5,6 +5,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <SFML/System.hpp>
 #include <SFML/Window/VideoMode.hpp>
 #include <cassert>
 #include <codecvt>
@@ -14,7 +15,9 @@
 #include <iostream>
 #include <vector>
 
-#include "cell.hh"
+struct Cell {
+  int walls_bitmap;
+};
 
 sf::Vector2u grid_size = {40, 40};
 sf::Vector2f cell_size = {0, 0};
@@ -317,6 +320,155 @@ void do_maze_stuff(sf::RenderWindow &window, std::vector<Cell> &grid,
   window.display();
 }
 
+void animate_generate_maze(sf::RenderWindow &window, std::vector<Cell> &grid){
+  //Set every Wall
+  for (int y = 0; y < grid_size.y; y++) {
+    for (int x = 0; x < grid_size.x; x++) {
+      int index = index_at_pos(x, y);
+
+      grid[index] = Cell();
+      grid[index].walls_bitmap = 15;
+    }
+  }
+
+  // Randomized Depth First Search
+  std::vector<sf::Vector2u> maze_stack(0);
+  std::vector<bool> visited_cells(grid_size.x * grid_size.y);
+
+  sf::Vector2u cell_pos = {rand() % grid_size.x, rand() % grid_size.y};
+
+  maze_stack.push_back(cell_pos);
+  visited_cells[index_at_pos(cell_pos.x, cell_pos.y)] = true;
+
+  while (!maze_stack.empty()) {
+    window.clear();
+    
+    for(int i = 0; i < maze_stack.size() - 1; i++){
+      sf::RectangleShape maze_cell({cell_size.x, cell_size.y});
+      maze_cell.setPosition(
+        {maze_stack[i].x * cell_size.x, maze_stack[i].y * cell_size.y});
+
+      float col_mult = (float) i / maze_stack.size();
+      maze_cell.setFillColor(sf::Color(24 * col_mult, 196 * col_mult, 24 * col_mult));
+      window.draw(maze_cell);
+    }
+
+    sf::RectangleShape current_cell({cell_size.x, cell_size.y});
+    current_cell.setPosition(
+      {maze_stack.back().x * cell_size.x, maze_stack.back().y * cell_size.y});
+    current_cell.setFillColor(sf::Color(32, 255, 32));
+    window.draw(current_cell);
+
+    draw_grid(window, grid);
+
+    window.display();
+
+    std::vector<sf::Vector2u> next_cells =
+        get_next_cells(maze_stack.back(), grid);
+
+    for (int i = 0; i < next_cells.size(); i++) {
+      int next_index = index_at_pos(next_cells[i].x, next_cells[i].y);
+
+      if (visited_cells[next_index]) {
+        next_cells.erase(next_cells.begin() + i);
+        i -= 1;
+      }
+    }
+
+    if (next_cells.size() > 0) {
+      sf::Vector2u rand_cell = next_cells[rand() % next_cells.size()];
+
+      int rand_cell_index = index_at_pos(rand_cell.x, rand_cell.y);
+      int curr_cell_index =
+          index_at_pos(maze_stack.back().x, maze_stack.back().y);
+
+      sf::Vector2i dir =
+          static_cast<sf::Vector2i>(rand_cell - maze_stack.back());
+
+      int &rand_cell_bitmap = grid[rand_cell_index].walls_bitmap;
+      int &curr_cell_bitmap = grid[curr_cell_index].walls_bitmap;
+
+      if (dir == sf::Vector2i(0, -1)) {
+        curr_cell_bitmap &= ~(1 << 0);
+        rand_cell_bitmap &= ~(1 << 2);
+      }
+
+      if (dir == sf::Vector2i(1, 0)) {
+        curr_cell_bitmap &= ~(1 << 1);
+        rand_cell_bitmap &= ~(1 << 3);
+      }
+
+      if (dir == sf::Vector2i(0, 1)) {
+        curr_cell_bitmap &= ~(1 << 2);
+        rand_cell_bitmap &= ~(1 << 0);
+      }
+
+      if (dir == sf::Vector2i(-1, 0)) {
+        curr_cell_bitmap &= ~(1 << 3);
+        rand_cell_bitmap &= ~(1 << 1);
+      }
+
+      maze_stack.push_back(rand_cell);
+      visited_cells[index_at_pos(rand_cell.x, rand_cell.y)] = true;
+    } else {
+      maze_stack.pop_back();
+    }
+  }
+}
+
+void animate_solve_maze(sf::RenderWindow &window, std::vector<Cell> &grid, std::vector<sf::Vector2u> &path){
+  path.clear();
+
+  path.push_back(start_cell);
+
+  sf::Vector2u curr_pos = start_cell;
+
+  std::vector<bool> visited_cells(grid_size.x * grid_size.y);
+  visited_cells[index_at_pos(curr_pos.x, curr_pos.y)] = true;
+
+  while (curr_pos != end_cell && !path.empty()) {
+    std::vector<sf::Vector2u> next_cells = get_next_cells(path.back(), grid);
+
+    for (int i = 0; i < next_cells.size(); i++) {
+      int next_index = index_at_pos(next_cells[i].x, next_cells[i].y);
+
+      if (!is_path_free(grid, path.back(), next_cells[i])) {
+        next_cells.erase(next_cells.begin() + i);
+        i -= 1;
+        continue;
+      }
+
+      if (visited_cells[next_index]) {
+        next_cells.erase(next_cells.begin() + i);
+        i -= 1;
+      }
+    }
+
+    if (next_cells.size() > 0) {
+      sf::Vector2u rand_cell = next_cells[rand() % next_cells.size()];
+
+      path.push_back(rand_cell);
+      visited_cells[index_at_pos(rand_cell.x, rand_cell.y)] = true;
+
+      if (rand_cell == end_cell) {
+        return;
+      }
+    } else {
+      path.pop_back();
+    }
+  }
+}
+
+void animated_maze_generation(sf::RenderWindow &window, std::vector<Cell> &grid, std::vector<sf::Vector2u> &path){
+  animate_generate_maze(window, grid);
+
+  window.clear();
+
+  draw_grid(window, grid);
+
+  window.display();
+}
+
 int main() {
   srand(time(nullptr));
 
@@ -332,7 +484,7 @@ int main() {
 
   std::vector<sf::Vector2u> path;
 
-  do_maze_stuff(window, grid, path);
+  animated_maze_generation(window, grid, path);
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {

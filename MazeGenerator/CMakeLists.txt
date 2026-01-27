@@ -25,7 +25,7 @@ else()
     message(STATUS "Using system-installed SFML")
 endif()
 
-add_executable(simulation src/main.cpp src/ball.cpp)
+add_executable(simulation src/main.cpp)
 target_compile_features(simulation PRIVATE cxx_std_17)
 
 target_link_libraries(simulation PRIVATE SFML::Graphics)
