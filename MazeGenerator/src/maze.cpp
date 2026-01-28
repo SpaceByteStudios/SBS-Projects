@@ -119,3 +119,63 @@ bool Maze::is_path_free(sf::Vector2u pos1, sf::Vector2u pos2) {
 
   return false;
 }
+
+void Maze::set_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
+  int cell1_index = index_at_pos(pos1);
+  int cell2_index = index_at_pos(pos2);
+
+  sf::Vector2i dir = static_cast<sf::Vector2i>(pos2 - pos1);
+
+  unsigned char &cell1_bitmap = grid[cell1_index].walls_bitmap;
+  unsigned char &cell2_bitmap = grid[cell2_index].walls_bitmap;
+
+  if (dir == sf::Vector2i(0, -1)) {
+    cell1_bitmap |= ~(1 << 0);
+    cell2_bitmap |= ~(1 << 2);
+  }
+
+  if (dir == sf::Vector2i(1, 0)) {
+    cell1_bitmap |= ~(1 << 1);
+    cell2_bitmap |= ~(1 << 3);
+  }
+
+  if (dir == sf::Vector2i(0, 1)) {
+    cell1_bitmap |= ~(1 << 2);
+    cell2_bitmap |= ~(1 << 0);
+  }
+
+  if (dir == sf::Vector2i(-1, 0)) {
+    cell1_bitmap |= ~(1 << 3);
+    cell2_bitmap |= ~(1 << 1);
+  }
+}
+
+void Maze::remove_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
+  int cell1_index = index_at_pos(pos1);
+  int cell2_index = index_at_pos(pos2);
+
+  sf::Vector2i dir = static_cast<sf::Vector2i>(pos2 - pos1);
+
+  unsigned char &cell1_bitmap = grid[cell1_index].walls_bitmap;
+  unsigned char &cell2_bitmap = grid[cell2_index].walls_bitmap;
+
+  if (dir == sf::Vector2i(0, -1)) {
+    cell1_bitmap &= ~(1 << 0);
+    cell2_bitmap &= ~(1 << 2);
+  }
+
+  if (dir == sf::Vector2i(1, 0)) {
+    cell1_bitmap &= ~(1 << 1);
+    cell2_bitmap &= ~(1 << 3);
+  }
+
+  if (dir == sf::Vector2i(0, 1)) {
+    cell1_bitmap &= ~(1 << 2);
+    cell2_bitmap &= ~(1 << 0);
+  }
+
+  if (dir == sf::Vector2i(-1, 0)) {
+    cell1_bitmap &= ~(1 << 3);
+    cell2_bitmap &= ~(1 << 1);
+  }
+}

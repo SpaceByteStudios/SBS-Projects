@@ -5,7 +5,7 @@
 #include "maze_renderer.hh"
 #include "maze_solver.hh"
 
-sf::Vector2u maze_size = {50, 50};
+sf::Vector2u maze_size = {100, 100};
 
 int main() {
   srand(time(nullptr));
@@ -21,8 +21,8 @@ int main() {
   maze.start_cell = sf::Vector2u(0, 0);
   maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
 
-  animate_generate_depth_first_maze(renderer, maze);
-  animate_solve_depth_first_maze(renderer, maze);
+  generate_prim_maze(maze);
+  solve_depth_first_maze(maze);
 
   window.clear();
 
@@ -40,7 +40,7 @@ int main() {
         if (keyPressed->scancode == sf::Keyboard::Scancode::Escape) {
           window.close();
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
-          generate_depth_first_maze(maze);
+          generate_prim_maze(maze);
           solve_depth_first_maze(maze);
 
           window.clear();

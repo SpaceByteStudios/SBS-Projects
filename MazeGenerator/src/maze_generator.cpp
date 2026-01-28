@@ -4,6 +4,9 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cstdlib>
+#include <random>
+#include <vector>
 
 void generate_depth_first_maze(Maze &maze) {
   for (int y = 0; y < maze.grid_size.y; y++) {
@@ -40,34 +43,7 @@ void generate_depth_first_maze(Maze &maze) {
     if (next_cells.size() > 0) {
       sf::Vector2u rand_cell = next_cells[rand() % next_cells.size()];
 
-      int rand_cell_index = maze.index_at_pos(rand_cell);
-      int curr_cell_index = maze.index_at_pos(maze_stack.back());
-
-      sf::Vector2i dir =
-          static_cast<sf::Vector2i>(rand_cell - maze_stack.back());
-
-      unsigned char &rand_cell_bitmap = maze.grid[rand_cell_index].walls_bitmap;
-      unsigned char &curr_cell_bitmap = maze.grid[curr_cell_index].walls_bitmap;
-
-      if (dir == sf::Vector2i(0, -1)) {
-        curr_cell_bitmap &= ~(1 << 0);
-        rand_cell_bitmap &= ~(1 << 2);
-      }
-
-      if (dir == sf::Vector2i(1, 0)) {
-        curr_cell_bitmap &= ~(1 << 1);
-        rand_cell_bitmap &= ~(1 << 3);
-      }
-
-      if (dir == sf::Vector2i(0, 1)) {
-        curr_cell_bitmap &= ~(1 << 2);
-        rand_cell_bitmap &= ~(1 << 0);
-      }
-
-      if (dir == sf::Vector2i(-1, 0)) {
-        curr_cell_bitmap &= ~(1 << 3);
-        rand_cell_bitmap &= ~(1 << 1);
-      }
+      maze.remove_wall(maze_stack.back(), rand_cell);
 
       maze_stack.push_back(rand_cell);
       visited_cells[maze.index_at_pos(rand_cell)] = true;
@@ -152,36 +128,7 @@ void animate_generate_depth_first_maze(MazeRenderer &renderer, Maze &maze) {
       if (next_cells.size() > 0) {
         sf::Vector2u rand_cell = next_cells[rand() % next_cells.size()];
 
-        int rand_cell_index = maze.index_at_pos(rand_cell);
-        int curr_cell_index = maze.index_at_pos(maze_stack.back());
-
-        sf::Vector2i dir =
-            static_cast<sf::Vector2i>(rand_cell - maze_stack.back());
-
-        unsigned char &rand_cell_bitmap =
-            maze.grid[rand_cell_index].walls_bitmap;
-        unsigned char &curr_cell_bitmap =
-            maze.grid[curr_cell_index].walls_bitmap;
-
-        if (dir == sf::Vector2i(0, -1)) {
-          curr_cell_bitmap &= ~(1 << 0);
-          rand_cell_bitmap &= ~(1 << 2);
-        }
-
-        if (dir == sf::Vector2i(1, 0)) {
-          curr_cell_bitmap &= ~(1 << 1);
-          rand_cell_bitmap &= ~(1 << 3);
-        }
-
-        if (dir == sf::Vector2i(0, 1)) {
-          curr_cell_bitmap &= ~(1 << 2);
-          rand_cell_bitmap &= ~(1 << 0);
-        }
-
-        if (dir == sf::Vector2i(-1, 0)) {
-          curr_cell_bitmap &= ~(1 << 3);
-          rand_cell_bitmap &= ~(1 << 1);
-        }
+        maze.remove_wall(maze_stack.back(), rand_cell);
 
         maze_stack.push_back(rand_cell);
         visited_cells[maze.index_at_pos(rand_cell)] = true;
@@ -189,5 +136,106 @@ void animate_generate_depth_first_maze(MazeRenderer &renderer, Maze &maze) {
         maze_stack.pop_back();
       }
     }
+  }
+}
+
+void generate_prim_maze(Maze &maze) {
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      int index = maze.index_at_pos(sf::Vector2u(x, y));
+
+      maze.grid[index].walls_bitmap = 15;
+    }
+  }
+
+  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y);
+  std::vector<Wall> walls;
+
+  sf::Vector2u start_pos = {rand() % maze.grid_size.x,
+                            rand() % maze.grid_size.y};
+  visited_cells[maze.index_at_pos(start_pos)] = true;
+
+  std::vector<sf::Vector2u> next_cells = maze.get_neighbors(start_pos);
+
+  for (int i = 0; i < next_cells.size(); i++) {
+    Wall new_wall = Wall();
+    new_wall.cell1 = start_pos;
+    new_wall.cell2 = next_cells[i];
+    walls.push_back(new_wall);
+  }
+
+  while (!walls.empty()) {
+    int random_wall_index = rand() % walls.size();
+    Wall random_wall = walls[random_wall_index];
+
+    int second_cell_index = maze.index_at_pos(random_wall.cell2);
+
+    walls.erase(walls.begin() + random_wall_index);
+
+    if (visited_cells[second_cell_index] == false) {
+      // Remove the wall from list and on grid walls_bitmap
+      // Add new_cell walls to walls and check visited
+
+      maze.remove_wall(random_wall.cell1, random_wall.cell2);
+
+      int cell2_index = maze.index_at_pos(random_wall.cell2);
+      visited_cells[cell2_index] = true;
+
+      std::vector<sf::Vector2u> next_cells =
+          maze.get_neighbors(random_wall.cell2);
+
+      for (int i = next_cells.size() - 1; i >= 0; i--) {
+        int next_index = maze.index_at_pos(next_cells[i]);
+
+        if (visited_cells[next_index]) {
+          next_cells.erase(next_cells.begin() + i);
+        }
+      }
+
+      for (int i = 0; i < next_cells.size(); i++) {
+        Wall new_wall = Wall();
+        new_wall.cell1 = random_wall.cell2;
+        new_wall.cell2 = next_cells[i];
+        walls.push_back(new_wall);
+      }
+    }
+  }
+}
+
+void generate_kruskal_maze(Maze &maze) {
+  std::vector<int> parent;
+  std::vector<int> rank;
+
+  for (int i = 0; i < maze.grid.size(); i++) {
+    parent[i] = i;
+  }
+
+  // Create all Walls
+  std::vector<Wall> walls;
+
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      sf::Vector2u cell(x, y);
+
+      sf::Vector2u right_cell = cell + sf::Vector2u(1, 0);
+      sf::Vector2u down_cell = cell + sf::Vector2u(0, 1);
+
+      if (maze.is_inside(right_cell)) {
+        walls.push_back({cell, right_cell});
+      }
+
+      if (maze.is_inside(down_cell)) {
+        walls.push_back({cell, down_cell});
+      }
+    }
+  }
+
+  std::random_device rd;
+  std::mt19937 rng(rd());
+  std::shuffle(walls.begin(), walls.end(), rng);
+
+  for (const Wall &wall : walls) {
+    int cell1_index = maze.index_at_pos(wall.cell1);
+    int cell2_index = maze.index_at_pos(wall.cell2);
   }
 }
