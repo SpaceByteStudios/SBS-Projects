@@ -203,8 +203,19 @@ void generate_prim_maze(Maze &maze) {
 }
 
 void generate_kruskal_maze(Maze &maze) {
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      int index = maze.index_at_pos(sf::Vector2u(x, y));
+
+      maze.grid[index].walls_bitmap = 15;
+    }
+  }
+
   std::vector<int> parent;
   std::vector<int> rank;
+
+  parent.resize(maze.grid.size());
+  rank.resize(maze.grid.size());
 
   for (int i = 0; i < maze.grid.size(); i++) {
     parent[i] = i;
@@ -237,5 +248,32 @@ void generate_kruskal_maze(Maze &maze) {
   for (const Wall &wall : walls) {
     int cell1_index = maze.index_at_pos(wall.cell1);
     int cell2_index = maze.index_at_pos(wall.cell2);
+
+    // Find parent of cell1
+    while (parent[cell1_index] != cell1_index) {
+      cell1_index = parent[cell1_index];
+    }
+    int cell1_parent = cell1_index;
+
+    // Find parent of cell2
+    while (parent[cell2_index] != cell2_index) {
+      cell2_index = parent[cell2_index];
+    }
+    int cell2_parent = cell2_index;
+
+    if (cell1_parent == cell2_parent) {
+      continue;
+    }
+
+    if (rank[cell1_parent] < rank[cell2_parent]) {
+      parent[cell1_parent] = cell2_parent;
+    } else {
+      parent[cell2_parent] = cell1_parent;
+      if (rank[cell1_parent] == rank[cell2_parent]) {
+        rank[cell1_parent] += 1;
+      }
+    }
+
+    maze.remove_wall(wall.cell1, wall.cell2);
   }
 }
