@@ -18,14 +18,13 @@ if(NOT SFML_FOUND)
         GIT_TAG 3.0.2
         GIT_SHALLOW ON
         EXCLUDE_FROM_ALL
-        SYSTEM
     )
     FetchContent_MakeAvailable(SFML)
 else()
     message(STATUS "Using system-installed SFML")
 endif()
 
-add_executable(simulation src/main.cpp src/ball.cpp)
-target_compile_features(simulation PRIVATE cxx_std_17)
+add_executable(simulation src/main.cpp src/simulation.cpp src/elementType.cpp)
+target_compile_features(simulation PRIVATE cxx_std_20)
 
 target_link_libraries(simulation PRIVATE SFML::Graphics)

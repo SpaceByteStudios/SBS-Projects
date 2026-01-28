@@ -1179,6 +1179,122 @@ class DrawCalls(Scene):
 
 
 
+class WaterMovement(Scene):
+    def construct(self):
+        size = 3
+        step = size / 3
+
+        half = size / 2
+
+        v_left  = Line(UP*half + LEFT*half, DOWN*half + LEFT*half)
+        v_mid_l = Line(UP*half + LEFT*(half - step), DOWN*half + LEFT*(half - step))
+        v_mid_r = Line(UP*half + RIGHT*(half - step), DOWN*half + RIGHT*(half - step))
+        v_right = Line(UP*half + RIGHT*half, DOWN*half + RIGHT*half)
+
+        h_top    = Line(LEFT*half + UP*half, RIGHT*half + UP*half)
+        h_mid_t  = Line(LEFT*half + UP*(half - step), RIGHT*half + UP*(half - step))
+        h_mid_b  = Line(LEFT*half + DOWN*(half - step), RIGHT*half + DOWN*(half - step))
+        h_bottom = Line(LEFT*half + DOWN*half, RIGHT*half + DOWN*half)
+
+        grid = VGroup(
+            v_left, v_mid_l, v_mid_r, v_right,
+            h_top, h_mid_t, h_mid_b, h_bottom
+        )
+
+        self.add(
+            v_left, v_mid_l, v_mid_r, v_right,
+            h_top, h_mid_t, h_mid_b, h_bottom
+        )
+
+        water_cell = Square(step, fill_opacity = 1.0, fill_color = BLUE_D, stroke_width = 0.0)
+
+        down_arrow = Arrow(start = water_cell.get_center(), end = water_cell.get_center() + DOWN * step * 1.15, buff = 0.2)
+        down_arrow.set_stroke(RED, 12)
+        down_arrow.fill_color = RED
+
+        down_left_arrow = Arrow(start = water_cell.get_center(), end = water_cell.get_center() + DOWN * step + LEFT * step, buff = 0.2)
+        down_left_arrow.set_stroke(RED, 12)
+        down_left_arrow.fill_color = RED
+
+        down_right_arrow = Arrow(start = water_cell.get_center(), end = water_cell.get_center() + DOWN * step + RIGHT * step, buff = 0.2)
+        down_right_arrow.set_stroke(RED, 12)
+        down_right_arrow.fill_color = RED
+
+        left_arrow = Arrow(start = water_cell.get_center(), end = water_cell.get_center() + LEFT * step * 1.15, buff = 0.2)
+        left_arrow.set_stroke(RED, 12)
+        left_arrow.fill_color = RED
+
+        right_arrow = Arrow(start = water_cell.get_center(), end = water_cell.get_center() + RIGHT * step * 1.15, buff = 0.2)
+        right_arrow.set_stroke(RED, 12)
+        right_arrow.fill_color = RED
+
+        self.add(water_cell, down_arrow, down_left_arrow, down_right_arrow, left_arrow, right_arrow)
+
+
+
+class FireMovement(Scene):
+    def construct(self):
+        size = 3
+        step = size / 3
+
+        half = size / 2
+
+        v_left  = Line(UP*half + LEFT*half, DOWN*half + LEFT*half)
+        v_mid_l = Line(UP*half + LEFT*(half - step), DOWN*half + LEFT*(half - step))
+        v_mid_r = Line(UP*half + RIGHT*(half - step), DOWN*half + RIGHT*(half - step))
+        v_right = Line(UP*half + RIGHT*half, DOWN*half + RIGHT*half)
+
+        h_top    = Line(LEFT*half + UP*half, RIGHT*half + UP*half)
+        h_mid_t  = Line(LEFT*half + UP*(half - step), RIGHT*half + UP*(half - step))
+        h_mid_b  = Line(LEFT*half + DOWN*(half - step), RIGHT*half + DOWN*(half - step))
+        h_bottom = Line(LEFT*half + DOWN*half, RIGHT*half + DOWN*half)
+
+        grid = VGroup(
+            v_left, v_mid_l, v_mid_r, v_right,
+            h_top, h_mid_t, h_mid_b, h_bottom
+        )
+
+        self.add(
+            v_left, v_mid_l, v_mid_r, v_right,
+            h_top, h_mid_t, h_mid_b, h_bottom
+        )
+
+        fire_cell = Square(step, fill_opacity = 1.0, fill_color = ORANGE, stroke_width = 0.0)
+
+        down_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + DOWN * step * 1.15, buff = 0.2)
+        down_arrow.set_stroke(RED, 12)
+        down_arrow.fill_color = RED
+
+        down_left_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + DOWN * step + LEFT * step, buff = 0.2)
+        down_left_arrow.set_stroke(RED, 12)
+        down_left_arrow.fill_color = RED
+
+        down_right_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + DOWN * step + RIGHT * step, buff = 0.2)
+        down_right_arrow.set_stroke(RED, 12)
+        down_right_arrow.fill_color = RED
+
+        left_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + LEFT * step * 1.15, buff = 0.2)
+        left_arrow.set_stroke(RED, 12)
+        left_arrow.fill_color = RED
+
+        right_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + RIGHT * step * 1.15, buff = 0.2)
+        right_arrow.set_stroke(RED, 12)
+        right_arrow.fill_color = RED
+
+        up_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + UP * step * 1.15, buff = 0.2)
+        up_arrow.set_stroke(RED, 12)
+        up_arrow.fill_color = RED
+
+        up_left_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + UP * step + LEFT * step, buff = 0.2)
+        up_left_arrow.set_stroke(RED, 12)
+        up_left_arrow.fill_color = RED
+
+        up_right_arrow = Arrow(start = fire_cell.get_center(), end = fire_cell.get_center() + UP * step + RIGHT * step, buff = 0.2)
+        up_right_arrow.set_stroke(RED, 12)
+        up_right_arrow.fill_color = RED
+
+        self.add(fire_cell, down_arrow, down_left_arrow, down_right_arrow, left_arrow, right_arrow, up_arrow, up_left_arrow, up_right_arrow)
+
 
 
 class TestScale(Scene):
@@ -1196,3 +1312,6 @@ class TestScale(Scene):
 
         self.play(GrowFromCenter(square))
         self.wait(0.5)
+
+
+
