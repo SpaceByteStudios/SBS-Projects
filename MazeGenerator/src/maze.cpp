@@ -130,23 +130,23 @@ void Maze::set_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
   unsigned char &cell2_bitmap = grid[cell2_index].walls_bitmap;
 
   if (dir == sf::Vector2i(0, -1)) {
-    cell1_bitmap |= ~(1 << 0);
-    cell2_bitmap |= ~(1 << 2);
+    cell1_bitmap |= (1 << 0);
+    cell2_bitmap |= (1 << 2);
   }
 
   if (dir == sf::Vector2i(1, 0)) {
-    cell1_bitmap |= ~(1 << 1);
-    cell2_bitmap |= ~(1 << 3);
+    cell1_bitmap |= (1 << 1);
+    cell2_bitmap |= (1 << 3);
   }
 
   if (dir == sf::Vector2i(0, 1)) {
-    cell1_bitmap |= ~(1 << 2);
-    cell2_bitmap |= ~(1 << 0);
+    cell1_bitmap |= (1 << 2);
+    cell2_bitmap |= (1 << 0);
   }
 
   if (dir == sf::Vector2i(-1, 0)) {
-    cell1_bitmap |= ~(1 << 3);
-    cell2_bitmap |= ~(1 << 1);
+    cell1_bitmap |= (1 << 3);
+    cell2_bitmap |= (1 << 1);
   }
 }
 

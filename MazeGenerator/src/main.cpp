@@ -13,7 +13,7 @@ int main() {
   sf::RenderWindow window(sf::VideoMode({1000, 1000}), "Maze Generator");
   window.setPosition({1920 - (int)window.getSize().x - 25, 25});
 
-  window.setFramerateLimit(60);
+  window.setFramerateLimit(180);
 
   Maze maze(maze_size);
   MazeRenderer renderer(window, maze);

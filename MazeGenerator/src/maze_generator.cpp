@@ -6,6 +6,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cstdlib>
+#include <iostream>
 #include <random>
 #include <unordered_map>
 #include <vector>
@@ -451,7 +452,72 @@ void animate_generate_wilson_maze(MazeRenderer &renderer, Maze &maze) {
   }
 }
 
-void recursive_divide_grid(Maze &maze) {}
+void recursive_divide_grid(Maze &maze, sf::Vector2u &pos, sf::Vector2u &dim) {
+  if (dim.x < 2 || dim.y < 2) {
+    return;
+  }
+
+  unsigned int rand_x = (pos.x + rand() % (dim.x - 1));
+  unsigned int rand_y = (pos.y + rand() % (dim.y - 1));
+
+  sf::Vector2u rand_cell = sf::Vector2u(rand_x, rand_y);
+
+  // Split horizontal or vertical
+  // horizontal
+
+  bool horizontal = dim.y > dim.x;
+  if (horizontal) {
+    int x_passage = pos.x + rand() % dim.x;
+
+    for (int x_cell = pos.x; x_cell < pos.x + dim.x; x_cell++) {
+      if (x_cell == x_passage) {
+        continue;
+      }
+
+      sf::Vector2u above_cell = sf::Vector2u(x_cell, rand_cell.y);
+      sf::Vector2u below_cell = sf::Vector2u(x_cell, rand_cell.y + 1);
+
+      maze.set_wall(above_cell, below_cell);
+    }
+
+    unsigned int split_y = rand_cell.y;
+
+    sf::Vector2u above_pos = pos;
+    sf::Vector2u below_pos = sf::Vector2u(pos.x, split_y + 1);
+
+    sf::Vector2u above_dim = sf::Vector2u(dim.x, split_y - pos.y + 1);
+    sf::Vector2u below_dim = sf::Vector2u(dim.x, pos.y + dim.y - (split_y + 1));
+
+    recursive_divide_grid(maze, above_pos, above_dim);
+    recursive_divide_grid(maze, below_pos, below_dim);
+  }
+  // vertical
+  else {
+    int y_passage = pos.y + rand() % dim.y;
+
+    for (int y_cell = pos.y; y_cell < pos.y + dim.y; y_cell++) {
+      if (y_cell == y_passage) {
+        continue;
+      }
+
+      sf::Vector2u left_cell = sf::Vector2u(rand_cell.x, y_cell);
+      sf::Vector2u right_cell = sf::Vector2u(rand_cell.x + 1, y_cell);
+
+      maze.set_wall(left_cell, right_cell);
+    }
+
+    unsigned int split_x = rand_cell.x;
+
+    sf::Vector2u left_pos = pos;
+    sf::Vector2u right_pos = sf::Vector2u(split_x + 1, pos.y);
+
+    sf::Vector2u left_dim = sf::Vector2u(split_x - pos.x + 1, dim.y);
+    sf::Vector2u right_dim = sf::Vector2u(pos.x + dim.x - (split_x + 1), dim.y);
+
+    recursive_divide_grid(maze, left_pos, left_dim);
+    recursive_divide_grid(maze, right_pos, right_dim);
+  }
+}
 
 void generate_recursive_division_maze(Maze &maze) {
   for (int y = 0; y < maze.grid_size.y; y++) {
@@ -485,4 +551,9 @@ void generate_recursive_division_maze(Maze &maze) {
       }
     }
   }
+
+  sf::Vector2u divide_pos = sf::Vector2u(0, 0);
+  sf::Vector2u divide_dim = sf::Vector2u(maze.grid_size.x, maze.grid_size.y);
+
+  recursive_divide_grid(maze, divide_pos, divide_dim);
 }
