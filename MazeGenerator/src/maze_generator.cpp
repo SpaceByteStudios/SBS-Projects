@@ -450,3 +450,39 @@ void animate_generate_wilson_maze(MazeRenderer &renderer, Maze &maze) {
     }
   }
 }
+
+void recursive_divide_grid(Maze &maze) {}
+
+void generate_recursive_division_maze(Maze &maze) {
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      int index = maze.index_at_pos(sf::Vector2u(x, y));
+
+      maze.grid[index].walls_bitmap = 0;
+    }
+  }
+
+  // Generate Wall border
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      int cell_index = maze.index_at_pos(sf::Vector2u(x, y));
+      unsigned char &cell_bitmap = maze.grid[cell_index].walls_bitmap;
+
+      if (x == 0) {
+        cell_bitmap |= (1 << 3);
+      }
+
+      if (x == maze.grid_size.x - 1) {
+        cell_bitmap |= (1 << 1);
+      }
+
+      if (y == 0) {
+        cell_bitmap |= (1 << 0);
+      }
+
+      if (y == maze.grid_size.y - 1) {
+        cell_bitmap |= (1 << 2);
+      }
+    }
+  }
+}
