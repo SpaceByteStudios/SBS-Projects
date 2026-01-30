@@ -5,7 +5,7 @@
 #include "maze_renderer.hh"
 #include "maze_solver.hh"
 
-sf::Vector2u maze_size = {100, 100};
+sf::Vector2u maze_size = {20, 20};
 
 int main() {
   srand(time(nullptr));
@@ -22,7 +22,7 @@ int main() {
   maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
 
   generate_recursive_division_maze(maze);
-  solve_depth_first_maze(maze);
+  solve_wall_follower_maze(false, maze);
 
   window.clear();
 
@@ -41,7 +41,7 @@ int main() {
           window.close();
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
           generate_recursive_division_maze(maze);
-          solve_depth_first_maze(maze);
+          solve_wall_follower_maze(false, maze);
 
           window.clear();
 

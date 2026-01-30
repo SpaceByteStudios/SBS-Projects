@@ -6,7 +6,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cstdlib>
-#include <iostream>
 #include <random>
 #include <unordered_map>
 #include <vector>
