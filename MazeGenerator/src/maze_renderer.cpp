@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 
@@ -37,8 +38,11 @@ void MazeRenderer::draw_grid(Maze &maze) {
           lines[cell_vertex + point1 + 1].position =
               vert_pos[(i + 1) % 4] + sf::Vector2f(1.0, 1.0);
 
-          lines[cell_vertex + point1].color = sf::Color(255, 255, 255);
-          lines[cell_vertex + point1 + 1].color = sf::Color(255, 255, 255);
+          // lines[cell_vertex + point1].color = sf::Color(255, 255, 255);
+          // lines[cell_vertex + point1 + 1].color = sf::Color(255, 255, 255);
+
+          lines[cell_vertex + point1].color = grid_color;
+          lines[cell_vertex + point1 + 1].color = grid_color;
         }
       }
 
@@ -70,8 +74,15 @@ void MazeRenderer::draw_path(Maze &maze) {
         maze.path[i].x * maze.cell_size.x + maze.cell_size.x / 2,
         maze.path[i].y * maze.cell_size.y + maze.cell_size.y / 2);
     line_path[i].position = path_point + sf::Vector2f(1.0, 1.0);
-    line_path[i].color = sf::Color(64, 255, 64);
+    // line_path[i].color = sf::Color(64, 255, 64);
+    line_path[i].color = path_color;
   }
 
   window.draw(line_path);
+}
+
+void MazeRenderer::set_color(sf::Color &new_grid_color,
+                             sf::Color &new_path_color) {
+  grid_color = new_grid_color;
+  path_color = new_path_color;
 }

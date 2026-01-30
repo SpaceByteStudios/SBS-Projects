@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 
 #include "maze.hh"
 #include "maze_generator.hh"
@@ -17,6 +18,11 @@ int main() {
 
   Maze maze(maze_size);
   MazeRenderer renderer(window, maze);
+
+  sf::Color grid_color = sf::Color(255, 255, 255);
+  sf::Color path_color = sf::Color(64, 255, 64);
+
+  renderer.set_color(grid_color, path_color);
 
   maze.start_cell = sf::Vector2u(0, 0);
   maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
