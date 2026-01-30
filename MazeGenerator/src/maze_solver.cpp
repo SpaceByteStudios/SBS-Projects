@@ -5,6 +5,9 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <array>
+#include <iterator>
+#include <queue>
+#include <vector>
 
 void solve_random_walk_maze(Maze &maze) {
   maze.path.clear();
@@ -168,4 +171,52 @@ void animate_solve_depth_first_maze(MazeRenderer &renderer, Maze &maze) {
   }
 }
 
-void solve_breadth_first_maze(Maze &maze) {}
+void solve_breadth_first_maze(Maze &maze) {
+  maze.path.clear();
+
+  std::queue<sf::Vector2u> maze_queue;
+  maze_queue.push(maze.start_cell);
+
+  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y, false);
+  visited_cells[maze.index_at_pos(maze_queue.back())] = true;
+
+  std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
+
+  while (!maze_queue.empty()) {
+    sf::Vector2u curr_cell = maze_queue.front();
+    maze_queue.pop();
+
+    int curr_index = maze.index_at_pos(curr_cell);
+
+    if (curr_cell == maze.end_cell) {
+      break;
+    }
+
+    std::vector<sf::Vector2u> next_cells = maze.get_neighbors(curr_cell);
+
+    for (const sf::Vector2u &next_cell : next_cells) {
+      int next_index = maze.index_at_pos(next_cell);
+
+      if (visited_cells[next_index]) {
+        continue;
+      }
+
+      if (!maze.is_path_free(curr_cell, next_cell)) {
+        continue;
+      }
+
+      visited_cells[next_index] = true;
+      parent[next_index] = curr_index;
+      maze_queue.push(next_cell);
+    }
+  }
+
+  int curr_index = maze.index_at_pos(maze.end_cell);
+
+  while (curr_index != -1) {
+    maze.path.push_back(maze.pos_at_index(curr_index));
+    curr_index = parent[curr_index];
+  }
+
+  std::reverse(maze.path.begin(), maze.path.end());
+}

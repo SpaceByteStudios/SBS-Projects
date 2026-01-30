@@ -18,6 +18,7 @@ struct Maze {
 
   bool is_inside(sf::Vector2u pos);
   int index_at_pos(sf::Vector2u pos);
+  sf::Vector2u pos_at_index(int index);
 
   std::vector<sf::Vector2u> get_neighbors(sf::Vector2u pos);
   bool are_neighbors(sf::Vector2u pos1, sf::Vector2u pos2);

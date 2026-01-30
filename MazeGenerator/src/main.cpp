@@ -22,7 +22,7 @@ int main() {
   maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
 
   generate_recursive_division_maze(maze);
-  solve_wall_follower_maze(false, maze);
+  solve_breadth_first_maze(maze);
 
   window.clear();
 
@@ -41,7 +41,7 @@ int main() {
           window.close();
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
           generate_recursive_division_maze(maze);
-          solve_wall_follower_maze(false, maze);
+          solve_breadth_first_maze(maze);
 
           window.clear();
 

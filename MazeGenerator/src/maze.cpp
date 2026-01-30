@@ -42,6 +42,14 @@ int Maze::index_at_pos(sf::Vector2u pos) {
   }
 }
 
+sf::Vector2u Maze::pos_at_index(int index) {
+  if (index > grid.size() - 1) {
+    return sf::Vector2u(0, 0);
+  } else {
+    return sf::Vector2u(index % grid_size.x, index / grid_size.x);
+  }
+}
+
 std::vector<sf::Vector2u> Maze::get_neighbors(sf::Vector2u pos) {
   std::vector<sf::Vector2u> cells_pos = {{pos.x, pos.y - 1},
                                          {pos.x, pos.y + 1},
