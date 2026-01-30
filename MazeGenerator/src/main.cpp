@@ -21,8 +21,9 @@ int main() {
   maze.start_cell = sf::Vector2u(0, 0);
   maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
 
-  generate_recursive_division_maze(maze);
-  solve_breadth_first_maze(maze);
+  generate_depth_first_maze(maze);
+  maze.remove_random_walls(10);
+  solve_depth_first_maze(maze);
 
   window.clear();
 
@@ -40,8 +41,9 @@ int main() {
         if (keyPressed->scancode == sf::Keyboard::Scancode::Escape) {
           window.close();
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
-          generate_recursive_division_maze(maze);
-          solve_breadth_first_maze(maze);
+          generate_depth_first_maze(maze);
+          maze.remove_random_walls(10);
+          solve_depth_first_maze(maze);
 
           window.clear();
 

@@ -1,5 +1,6 @@
 #include "maze.hh"
 #include <SFML/System/Vector2.hpp>
+#include <random>
 #include <vector>
 
 Maze::Maze() : grid_size(sf::Vector2u(5, 5)) {
@@ -186,4 +187,30 @@ void Maze::remove_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
     cell1_bitmap &= ~(1 << 3);
     cell2_bitmap &= ~(1 << 1);
   }
+}
+
+void Maze::remove_random_walls(int amount) {
+  const int MAX_TRIES = 100;
+
+  for (int i = 0; i < amount; i++) {
+    for (int t = 0; t < MAX_TRIES; t++) {
+      if (t > MAX_TRIES) {
+        return;
+      }
+
+      sf::Vector2u rand_cell = {rand() % grid_size.x, rand() % grid_size.y};
+
+      std::vector<sf::Vector2u> next_cells = get_neighbors(rand_cell);
+      sf::Vector2u rand_next_cell = next_cells[rand() % next_cells.size()];
+
+      if (!is_path_free(rand_cell, rand_next_cell)) {
+        remove_wall(rand_cell, rand_next_cell);
+        break;
+      }
+
+      t += 1;
+    }
+  }
+
+  return;
 }

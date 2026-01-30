@@ -27,6 +27,8 @@ struct Maze {
   void set_wall(sf::Vector2u pos1, sf::Vector2u pos2);
   void remove_wall(sf::Vector2u pos1, sf::Vector2u pos2);
 
+  void remove_random_walls(int amount);
+
   const sf::Vector2u grid_size;
   sf::Vector2f cell_size;
 
