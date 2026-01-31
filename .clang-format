@@ -1,7 +1,7 @@
 # .clang-format - Google C++ Style
 BasedOnStyle: Google
 IndentWidth: 2           # Google uses 2-space indentation
-ColumnLimit: 100         # Max line length
+ColumnLimit: 120         # Max line length
 UseTab: Never            # Always use spaces, not tabs
 BreakBeforeBraces: Attach
 AllowShortFunctionsOnASingleLine: false

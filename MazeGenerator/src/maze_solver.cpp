@@ -1,15 +1,17 @@
 #include "maze_solver.hh"
-#include "maze.hh"
-#include "maze_renderer.hh"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <array>
-#include <iterator>
+#include <cstdlib>
+#include <functional>
 #include <queue>
 #include <vector>
 
-void solve_random_walk_maze(Maze &maze) {
+#include "maze.hh"
+#include "maze_renderer.hh"
+
+void solve_random_walk_maze(Maze& maze) {
   maze.path.clear();
   maze.path.push_back(maze.start_cell);
 
@@ -36,7 +38,7 @@ void solve_random_walk_maze(Maze &maze) {
   }
 }
 
-void solve_wall_follower_maze(bool follow_right, Maze &maze) {
+void solve_wall_follower_maze(bool follow_right, Maze& maze) {
   maze.path.clear();
   maze.path.push_back(maze.start_cell);
 
@@ -56,8 +58,7 @@ void solve_wall_follower_maze(bool follow_right, Maze &maze) {
 
     for (int turn : turn_order) {
       sf::Vector2i next_dir = directions[(curr_dir + turn) % 4];
-      sf::Vector2u next_cell = {maze.path.back().x + next_dir.x,
-                                maze.path.back().y + next_dir.y};
+      sf::Vector2u next_cell = {maze.path.back().x + next_dir.x, maze.path.back().y + next_dir.y};
 
       if (maze.is_path_free(curr_cell, next_cell)) {
         curr_dir = (curr_dir + turn) % 4;
@@ -68,7 +69,7 @@ void solve_wall_follower_maze(bool follow_right, Maze &maze) {
   }
 }
 
-void solve_depth_first_maze(Maze &maze) {
+void solve_depth_first_maze(Maze& maze) {
   maze.path.clear();
 
   maze.path.push_back(maze.start_cell);
@@ -109,7 +110,7 @@ void solve_depth_first_maze(Maze &maze) {
   }
 }
 
-void animate_solve_depth_first_maze(MazeRenderer &renderer, Maze &maze) {
+void animate_solve_depth_first_maze(MazeRenderer& renderer, Maze& maze) {
   maze.path.clear();
 
   maze.path.push_back(maze.start_cell);
@@ -136,9 +137,7 @@ void animate_solve_depth_first_maze(MazeRenderer &renderer, Maze &maze) {
     const int STEPS_PER_FRAME = 3;
 
     for (int i = 0; i < STEPS_PER_FRAME; i++) {
-
-      std::vector<sf::Vector2u> next_cells =
-          maze.get_neighbors(maze.path.back());
+      std::vector<sf::Vector2u> next_cells = maze.get_neighbors(maze.path.back());
 
       for (int i = 0; i < next_cells.size(); i++) {
         int next_index = maze.index_at_pos(next_cells[i]);
@@ -171,7 +170,7 @@ void animate_solve_depth_first_maze(MazeRenderer &renderer, Maze &maze) {
   }
 }
 
-void solve_breadth_first_maze(Maze &maze) {
+void solve_breadth_first_maze(Maze& maze) {
   maze.path.clear();
 
   std::queue<sf::Vector2u> maze_queue;
@@ -194,7 +193,7 @@ void solve_breadth_first_maze(Maze &maze) {
 
     std::vector<sf::Vector2u> next_cells = maze.get_neighbors(curr_cell);
 
-    for (const sf::Vector2u &next_cell : next_cells) {
+    for (const sf::Vector2u& next_cell : next_cells) {
       int next_index = maze.index_at_pos(next_cell);
 
       if (visited_cells[next_index]) {
@@ -219,4 +218,141 @@ void solve_breadth_first_maze(Maze &maze) {
   }
 
   std::reverse(maze.path.begin(), maze.path.end());
+}
+
+struct Node {
+  int dist;
+  int estimated_dist;
+  sf::Vector2u pos;
+  bool operator>(const Node& other) const {
+    return estimated_dist > other.estimated_dist;
+  }
+};
+
+void solve_dijkstra_maze(Maze& maze) {
+  std::vector<int> dist(maze.grid_size.x * maze.grid_size.y, 1e9);
+  std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
+
+  dist[maze.index_at_pos(maze.start_cell)] = 0;
+
+  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> p_queue;
+
+  p_queue.push({0, 0, maze.start_cell});
+
+  while (!p_queue.empty()) {
+    Node top_node = p_queue.top();
+
+    p_queue.pop();
+
+    if (top_node.pos == maze.end_cell) {
+      break;
+    }
+
+    std::vector<sf::Vector2u> next_cells = maze.get_neighbors(top_node.pos);
+
+    for (int i = next_cells.size() - 1; i >= 0; i--) {
+      int next_index = maze.index_at_pos(next_cells[i]);
+
+      if (!maze.is_path_free(top_node.pos, next_cells[i])) {
+        next_cells.erase(next_cells.begin() + i);
+        continue;
+      }
+    }
+
+    int top_index = maze.index_at_pos(top_node.pos);
+
+    for (sf::Vector2u& next_cell : next_cells) {
+      int next_index = maze.index_at_pos(next_cell);
+
+      int alt_dist = top_node.dist + 1;
+
+      if (alt_dist < dist[next_index]) {
+        dist[next_index] = alt_dist;
+        parent[next_index] = top_index;
+        p_queue.push({alt_dist, alt_dist, next_cell});
+      }
+    }
+  }
+
+  maze.path.clear();
+  int curr_index = maze.index_at_pos(maze.end_cell);
+
+  if (parent[curr_index] != -1 || maze.start_cell == maze.end_cell) {
+    // Reconstruct path
+    while (curr_index != -1) {
+      maze.path.push_back(maze.pos_at_index(curr_index));
+      curr_index = parent[curr_index];
+    }
+
+    std::reverse(maze.path.begin(), maze.path.end());
+  }
+}
+
+int heuristic(sf::Vector2u pos1, sf::Vector2u pos2) {
+  return abs(int(pos1.x) - int(pos2.x)) + abs(int(pos1.y) - int(pos2.y));
+}
+
+void solve_astar_maze(Maze& maze) {
+  std::vector<int> dist(maze.grid_size.x * maze.grid_size.y, 1e9);
+  std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
+
+  dist[maze.index_at_pos(maze.start_cell)] = 0;
+
+  std::priority_queue<Node, std::vector<Node>, std::greater<Node>> p_queue;
+
+  int est_dist_start = heuristic(maze.start_cell, maze.end_cell);
+
+  p_queue.push({0, est_dist_start, maze.start_cell});
+
+  while (!p_queue.empty()) {
+    Node top_node = p_queue.top();
+    int top_index = maze.index_at_pos(top_node.pos);
+
+    p_queue.pop();
+
+    if (top_node.dist > dist[top_index]) {
+      continue;
+    }
+
+    if (top_node.pos == maze.end_cell) {
+      break;
+    }
+
+    std::vector<sf::Vector2u> next_cells = maze.get_neighbors(top_node.pos);
+
+    for (int i = next_cells.size() - 1; i >= 0; i--) {
+      int next_index = maze.index_at_pos(next_cells[i]);
+
+      if (!maze.is_path_free(top_node.pos, next_cells[i])) {
+        next_cells.erase(next_cells.begin() + i);
+        continue;
+      }
+    }
+
+    for (sf::Vector2u& next_cell : next_cells) {
+      int next_index = maze.index_at_pos(next_cell);
+
+      int alt_dist = top_node.dist + 1;
+      int est_dist = alt_dist + heuristic(next_cell, maze.end_cell);
+
+      if (alt_dist < dist[next_index]) {
+        dist[next_index] = alt_dist;
+        parent[next_index] = top_index;
+        p_queue.push({alt_dist, est_dist, next_cell});
+      }
+    }
+  }
+
+  maze.path.clear();
+  int curr_index = maze.index_at_pos(maze.end_cell);
+
+  if (parent[curr_index] != -1 || maze.start_cell == maze.end_cell) {
+    // Reconstruct path
+    while (curr_index != -1) {
+      maze.path.push_back(maze.pos_at_index(curr_index));
+      curr_index = parent[curr_index];
+    }
+
+    std::reverse(maze.path.begin(), maze.path.end());
+  }
 }

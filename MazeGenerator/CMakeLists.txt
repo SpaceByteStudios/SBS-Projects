@@ -25,7 +25,14 @@ else()
     message(STATUS "Using system-installed SFML")
 endif()
 
-add_executable(simulation src/main.cpp src/maze_generator.cpp src/maze_solver.cpp src/maze.cpp src/maze_renderer.cpp)
+add_executable(
+  simulation
+  src/main.cpp
+  src/maze_generator.cpp
+  src/maze_solver.cpp
+  src/maze.cpp
+  src/maze_renderer.cpp
+)
 target_compile_features(simulation PRIVATE cxx_std_17)
 
 target_link_libraries(simulation PRIVATE SFML::Graphics)
