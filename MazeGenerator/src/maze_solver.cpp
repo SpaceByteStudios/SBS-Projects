@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <array>
+#include <cmath>
 #include <cstdlib>
 #include <functional>
 #include <queue>
@@ -225,6 +226,9 @@ struct Node {
   int estimated_dist;
   sf::Vector2u pos;
   bool operator>(const Node& other) const {
+    if (estimated_dist == other.estimated_dist) {
+      return dist < other.dist;
+    }
     return estimated_dist > other.estimated_dist;
   }
 };
@@ -250,18 +254,13 @@ void solve_dijkstra_maze(Maze& maze) {
 
     std::vector<sf::Vector2u> next_cells = maze.get_neighbors(top_node.pos);
 
-    for (int i = next_cells.size() - 1; i >= 0; i--) {
-      int next_index = maze.index_at_pos(next_cells[i]);
-
-      if (!maze.is_path_free(top_node.pos, next_cells[i])) {
-        next_cells.erase(next_cells.begin() + i);
-        continue;
-      }
-    }
-
     int top_index = maze.index_at_pos(top_node.pos);
 
     for (sf::Vector2u& next_cell : next_cells) {
+      if (!maze.is_path_free(top_node.pos, next_cell)) {
+        continue;
+      }
+
       int next_index = maze.index_at_pos(next_cell);
 
       int alt_dist = top_node.dist + 1;
@@ -289,12 +288,15 @@ void solve_dijkstra_maze(Maze& maze) {
 }
 
 int heuristic(sf::Vector2u pos1, sf::Vector2u pos2) {
-  return abs(int(pos1.x) - int(pos2.x)) + abs(int(pos1.y) - int(pos2.y));
+  int dx = std::abs((int)pos1.x - (int)pos2.x);
+  int dy = std::abs((int)pos1.y - (int)pos2.y);
+  return std::max(dx, dy);
 }
 
 void solve_astar_maze(Maze& maze) {
   std::vector<int> dist(maze.grid_size.x * maze.grid_size.y, 1e9);
   std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
+  std::vector<bool> closed(maze.grid_size.x * maze.grid_size.y, false);
 
   dist[maze.index_at_pos(maze.start_cell)] = 0;
 
@@ -310,9 +312,15 @@ void solve_astar_maze(Maze& maze) {
 
     p_queue.pop();
 
+    if (closed[top_index]) {
+      continue;
+    }
+
     if (top_node.dist > dist[top_index]) {
       continue;
     }
+
+    closed[top_index] = true;
 
     if (top_node.pos == maze.end_cell) {
       break;
@@ -320,17 +328,16 @@ void solve_astar_maze(Maze& maze) {
 
     std::vector<sf::Vector2u> next_cells = maze.get_neighbors(top_node.pos);
 
-    for (int i = next_cells.size() - 1; i >= 0; i--) {
-      int next_index = maze.index_at_pos(next_cells[i]);
-
-      if (!maze.is_path_free(top_node.pos, next_cells[i])) {
-        next_cells.erase(next_cells.begin() + i);
+    for (sf::Vector2u& next_cell : next_cells) {
+      if (!maze.is_path_free(top_node.pos, next_cell)) {
         continue;
       }
-    }
 
-    for (sf::Vector2u& next_cell : next_cells) {
       int next_index = maze.index_at_pos(next_cell);
+
+      if (closed[next_index]) {
+        continue;
+      }
 
       int alt_dist = top_node.dist + 1;
       int est_dist = alt_dist + heuristic(next_cell, maze.end_cell);

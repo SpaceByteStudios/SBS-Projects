@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(TEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test)
 
 # Prefer system-installed SFML if available
 find_package(SFML 3 QUIET COMPONENTS Graphics)
@@ -28,11 +29,28 @@ endif()
 add_executable(
   simulation
   src/main.cpp
-  src/maze_generator.cpp
-  src/maze_solver.cpp
   src/maze.cpp
   src/maze_renderer.cpp
+  src/maze_generator.cpp
+  src/maze_solver.cpp
 )
-target_compile_features(simulation PRIVATE cxx_std_17)
 
+target_compile_features(simulation PRIVATE cxx_std_17)
 target_link_libraries(simulation PRIVATE SFML::Graphics)
+
+# Compile Test Program
+add_executable(
+  test_times
+  test/test_times.cpp
+  src/maze.cpp
+  src/maze_renderer.cpp
+  src/maze_generator.cpp
+  src/maze_solver.cpp
+)
+
+set_target_properties(test_times PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
+)
+
+target_compile_features(test_times PRIVATE cxx_std_17)
+target_link_libraries(test_times PRIVATE SFML::Graphics)
