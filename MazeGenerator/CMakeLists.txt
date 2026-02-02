@@ -35,22 +35,38 @@ add_executable(
   src/maze_solver.cpp
 )
 
-target_compile_features(simulation PRIVATE cxx_std_17)
 target_link_libraries(simulation PRIVATE SFML::Graphics)
 
 # Compile Test Program
 add_executable(
-  test_times
-  test/test_times.cpp
+  test_solve_times
+  test/test_solve_times.cpp
   src/maze.cpp
   src/maze_renderer.cpp
   src/maze_generator.cpp
   src/maze_solver.cpp
 )
 
-set_target_properties(test_times PROPERTIES
+set_target_properties(test_solve_times PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
-target_compile_features(test_times PRIVATE cxx_std_17)
-target_link_libraries(test_times PRIVATE SFML::Graphics)
+target_compile_features(test_solve_times PRIVATE cxx_std_17)
+target_link_libraries(test_solve_times PRIVATE SFML::Graphics)
+
+# Compile Test Program
+add_executable(
+  test_generate_times
+  test/test_generate_times.cpp
+  src/maze.cpp
+  src/maze_renderer.cpp
+  src/maze_generator.cpp
+  src/maze_solver.cpp
+)
+
+set_target_properties(test_generate_times PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
+)
+
+target_compile_features(test_generate_times PRIVATE cxx_std_17)
+target_link_libraries(test_generate_times PRIVATE SFML::Graphics)

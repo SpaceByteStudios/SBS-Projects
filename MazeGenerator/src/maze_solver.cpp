@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 #include <queue>
 #include <vector>
 
@@ -177,10 +178,14 @@ void solve_breadth_first_maze(Maze& maze) {
   std::queue<sf::Vector2u> maze_queue;
   maze_queue.push(maze.start_cell);
 
+  const int total_cells = maze.grid_size.x * maze.grid_size.y;
   std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y, false);
   visited_cells[maze.index_at_pos(maze_queue.back())] = true;
 
   std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
+
+  int visited_count = 1;
+  int last_percent = 0;
 
   while (!maze_queue.empty()) {
     sf::Vector2u curr_cell = maze_queue.front();
@@ -208,6 +213,13 @@ void solve_breadth_first_maze(Maze& maze) {
       visited_cells[next_index] = true;
       parent[next_index] = curr_index;
       maze_queue.push(next_cell);
+
+      visited_count++;
+      int percent = (visited_count * 100) / total_cells;
+      if (percent > last_percent) {
+        last_percent = percent;
+        std::cout << "\rSolving maze: " << percent << "% completed" << std::flush;
+      }
     }
   }
 
@@ -219,6 +231,8 @@ void solve_breadth_first_maze(Maze& maze) {
   }
 
   std::reverse(maze.path.begin(), maze.path.end());
+
+  std::cout << "\rSolving maze: 100% completed" << std::endl;
 }
 
 struct Node {

@@ -38,8 +38,8 @@ int main() {
   maze.remove_random_walls(50);
   maze2.grid = maze.grid;
 
-  solve_depth_first_maze(maze);
-  solve_astar_maze(maze2);
+  solve_breadth_first_maze(maze);
+  solve_dijkstra_maze(maze2);
 
   window.clear();
 
@@ -61,7 +61,7 @@ int main() {
           maze.remove_random_walls(50);
           maze2.grid = maze.grid;
 
-          solve_depth_first_maze(maze);
+          solve_breadth_first_maze(maze);
           solve_astar_maze(maze2);
 
           window.clear();
