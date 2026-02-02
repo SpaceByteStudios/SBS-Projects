@@ -60,6 +60,12 @@ int main() {
   }
 
   depth_first_average /= REPETITIONS;
+  prim_average /= REPETITIONS;
+  kruskal_average /= REPETITIONS;
+  recursive_division_average /= REPETITIONS;
 
-  std::cout << "Depth First   average duration in ms: " << depth_first_average << std::endl;
+  std::cout << "Depth First        average duration in ms: " << depth_first_average << std::endl;
+  std::cout << "Prim               average duration in ms: " << prim_average << std::endl;
+  std::cout << "Kruskal            average duration in ms: " << kruskal_average << std::endl;
+  std::cout << "Recursive Division average duration in ms: " << recursive_division_average << std::endl;
 }

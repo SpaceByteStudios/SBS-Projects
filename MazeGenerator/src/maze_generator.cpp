@@ -14,8 +14,6 @@
 #include "maze_renderer.hh"
 
 void generate_depth_first_maze(Maze& maze) {
-  std::mt19937 rng(std::random_device{}());
-
   for (int y = 0; y < maze.grid_size.y; y++) {
     for (int x = 0; x < maze.grid_size.x; x++) {
       int index = maze.index_at_pos(sf::Vector2u(x, y));
@@ -36,6 +34,14 @@ void generate_depth_first_maze(Maze& maze) {
   std::vector<sf::Vector2u> next_cells;
   std::vector<sf::Vector2u> unvisited;
 
+  int total_cells = maze.grid_size.x * maze.grid_size.y;
+  int visited_count = 1;
+
+  const double progress_interval = 0.01; // 0,01%
+  double last_displayed_percent = -1.0;
+  const int cells_per_update = std::max(1, static_cast<int>(total_cells * progress_interval / 100.0));
+  int next_update_cell = cells_per_update;
+
   while (!maze_stack.empty()) {
     next_cells.clear();
     unvisited.clear();
@@ -47,19 +53,33 @@ void generate_depth_first_maze(Maze& maze) {
     }
 
     if (!unvisited.empty()) {
-      std::uniform_int_distribution<> dist(0, unvisited.size() - 1);
-
-      sf::Vector2u rand_cell = unvisited[dist(rng)];
+      sf::Vector2u rand_cell = unvisited[rand() % unvisited.size()];
 
       maze.remove_wall(maze_stack.back(), rand_cell);
 
       maze_stack.push_back(rand_cell);
       visited_cells[maze.index_at_pos(rand_cell)] = true;
 
+      visited_count++;
+
+      if (visited_count >= next_update_cell) {
+        double percent = (visited_count * 100.0) / total_cells;
+
+        double displayed_percent = std::floor(percent * 100.0) / 100.0; // 2 Nachkommastellen
+        if (displayed_percent != last_displayed_percent) {
+          last_displayed_percent = displayed_percent;
+          std::cout << "\rGenerating maze: " << std::fixed << std::setprecision(2) << displayed_percent << "% completed"
+                    << std::flush;
+        }
+
+        next_update_cell += cells_per_update;
+      }
     } else {
       maze_stack.pop_back();
     }
   }
+
+  std::cout << "\rGenerating maze: 100% completed" << std::endl;
 }
 
 void animate_generate_depth_first_maze(MazeRenderer& renderer, Maze& maze) {

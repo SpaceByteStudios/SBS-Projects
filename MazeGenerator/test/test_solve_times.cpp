@@ -6,7 +6,7 @@
 #include "../src/maze_generator.hh"
 #include "../src/maze_solver.hh"
 
-sf::Vector2u maze_size = {10, 10};
+sf::Vector2u maze_size = {100, 10};
 
 int main() {
   srand(time(nullptr));

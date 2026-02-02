@@ -185,7 +185,11 @@ void solve_breadth_first_maze(Maze& maze) {
   std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
 
   int visited_count = 1;
-  int last_percent = 0;
+
+  const double progress_interval = 0.01; // 0,01%
+  double last_displayed_percent = -1.0;
+  const int cells_per_update = std::max(1, static_cast<int>(total_cells * progress_interval / 100.0));
+  int next_update_cell = cells_per_update;
 
   while (!maze_queue.empty()) {
     sf::Vector2u curr_cell = maze_queue.front();
@@ -215,10 +219,16 @@ void solve_breadth_first_maze(Maze& maze) {
       maze_queue.push(next_cell);
 
       visited_count++;
-      int percent = (visited_count * 100) / total_cells;
-      if (percent > last_percent) {
-        last_percent = percent;
-        std::cout << "\rSolving maze: " << percent << "% completed" << std::flush;
+
+      if (visited_count >= next_update_cell) {
+        double percent = (visited_count * 100.0) / total_cells;
+        double displayed_percent = std::floor(percent * 100.0) / 100.0; // 2 Nachkommastellen
+        if (displayed_percent != last_displayed_percent) {
+          last_displayed_percent = displayed_percent;
+          std::cout << "\rSolving maze: " << std::fixed << std::setprecision(2) << displayed_percent << "% completed"
+                    << std::flush;
+        }
+        next_update_cell += cells_per_update;
       }
     }
   }
