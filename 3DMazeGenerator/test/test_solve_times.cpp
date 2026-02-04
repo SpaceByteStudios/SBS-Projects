@@ -2,9 +2,9 @@
 #include <cmath>
 #include <iostream>
 
-#include "maze.hh"
-#include "maze_generator.hh"
-#include "maze_solver.hh"
+#include "../src/maze.hh"
+#include "../src/maze_generator.hh"
+#include "../src/maze_solver.hh"
 
 sf::Vector2u maze_size = {100, 10};
 

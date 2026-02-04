@@ -52,7 +52,6 @@ set_target_properties(test_solve_times PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
-target_include_directories(test_solve_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_features(test_solve_times PRIVATE cxx_std_17)
 target_link_libraries(test_solve_times PRIVATE SFML::Graphics)
 
@@ -70,6 +69,5 @@ set_target_properties(test_generate_times PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
-target_include_directories(test_generate_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_compile_features(test_generate_times PRIVATE cxx_std_17)
 target_link_libraries(test_generate_times PRIVATE SFML::Graphics)
