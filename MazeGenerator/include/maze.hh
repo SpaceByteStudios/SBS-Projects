@@ -17,16 +17,16 @@ struct Maze {
   Maze();
   Maze(sf::Vector2u new_grid_size);
 
-  bool is_inside(sf::Vector2u pos);
-  int index_at_pos(sf::Vector2u pos);
-  sf::Vector2u pos_at_index(int index);
+  bool is_inside(const sf::Vector2u& pos) const;
+  int index_at_pos(const sf::Vector2u& pos) const;
+  sf::Vector2u pos_at_index(int index) const;
 
-  std::vector<sf::Vector2u> get_neighbors(sf::Vector2u pos);
-  bool are_neighbors(sf::Vector2u pos1, sf::Vector2u pos2);
-  bool is_path_free(sf::Vector2u pos1, sf::Vector2u pos2);
+  std::vector<sf::Vector2u> get_neighbors(const sf::Vector2u& pos) const;
+  bool are_neighbors(const sf::Vector2u& pos1, const sf::Vector2u& pos2) const;
+  bool is_path_free(const sf::Vector2u& pos1, const sf::Vector2u& pos2) const;
 
-  void set_wall(sf::Vector2u pos1, sf::Vector2u pos2);
-  void remove_wall(sf::Vector2u pos1, sf::Vector2u pos2);
+  void set_wall(const sf::Vector2u& pos1, const sf::Vector2u& pos2);
+  void remove_wall(const sf::Vector2u& pos1, const sf::Vector2u& pos2);
 
   void remove_random_walls(int amount);
 

@@ -1,6 +1,8 @@
 #include "maze.hh"
+
+#include <stdlib.h>
+
 #include <SFML/System/Vector2.hpp>
-#include <random>
 #include <vector>
 
 Maze::Maze() : grid_size(sf::Vector2u(5, 5)) {
@@ -27,7 +29,7 @@ Maze::Maze(sf::Vector2u new_grid_size) : grid_size(new_grid_size) {
   }
 }
 
-bool Maze::is_inside(sf::Vector2u pos) {
+bool Maze::is_inside(const sf::Vector2u& pos) const {
   if (pos.x < 0 || pos.x >= grid_size.x || pos.y < 0 || pos.y >= grid_size.y) {
     return false;
   }
@@ -35,7 +37,7 @@ bool Maze::is_inside(sf::Vector2u pos) {
   return true;
 }
 
-int Maze::index_at_pos(sf::Vector2u pos) {
+int Maze::index_at_pos(const sf::Vector2u& pos) const {
   if (is_inside(pos)) {
     return pos.y * grid_size.x + pos.x;
   } else {
@@ -43,7 +45,7 @@ int Maze::index_at_pos(sf::Vector2u pos) {
   }
 }
 
-sf::Vector2u Maze::pos_at_index(int index) {
+sf::Vector2u Maze::pos_at_index(int index) const {
   if (index > grid.size() - 1) {
     return sf::Vector2u(0, 0);
   } else {
@@ -51,11 +53,9 @@ sf::Vector2u Maze::pos_at_index(int index) {
   }
 }
 
-std::vector<sf::Vector2u> Maze::get_neighbors(sf::Vector2u pos) {
-  std::vector<sf::Vector2u> cells_pos = {{pos.x, pos.y - 1},
-                                         {pos.x, pos.y + 1},
-                                         {pos.x - 1, pos.y},
-                                         {pos.x + 1, pos.y}};
+std::vector<sf::Vector2u> Maze::get_neighbors(const sf::Vector2u& pos) const {
+  std::vector<sf::Vector2u> cells_pos = {
+      {pos.x, pos.y - 1}, {pos.x, pos.y + 1}, {pos.x - 1, pos.y}, {pos.x + 1, pos.y}};
 
   std::vector<sf::Vector2u> neigbor_cells;
 
@@ -68,12 +68,11 @@ std::vector<sf::Vector2u> Maze::get_neighbors(sf::Vector2u pos) {
   return neigbor_cells;
 }
 
-bool Maze::are_neighbors(sf::Vector2u pos1, sf::Vector2u pos2) {
+bool Maze::are_neighbors(const sf::Vector2u& pos1, const sf::Vector2u& pos2) const {
   int index_cell1 = index_at_pos(pos1);
   int index_cell2 = index_at_pos(pos2);
 
-  if (index_cell2 - 1 == index_cell1 || index_cell2 + 1 == index_cell1 ||
-      index_cell2 - grid_size.x == index_cell1 ||
+  if (index_cell2 - 1 == index_cell1 || index_cell2 + 1 == index_cell1 || index_cell2 - grid_size.x == index_cell1 ||
       index_cell2 + grid_size.x == index_cell1) {
     return true;
   } else {
@@ -81,7 +80,7 @@ bool Maze::are_neighbors(sf::Vector2u pos1, sf::Vector2u pos2) {
   }
 }
 
-bool Maze::is_path_free(sf::Vector2u pos1, sf::Vector2u pos2) {
+bool Maze::is_path_free(const sf::Vector2u& pos1, const sf::Vector2u& pos2) const {
   if (!is_inside(pos1)) {
     return false;
   }
@@ -99,8 +98,8 @@ bool Maze::is_path_free(sf::Vector2u pos1, sf::Vector2u pos2) {
 
   sf::Vector2i dir = static_cast<sf::Vector2i>(pos2 - pos1);
 
-  unsigned char &cell1_bitmap = grid[index_cell1].walls_bitmap;
-  unsigned char &cell2_bitmap = grid[index_cell2].walls_bitmap;
+  const unsigned char& cell1_bitmap = grid[index_cell1].walls_bitmap;
+  const unsigned char& cell2_bitmap = grid[index_cell2].walls_bitmap;
 
   if (dir == sf::Vector2i(0, -1)) {
     if (!(cell1_bitmap & (1 << 0)) && !(cell2_bitmap & (1 << 2))) {
@@ -129,14 +128,14 @@ bool Maze::is_path_free(sf::Vector2u pos1, sf::Vector2u pos2) {
   return false;
 }
 
-void Maze::set_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
+void Maze::set_wall(const sf::Vector2u& pos1, const sf::Vector2u& pos2) {
   int cell1_index = index_at_pos(pos1);
   int cell2_index = index_at_pos(pos2);
 
   sf::Vector2i dir = static_cast<sf::Vector2i>(pos2 - pos1);
 
-  unsigned char &cell1_bitmap = grid[cell1_index].walls_bitmap;
-  unsigned char &cell2_bitmap = grid[cell2_index].walls_bitmap;
+  unsigned char& cell1_bitmap = grid[cell1_index].walls_bitmap;
+  unsigned char& cell2_bitmap = grid[cell2_index].walls_bitmap;
 
   if (dir == sf::Vector2i(0, -1)) {
     cell1_bitmap |= (1 << 0);
@@ -159,14 +158,14 @@ void Maze::set_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
   }
 }
 
-void Maze::remove_wall(sf::Vector2u pos1, sf::Vector2u pos2) {
+void Maze::remove_wall(const sf::Vector2u& pos1, const sf::Vector2u& pos2) {
   int cell1_index = index_at_pos(pos1);
   int cell2_index = index_at_pos(pos2);
 
   sf::Vector2i dir = static_cast<sf::Vector2i>(pos2 - pos1);
 
-  unsigned char &cell1_bitmap = grid[cell1_index].walls_bitmap;
-  unsigned char &cell2_bitmap = grid[cell2_index].walls_bitmap;
+  unsigned char& cell1_bitmap = grid[cell1_index].walls_bitmap;
+  unsigned char& cell2_bitmap = grid[cell2_index].walls_bitmap;
 
   if (dir == sf::Vector2i(0, -1)) {
     cell1_bitmap &= ~(1 << 0);
