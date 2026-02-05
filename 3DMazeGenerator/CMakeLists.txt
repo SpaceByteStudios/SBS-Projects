@@ -39,7 +39,7 @@ target_link_libraries(3dsimulation PRIVATE SFML::Graphics)
 # Compile Test Program
 add_executable(
   test_maze
-  test/test_maze.cpp
+  test/test_maze3d.cpp
   src/maze3d.cpp
 )
 

@@ -4,6 +4,7 @@
 #include <vector>
 
 struct Cell3D {
+  // Top, Front, Right, Back, Left, Bottom
   // 6bit: 1: +y, 2: +x, 3: +z, 4: -x, 5: -z, 6: -y
   unsigned char walls_bitmap;
 };
@@ -17,18 +18,17 @@ struct Maze3D {
   Maze3D();
   Maze3D(sf::Vector3i new_grid_size);
 
-  bool is_inside(sf::Vector3i pos);
-  int index_at_pos(sf::Vector3i pos);
+  bool is_inside(const sf::Vector3i& pos);
+  int index_at_pos(const sf::Vector3i& pos);
 
-  // Needs Implementation
-  // sf::Vector3i pos_at_index(int index);
+  sf::Vector3i pos_at_index(int index);
 
-  std::vector<sf::Vector3i> get_neighbors(sf::Vector3i pos);
-  bool are_neighbors(sf::Vector3i pos1, sf::Vector3i pos2);
-  bool is_path_free(sf::Vector3i pos1, sf::Vector3i pos2);
+  std::vector<sf::Vector3i> get_neighbors(const sf::Vector3i& pos);
+  bool are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
+  bool is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
 
-  void set_wall(sf::Vector3i pos1, sf::Vector3i pos2);
-  void remove_wall(sf::Vector3i pos1, sf::Vector3i pos2);
+  void set_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
+  void remove_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
 
   void remove_random_walls(int amount);
 

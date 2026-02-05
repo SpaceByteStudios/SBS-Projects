@@ -1,10 +1,11 @@
 #include "maze3d.hh"
 
+#include <stdlib.h>
+
 #include <SFML/System/Vector3.hpp>
-#include <random>
 #include <vector>
 
-Maze3D ::Maze3D() : grid_size(sf::Vector3i(3, 3, 3)) {
+Maze3D::Maze3D() : grid_size(sf::Vector3i(3, 3, 3)) {
   grid.resize(grid_size.x * grid_size.y * grid_size.z);
 
   for (int y = 0; y < grid_size.y; y++) {
@@ -18,7 +19,7 @@ Maze3D ::Maze3D() : grid_size(sf::Vector3i(3, 3, 3)) {
   }
 }
 
-Maze3D ::Maze3D(sf::Vector3i new_grid_size) : grid_size(new_grid_size) {
+Maze3D::Maze3D(sf::Vector3i new_grid_size) : grid_size(new_grid_size) {
   grid.resize(grid_size.x * grid_size.y * grid_size.z);
 
   for (int y = 0; y < grid_size.y; y++) {
@@ -32,7 +33,7 @@ Maze3D ::Maze3D(sf::Vector3i new_grid_size) : grid_size(new_grid_size) {
   }
 }
 
-bool Maze3D ::is_inside(sf::Vector3i pos) {
+bool Maze3D::is_inside(const sf::Vector3i& pos) {
   if (pos.x < 0 || pos.x >= grid_size.x || pos.y < 0 || pos.y >= grid_size.y || pos.z < 0 || pos.z >= grid_size.z) {
     return false;
   }
@@ -40,7 +41,7 @@ bool Maze3D ::is_inside(sf::Vector3i pos) {
   return true;
 }
 
-int Maze3D ::index_at_pos(sf::Vector3i pos) {
+int Maze3D::index_at_pos(const sf::Vector3i& pos) {
   if (is_inside(pos)) {
     return pos.x + pos.z * grid_size.x + pos.y * grid_size.x * grid_size.z;
   } else {
@@ -48,15 +49,20 @@ int Maze3D ::index_at_pos(sf::Vector3i pos) {
   }
 }
 
-// sf::Vector3i Maze3D::pos_at_index(int index) {
-//   if (index > grid.size() - 1) {
-//     return sf::Vector3i(0, 0);
-//   } else {
-//     return sf::Vector3i(index % grid_size.x, index / grid_size.x);
-//   }
-//}
+sf::Vector3i Maze3D::pos_at_index(int index) {
+  if (index > grid.size() - 1) {
+    return sf::Vector3i(0, 0, 0);
+  } else {
+    int pos_y = index / (grid_size.x * grid_size.z);
+    int remain = index % (grid_size.x * grid_size.z);
 
-std::vector<sf::Vector3i> Maze3D ::get_neighbors(sf::Vector3i pos) {
+    int pos_x = remain % grid_size.x;
+    int pos_z = remain / grid_size.x;
+    return sf::Vector3i(pos_x, pos_y, pos_z);
+  }
+}
+
+std::vector<sf::Vector3i> Maze3D::get_neighbors(const sf::Vector3i& pos) {
   std::vector<sf::Vector3i> cells_pos = {{pos.x, pos.y - 1, pos.z}, {pos.x, pos.y + 1, pos.z},
                                          {pos.x - 1, pos.y, pos.z}, {pos.x + 1, pos.y, pos.z},
                                          {pos.x, pos.y, pos.z - 1}, {pos.x, pos.y, pos.z + 1}};
@@ -72,26 +78,20 @@ std::vector<sf::Vector3i> Maze3D ::get_neighbors(sf::Vector3i pos) {
   return neigbor_cells;
 }
 
-bool Maze3D ::are_neighbors(sf::Vector3i pos1, sf::Vector3i pos2) {
-  return true;
-
-  // Needs testing
+bool Maze3D::are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   int index_cell1 = index_at_pos(pos1);
   int index_cell2 = index_at_pos(pos2);
 
   if (index_cell2 - 1 == index_cell1 || index_cell2 + 1 == index_cell1 || index_cell2 - grid_size.x == index_cell1 ||
-      index_cell2 + grid_size.x == index_cell1 || index_cell2 + grid_size.x * grid_size.z ||
-      index_cell2 - grid_size.x * grid_size.z) {
+      index_cell2 + grid_size.x == index_cell1 || index_cell2 + grid_size.x * grid_size.z == index_cell1 ||
+      index_cell2 - grid_size.x * grid_size.z == index_cell1) {
     return true;
   } else {
     return false;
   }
 }
 
-bool Maze3D ::is_path_free(sf::Vector3i pos1, sf::Vector3i pos2) {
-  return true;
-
-  // Not working in 3D
+bool Maze3D::is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   if (!is_inside(pos1)) {
     return false;
   }
@@ -139,7 +139,7 @@ bool Maze3D ::is_path_free(sf::Vector3i pos1, sf::Vector3i pos2) {
   return false;
 }
 
-void Maze3D::set_wall(sf::Vector3i pos1, sf::Vector3i pos2) {
+void Maze3D::set_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   return;
 
   // Not working in 3D
@@ -173,7 +173,7 @@ void Maze3D::set_wall(sf::Vector3i pos1, sf::Vector3i pos2) {
   }
 }
 
-void Maze3D::remove_wall(sf::Vector3i pos1, sf::Vector3i pos2) {
+void Maze3D::remove_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   return;
 
   // Not working in 3D
@@ -207,8 +207,6 @@ void Maze3D::remove_wall(sf::Vector3i pos1, sf::Vector3i pos2) {
 }
 
 void Maze3D::remove_random_walls(int amount) {
-  return;
-
   // should work when remove_wall implemented
   const int MAX_TRIES = 100;
 
