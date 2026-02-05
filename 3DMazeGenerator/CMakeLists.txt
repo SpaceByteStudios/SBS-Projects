@@ -27,47 +27,59 @@ else()
 endif()
 
 add_executable(
-  simulation
+  3dsimulation
   src/main.cpp
-  src/maze.cpp
-  src/maze_renderer.cpp
-  src/maze_generator.cpp
-  src/maze_solver.cpp
+  src/maze3d.cpp
+  src/maze3d_renderer.cpp
 )
 
-target_include_directories(simulation PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_link_libraries(simulation PRIVATE SFML::Graphics)
+target_include_directories(3dsimulation PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(3dsimulation PRIVATE SFML::Graphics)
 
 # Compile Test Program
 add_executable(
-  test_solve_times
-  test/test_solve_times.cpp
-  src/maze.cpp
-  src/maze_renderer.cpp
-  src/maze_generator.cpp
-  src/maze_solver.cpp
+  test_maze
+  test/test_maze.cpp
+  src/maze3d.cpp
 )
 
-set_target_properties(test_solve_times PROPERTIES
+set_target_properties(test_maze PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
-target_compile_features(test_solve_times PRIVATE cxx_std_17)
-target_link_libraries(test_solve_times PRIVATE SFML::Graphics)
+target_include_directories(test_maze PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(test_maze PRIVATE SFML::Graphics)
 
 # Compile Test Program
 add_executable(
-  test_generate_times
-  test/test_generate_times.cpp
-  src/maze.cpp
-  src/maze_renderer.cpp
-  src/maze_generator.cpp
-  src/maze_solver.cpp
+  test_3dsolve_times
+  test/test_3dsolve_times.cpp
+  src/maze3d.cpp
+  src/maze3d_renderer.cpp
+  src/maze3d_generator.cpp
+  src/maze3d_solver.cpp
 )
 
-set_target_properties(test_generate_times PROPERTIES
+set_target_properties(test_3dsolve_times PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
 )
 
-target_compile_features(test_generate_times PRIVATE cxx_std_17)
-target_link_libraries(test_generate_times PRIVATE SFML::Graphics)
+target_include_directories(test_3dsolve_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(test_3dsolve_times PRIVATE SFML::Graphics)
+
+# Compile Test Program
+add_executable(
+  test_3dgenerate_times
+  test/test_3dgenerate_times.cpp
+  src/maze3d.cpp
+  src/maze3d_renderer.cpp
+  src/maze3d_generator.cpp
+  src/maze3d_solver.cpp
+)
+
+set_target_properties(test_3dgenerate_times PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
+)
+
+target_include_directories(test_3dgenerate_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(test_3dgenerate_times PRIVATE SFML::Graphics)

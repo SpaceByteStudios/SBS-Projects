@@ -4,6 +4,7 @@
 #include <vector>
 
 struct Cell {
+  // 4bit -> 1: Top, 2: Right, 4:Bottom, 8: Left
   unsigned char walls_bitmap;
 };
 

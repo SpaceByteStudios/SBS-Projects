@@ -1,12 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/System/Vector3.hpp>
 
-#include "maze.hh"
-#include "maze_generator.hh"
-#include "maze_renderer.hh"
-#include "maze_solver.hh"
+#include "maze3d.hh"
+#include "maze3d_renderer.hh"
 
-sf::Vector2u maze_size = {100, 100};
+sf::Vector3i maze_size{4, 4, 4};
+sf::Vector3f cells_size{1.0f, 1.0f, 1.0f};
 
 int main() {
   srand(time(nullptr));
@@ -16,36 +16,15 @@ int main() {
 
   window.setFramerateLimit(0);
 
-  Maze maze(maze_size);
-  Maze maze2(maze_size);
-  MazeRenderer renderer(window, maze);
-  MazeRenderer renderer2(window, maze2);
+  Maze3D maze(maze_size);
+  Maze3DRenderer renderer(window, maze, cells_size);
 
-  sf::Color grid_color = sf::Color(255, 255, 255);
-  sf::Color path_color = sf::Color(64, 255, 64);
-  sf::Color path2_color = sf::Color(255, 64, 64);
-
-  renderer.set_color(grid_color, path_color);
-  renderer2.set_color(grid_color, path2_color);
-
-  maze.start_cell = sf::Vector2u(0, 0);
-  maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
-
-  maze2.start_cell = maze.start_cell;
-  maze2.end_cell = maze.end_cell;
-
-  generate_depth_first_maze(maze);
-  maze.remove_random_walls(50);
-  maze2.grid = maze.grid;
-
-  solve_breadth_first_maze(maze);
-  solve_dijkstra_maze(maze2);
+  maze.start_cell = sf::Vector3i(0, 0, 0);
+  maze.end_cell = sf::Vector3i(maze.grid_size.x - 1, maze.grid_size.y - 1, maze.grid_size.z - 1);
 
   window.clear();
 
   renderer.draw_grid(maze);
-  renderer2.draw_path(maze2);
-  renderer.draw_path(maze);
 
   window.display();
 
@@ -57,18 +36,7 @@ int main() {
         if (keyPressed->scancode == sf::Keyboard::Scancode::Escape) {
           window.close();
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
-          generate_depth_first_maze(maze);
-          maze.remove_random_walls(50);
-          maze2.grid = maze.grid;
-
-          solve_breadth_first_maze(maze);
-          solve_astar_maze(maze2);
-
           window.clear();
-
-          renderer.draw_grid(maze);
-          renderer2.draw_path(maze2);
-          renderer.draw_path(maze);
 
           window.display();
         }

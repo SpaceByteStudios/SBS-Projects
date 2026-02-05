@@ -1,11 +1,10 @@
 #include <chrono>
 #include <iostream>
 
-#include "maze.hh"
-#include "maze_generator.hh"
-#include "maze_solver.hh"
+#include "maze3d.hh"
+#include "maze3d_generator.hh"
 
-sf::Vector2u maze_size = {10, 10};
+sf::Vector3i maze_size = {10, 10, 10};
 
 int main() {
   srand(time(nullptr));
@@ -19,10 +18,10 @@ int main() {
   std::cout << "How many repetitions: ";
   std::cin >> REPETITIONS;
 
-  Maze maze(maze_size);
+  Maze3D maze(maze_size);
 
-  maze.start_cell = sf::Vector2u(0, 0);
-  maze.end_cell = sf::Vector2u(maze.grid_size.x - 1, maze.grid_size.y - 1);
+  maze.start_cell = sf::Vector3i(0, 0, 0);
+  maze.end_cell = sf::Vector3i(maze.grid_size.x - 1, maze.grid_size.y - 1, maze.grid_size.z - 1);
 
   double depth_first_average = 0.0;
   double prim_average = 0.0;
