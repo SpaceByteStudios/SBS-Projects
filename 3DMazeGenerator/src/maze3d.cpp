@@ -112,25 +112,37 @@ bool Maze3D::is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   unsigned char& cell1_bitmap = grid[index_cell1].walls_bitmap;
   unsigned char& cell2_bitmap = grid[index_cell2].walls_bitmap;
 
-  if (dir == sf::Vector3i(0, -1, 0)) {
-    if (!(cell1_bitmap & (1 << 0)) && !(cell2_bitmap & (1 << 2))) {
+  if (dir == sf::Vector3i(-1, 0, 0)) {
+    if (!(cell1_bitmap & (1 << 4)) && !(cell2_bitmap & (1 << 2))) {
       return true;
     }
   }
 
   if (dir == sf::Vector3i(1, 0, 0)) {
-    if (!(cell1_bitmap & (1 << 1)) && !(cell2_bitmap & (1 << 3))) {
+    if (!(cell1_bitmap & (1 << 2)) && !(cell2_bitmap & (1 << 4))) {
+      return true;
+    }
+  }
+
+  if (dir == sf::Vector3i(0, -1, 0)) {
+    if (!(cell1_bitmap & (1 << 0)) && !(cell2_bitmap & (1 << 5))) {
       return true;
     }
   }
 
   if (dir == sf::Vector3i(0, 1, 0)) {
-    if (!(cell1_bitmap & (1 << 2)) && !(cell2_bitmap & (1 << 0))) {
+    if (!(cell1_bitmap & (1 << 5)) && !(cell2_bitmap & (1 << 0))) {
       return true;
     }
   }
 
-  if (dir == sf::Vector3i(-1, 0, 0)) {
+  if (dir == sf::Vector3i(0, 0, -1)) {
+    if (!(cell1_bitmap & (1 << 1)) && !(cell2_bitmap & (1 << 3))) {
+      return true;
+    }
+  }
+
+  if (dir == sf::Vector3i(0, 0, 1)) {
     if (!(cell1_bitmap & (1 << 3)) && !(cell2_bitmap & (1 << 1))) {
       return true;
     }
@@ -140,9 +152,8 @@ bool Maze3D::is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
 }
 
 void Maze3D::set_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
-  return;
-
-  // Not working in 3D
+  //       Top,   Front, Right, Back,  Left,  Bottom
+  // 6bit: 0: +y, 1: +x, 2: +z, 3: -x, 4: -z, 5: -y
 
   int cell1_index = index_at_pos(pos1);
   int cell2_index = index_at_pos(pos2);
@@ -152,31 +163,41 @@ void Maze3D::set_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   unsigned char& cell1_bitmap = grid[cell1_index].walls_bitmap;
   unsigned char& cell2_bitmap = grid[cell2_index].walls_bitmap;
 
-  if (dir == sf::Vector3i(0, -1, 0)) {
-    cell1_bitmap |= (1 << 0);
+  if (dir == sf::Vector3i(-1, 0, 0)) {
+    cell1_bitmap |= (1 << 4);
     cell2_bitmap |= (1 << 2);
   }
 
   if (dir == sf::Vector3i(1, 0, 0)) {
+    cell1_bitmap |= (1 << 2);
+    cell2_bitmap |= (1 << 4);
+  }
+
+  if (dir == sf::Vector3i(0, -1, 0)) {
+    cell1_bitmap |= (1 << 0);
+    cell2_bitmap |= (1 << 5);
+  }
+
+  if (dir == sf::Vector3i(0, 1, 0)) {
+    cell1_bitmap |= (1 << 5);
+    cell2_bitmap |= (1 << 0);
+  }
+
+  if (dir == sf::Vector3i(0, 0, -1)) {
     cell1_bitmap |= (1 << 1);
     cell2_bitmap |= (1 << 3);
   }
 
-  if (dir == sf::Vector3i(0, 1, 0)) {
-    cell1_bitmap |= (1 << 2);
-    cell2_bitmap |= (1 << 0);
-  }
-
-  if (dir == sf::Vector3i(-1, 0, 0)) {
+  if (dir == sf::Vector3i(0, 0, 1)) {
     cell1_bitmap |= (1 << 3);
     cell2_bitmap |= (1 << 1);
   }
 }
 
 void Maze3D::remove_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
-  return;
+  // Top, Front, Right, Back, Left, Bottom
+  // 6bit: 1: +y, 2: +x, 3: +z, 4: -x, 5: -z, 6: -y
 
-  // Not working in 3D
   int cell1_index = index_at_pos(pos1);
   int cell2_index = index_at_pos(pos2);
 
@@ -185,22 +206,32 @@ void Maze3D::remove_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   unsigned char& cell1_bitmap = grid[cell1_index].walls_bitmap;
   unsigned char& cell2_bitmap = grid[cell2_index].walls_bitmap;
 
-  if (dir == sf::Vector3i(0, -1, 0)) {
-    cell1_bitmap &= ~(1 << 0);
+  if (dir == sf::Vector3i(-1, 0, 0)) {
+    cell1_bitmap &= ~(1 << 4);
     cell2_bitmap &= ~(1 << 2);
   }
 
   if (dir == sf::Vector3i(1, 0, 0)) {
+    cell1_bitmap &= ~(1 << 2);
+    cell2_bitmap &= ~(1 << 4);
+  }
+
+  if (dir == sf::Vector3i(0, -1, 0)) {
+    cell1_bitmap &= ~(1 << 0);
+    cell2_bitmap &= ~(1 << 5);
+  }
+
+  if (dir == sf::Vector3i(0, 1, 0)) {
+    cell1_bitmap &= ~(1 << 5);
+    cell2_bitmap &= ~(1 << 0);
+  }
+
+  if (dir == sf::Vector3i(0, 0, -1)) {
     cell1_bitmap &= ~(1 << 1);
     cell2_bitmap &= ~(1 << 3);
   }
 
-  if (dir == sf::Vector3i(0, 1, 0)) {
-    cell1_bitmap &= ~(1 << 2);
-    cell2_bitmap &= ~(1 << 0);
-  }
-
-  if (dir == sf::Vector3i(-1, 0, 0)) {
+  if (dir == sf::Vector3i(0, 0, 1)) {
     cell1_bitmap &= ~(1 << 3);
     cell2_bitmap &= ~(1 << 1);
   }

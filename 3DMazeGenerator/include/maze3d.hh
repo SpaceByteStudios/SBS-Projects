@@ -4,8 +4,8 @@
 #include <vector>
 
 struct Cell3D {
-  // Top, Front, Right, Back, Left, Bottom
-  // 6bit: 1: +y, 2: +x, 3: +z, 4: -x, 5: -z, 6: -y
+  //       Top,   Front, Right, Back,  Left,  Bottom
+  // 6bit: 0: +y, 1: +x, 2: +z, 3: -x, 4: -z, 5: -y
   unsigned char walls_bitmap;
 };
 
