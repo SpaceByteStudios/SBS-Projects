@@ -53,7 +53,8 @@ int main() {
 
     float delta_time = deltaClock.restart().asSeconds();
 
-    renderer.rotation.x += (3.14f / 16.0f) * delta_time;
+    renderer.rotation.y += (3.14f / 16.0f) * delta_time;
+    renderer.rotation.x += (3.14f / 12.0f) * delta_time;
 
     window.clear();
 

@@ -2,11 +2,11 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 #include "maze3d.hh"
@@ -41,7 +41,7 @@ sf::Vector3f ortho_project(const sf::Vector3f& v, const sf::Vector2u& window_siz
   float normalized_y = v.y * (2.0 / window_size.y);
 
   float new_x = (normalized_x + 1.0f) * 0.5f * window_size.x;
-  float new_y = (normalized_y + 1.0f) * 0.5f * window_size.y;
+  float new_y = (1.0f - (normalized_y + 1.0f) * 0.5f) * window_size.y;
   return {new_x, new_y, v.z};
 }
 
@@ -51,6 +51,17 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
                         maze.grid_size.x * maze.grid_size.y * maze.grid_size.z * vertices_per_cell);
 
   int cell_vertex = 0;
+
+  sf::Vector3f center = {maze.cell_size.x * maze.grid_size.x * 0.5f, maze.cell_size.y * maze.grid_size.y * 0.5f,
+                         maze.cell_size.z * maze.grid_size.z * 0.5f};
+
+  // Vertex indeces for walls
+  std::vector<std::vector<int>> walls = {{2, 3, 7, 6, 2, 7}, {4, 5, 7, 6, 4, 7}, {1, 3, 7, 5, 1, 7},
+                                         {0, 1, 3, 2, 0, 3}, {0, 2, 6, 4, 0, 6}, {0, 1, 5, 4, 0, 5}};
+
+  // Top: Green, Front: Red, Right: Blue, Back: Cyan,  Left: Yellow,  Bottom: Purple
+  std::vector<sf::Color> wall_colors = {sf::Color{0, 255, 0},   sf::Color{255, 0, 0},   sf::Color{0, 0, 255},
+                                        sf::Color{0, 255, 255}, sf::Color{255, 255, 0}, sf::Color{255, 0, 255}};
 
   for (int y = 0; y < maze.grid_size.y; y++) {
     for (int z = 0; z < maze.grid_size.z; z++) {
@@ -67,13 +78,6 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
             {(x + 1) * maze.cell_size.x, (y + 1) * maze.cell_size.y, z * maze.cell_size.z},
             {(x + 1) * maze.cell_size.x, (y + 1) * maze.cell_size.y, (z + 1) * maze.cell_size.z}};
 
-        // Vertex indeces for walls
-        std::vector<std::vector<int>> walls = {{2, 3, 7, 6, 2, 7}, {4, 5, 6, 7, 4, 6}, {1, 3, 5, 7, 1, 5},
-                                               {0, 1, 2, 3, 0, 2}, {0, 2, 4, 6, 0, 4}, {0, 1, 4, 5, 0, 4}};
-
-        sf::Vector3f center = {maze.cell_size.x * maze.grid_size.x * 0.5f, maze.cell_size.y * maze.grid_size.y * 0.5f,
-                               maze.cell_size.z * maze.grid_size.z * 0.5f};
-
         for (sf::Vector3f& v : vertex_pos) {
           v -= center;
           v = rotate_x(v, rotation.x);
@@ -81,16 +85,13 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
           v = rotate_z(v, rotation.z);
           v += center;
 
-          v = translate(v, {0, 0, 0});
+          v = translate(v, -center);
           v = ortho_project(v, window.getSize());
         }
 
-        // Top: Green, Front: Red, Right: Blue, Back: Cyan,  Left: Yellow,  Bottom: Purple
-        std::vector<sf::Color> wall_colors = {sf::Color{0, 255, 0},   sf::Color{255, 0, 0},   sf::Color{0, 0, 255},
-                                              sf::Color{0, 255, 255}, sf::Color{255, 255, 0}, sf::Color{255, 0, 255}};
-
         // Each Wall
-        for (int i = 0; i < 1; i++) {
+        int vertex_offset = 0;
+        for (int i = 0; i < 6; i++) {
           if (maze.grid[index].walls_bitmap & (1 << i)) {
             for (int j = 0; j < 5; j++) {
               int point = i * 6 + j * 2;
@@ -98,28 +99,13 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
               sf::Vector3f pos1 = vertex_pos[walls[i][j]];
               sf::Vector3f pos2 = vertex_pos[walls[i][j + 1]];
 
-              lines[cell_vertex + point].position = {pos1.x, pos1.y};
-              lines[cell_vertex + point + 1].position = {pos2.x, pos2.y};
+              lines[cell_vertex + vertex_offset].position = {pos1.x, pos1.y};
+              lines[cell_vertex + vertex_offset + 1].position = {pos2.x, pos2.y};
 
-              lines[cell_vertex + point].color = wall_colors[i];
-              lines[cell_vertex + point + 1].color = wall_colors[i];
-            }
-          }
-        }
+              lines[cell_vertex + vertex_offset].color = wall_colors[i];
+              lines[cell_vertex + vertex_offset + 1].color = wall_colors[i];
 
-        for (int i = 5; i < 6; i++) {
-          if (maze.grid[index].walls_bitmap & (1 << i)) {
-            for (int j = 0; j < 5; j++) {
-              int point = i * 6 + j * 2;
-
-              sf::Vector3f pos1 = vertex_pos[walls[i][j]];
-              sf::Vector3f pos2 = vertex_pos[walls[i][j + 1]];
-
-              lines[cell_vertex + point].position = {pos1.x, pos1.y};
-              lines[cell_vertex + point + 1].position = {pos2.x, pos2.y};
-
-              lines[cell_vertex + point].color = wall_colors[i];
-              lines[cell_vertex + point + 1].color = wall_colors[i];
+              vertex_offset += 2;
             }
           }
         }
@@ -130,6 +116,24 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
   }
 
   window.draw(lines);
+
+  sf::Vector3f center_pos = ortho_project({0.0f, 0.0f, 0.0f}, window.getSize());
+  sf::Vector3f x_pos = ortho_project({200.0f, 0.0f, 0.0f}, window.getSize());
+  sf::Vector3f y_pos = ortho_project({0.0f, 200.0f, 0.0f}, window.getSize());
+  sf::Vector3f z_pos = ortho_project({0.0f, 0.0f, 200.0f}, window.getSize());
+
+  sf::Vertex x_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Red),
+                         sf::Vertex({x_pos.x, x_pos.y}, sf::Color::Red)};
+
+  sf::Vertex y_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Green),
+                         sf::Vertex({y_pos.x, y_pos.y}, sf::Color::Green)};
+
+  sf::Vertex z_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Blue),
+                         sf::Vertex({z_pos.x, z_pos.y}, sf::Color::Blue)};
+
+  window.draw(x_axis, 2, sf::PrimitiveType::Lines);
+  window.draw(y_axis, 2, sf::PrimitiveType::Lines);
+  window.draw(z_axis, 2, sf::PrimitiveType::Lines);
 }
 
 void Maze3DRenderer::draw_path(const Maze3D& maze) {
