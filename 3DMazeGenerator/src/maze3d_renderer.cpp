@@ -36,13 +36,39 @@ sf::Vector3f translate(const sf::Vector3f& v, const sf::Vector3f& t) {
   return v + t;
 }
 
-sf::Vector3f ortho_project(const sf::Vector3f& v, const sf::Vector2u& window_size) {
+sf::Vector3f apply_camera(sf::Vector3f v, Camera camera) {
+  v = translate(v, -camera.position);
+  v = rotate_x(v, -camera.rotation.x);
+  v = rotate_y(v, -camera.rotation.y);
+  v = rotate_z(v, -camera.rotation.z);
+
+  return v;
+}
+
+sf::Vector3f ortho_projection(const sf::Vector3f& v, const sf::Vector2u& window_size) {
   float normalized_x = v.x * (2.0 / window_size.x);
   float normalized_y = v.y * (2.0 / window_size.y);
 
   float new_x = (normalized_x + 1.0f) * 0.5f * window_size.x;
   float new_y = (1.0f - (normalized_y + 1.0f) * 0.5f) * window_size.y;
   return {new_x, new_y, v.z};
+}
+
+sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 120.0f) {
+  float fov_rad = fov_deg * 3.14159 / 180.0f;
+  float fov = window_size.y / (2.0f * std::tan(fov_rad / 2.0f));
+
+  if (v.z <= 0.1) {
+    return {-1.0f, -1.0f, -1.0f};
+  }
+
+  float x_proj = (v.x * fov) / v.z;
+  float y_proj = (v.y * fov) / v.z;
+
+  float screen_x = (x_proj + 1.0f) * 0.5f * window_size.x;
+  float screen_y = (1.0f - (y_proj + 1.0f) * 0.5f) * window_size.y;
+
+  return {screen_x, screen_y, 0.0};
 }
 
 void Maze3DRenderer::draw_grid(const Maze3D& maze) {
@@ -80,13 +106,16 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
         for (sf::Vector3f& v : vertex_pos) {
           v -= center;
-          v = rotate_x(v, rotation.x);
-          v = rotate_y(v, rotation.y);
-          v = rotate_z(v, rotation.z);
+          v = rotate_x(v, cube_rotation.x);
+          v = rotate_y(v, cube_rotation.y);
+          v = rotate_z(v, cube_rotation.z);
           v += center;
-
           v = translate(v, -center);
-          v = ortho_project(v, window.getSize());
+          v = translate(v, {0.0f, 0.0f, 0.0f});
+
+          v = apply_camera(v, camera);
+
+          v = pers_projection(v, window.getSize(), 100.0f);
         }
 
         // Each Wall
@@ -99,11 +128,13 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
               sf::Vector3f pos1 = vertex_pos[walls[i][j]];
               sf::Vector3f pos2 = vertex_pos[walls[i][j + 1]];
 
-              lines[cell_vertex + vertex_offset].position = {pos1.x, pos1.y};
-              lines[cell_vertex + vertex_offset + 1].position = {pos2.x, pos2.y};
+              if (pos1.x != -1.0f && pos2.x != -1.0f) {
+                lines[cell_vertex + vertex_offset].position = {pos1.x, pos1.y};
+                lines[cell_vertex + vertex_offset + 1].position = {pos2.x, pos2.y};
 
-              lines[cell_vertex + vertex_offset].color = wall_colors[i];
-              lines[cell_vertex + vertex_offset + 1].color = wall_colors[i];
+                lines[cell_vertex + vertex_offset].color = wall_colors[i];
+                lines[cell_vertex + vertex_offset + 1].color = wall_colors[i];
+              }
 
               vertex_offset += 2;
             }
@@ -117,10 +148,10 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
   window.draw(lines);
 
-  sf::Vector3f center_pos = ortho_project({0.0f, 0.0f, 0.0f}, window.getSize());
-  sf::Vector3f x_pos = ortho_project({200.0f, 0.0f, 0.0f}, window.getSize());
-  sf::Vector3f y_pos = ortho_project({0.0f, 200.0f, 0.0f}, window.getSize());
-  sf::Vector3f z_pos = ortho_project({0.0f, 0.0f, 200.0f}, window.getSize());
+  sf::Vector3f center_pos = ortho_projection(apply_camera({0.0f, 0.0f, 0.0f}, camera), window.getSize());
+  sf::Vector3f x_pos = ortho_projection(apply_camera({200.0f, 0.0f, 0.0f}, camera), window.getSize());
+  sf::Vector3f y_pos = ortho_projection(apply_camera({0.0f, 200.0f, 0.0f}, camera), window.getSize());
+  sf::Vector3f z_pos = ortho_projection(apply_camera({0.0f, 0.0f, 200.0f}, camera), window.getSize());
 
   sf::Vertex x_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Red),
                          sf::Vertex({x_pos.x, x_pos.y}, sf::Color::Red)};

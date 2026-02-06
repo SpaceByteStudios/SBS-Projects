@@ -2,12 +2,13 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector3.hpp>
+#include <SFML/Window/Keyboard.hpp>
 
 #include "maze3d.hh"
 #include "maze3d_renderer.hh"
 
 sf::Vector3i maze_size{1, 1, 1};
-sf::Vector3f cell_size{100.0f, 100.0f, 100.0f};
+sf::Vector3f cell_size{10.0f, 10.0f, 10.0f};
 
 sf::Clock deltaClock;
 
@@ -53,8 +54,32 @@ int main() {
 
     float delta_time = deltaClock.restart().asSeconds();
 
-    renderer.rotation.y += (3.14f / 16.0f) * delta_time;
-    renderer.rotation.x += (3.14f / 12.0f) * delta_time;
+    renderer.cube_rotation.y += (3.14f / 16.0f) * delta_time;
+    renderer.cube_rotation.x += (3.14f / 12.0f) * delta_time;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+      renderer.camera.position.z += 5000.0f * delta_time;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+      renderer.camera.position.z -= 5000.0f * delta_time;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+      renderer.camera.position.x -= 500.0f * delta_time;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+      renderer.camera.position.x += 500.0f * delta_time;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
+      renderer.camera.position.y += 500.0f * delta_time;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl)) {
+      renderer.camera.position.y -= 500.0f * delta_time;
+    }
 
     window.clear();
 

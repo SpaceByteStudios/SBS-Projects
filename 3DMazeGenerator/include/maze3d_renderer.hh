@@ -6,6 +6,11 @@
 
 #include "maze3d.hh"
 
+struct Camera {
+  sf::Vector3f position;
+  sf::Vector3f rotation;
+};
+
 struct Maze3DRenderer {
   Maze3DRenderer(sf::RenderWindow& window);
 
@@ -19,5 +24,6 @@ struct Maze3DRenderer {
   sf::Color grid_color;
   sf::Color path_color;
 
-  sf::Vector3f rotation;
+  sf::Vector3f cube_rotation;
+  Camera camera;
 };
