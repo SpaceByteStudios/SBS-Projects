@@ -18,8 +18,8 @@ struct Maze3D {
   Maze3D();
   Maze3D(sf::Vector3i new_grid_size);
 
-  bool is_inside(const sf::Vector3i& pos);
-  int index_at_pos(const sf::Vector3i& pos);
+  bool is_inside(const sf::Vector3i& pos) const;
+  int index_at_pos(const sf::Vector3i& pos) const;
 
   sf::Vector3i pos_at_index(int index);
 

@@ -33,7 +33,7 @@ Maze3D::Maze3D(sf::Vector3i new_grid_size) : grid_size(new_grid_size) {
   }
 }
 
-bool Maze3D::is_inside(const sf::Vector3i& pos) {
+bool Maze3D::is_inside(const sf::Vector3i& pos) const {
   if (pos.x < 0 || pos.x >= grid_size.x || pos.y < 0 || pos.y >= grid_size.y || pos.z < 0 || pos.z >= grid_size.z) {
     return false;
   }
@@ -41,7 +41,7 @@ bool Maze3D::is_inside(const sf::Vector3i& pos) {
   return true;
 }
 
-int Maze3D::index_at_pos(const sf::Vector3i& pos) {
+int Maze3D::index_at_pos(const sf::Vector3i& pos) const {
   if (is_inside(pos)) {
     return pos.x + pos.z * grid_size.x + pos.y * grid_size.x * grid_size.z;
   } else {
