@@ -7,6 +7,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <cmath>
+#include <iostream>
 #include <vector>
 
 #include "maze3d.hh"
@@ -148,10 +149,10 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
   window.draw(lines);
 
-  sf::Vector3f center_pos = ortho_projection(apply_camera({0.0f, 0.0f, 0.0f}, camera), window.getSize());
-  sf::Vector3f x_pos = ortho_projection(apply_camera({200.0f, 0.0f, 0.0f}, camera), window.getSize());
-  sf::Vector3f y_pos = ortho_projection(apply_camera({0.0f, 200.0f, 0.0f}, camera), window.getSize());
-  sf::Vector3f z_pos = ortho_projection(apply_camera({0.0f, 0.0f, 200.0f}, camera), window.getSize());
+  sf::Vector3f center_pos = pers_projection(apply_camera({0.0f, 0.0f, 0.0f}, camera), window.getSize());
+  sf::Vector3f x_pos = pers_projection(apply_camera({200.0f, 0.0f, 0.0f}, camera), window.getSize());
+  sf::Vector3f y_pos = pers_projection(apply_camera({0.0f, 200.0f, 0.0f}, camera), window.getSize());
+  sf::Vector3f z_pos = pers_projection(apply_camera({0.0f, 0.0f, 200.0f}, camera), window.getSize());
 
   sf::Vertex x_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Red),
                          sf::Vertex({x_pos.x, x_pos.y}, sf::Color::Red)};
@@ -165,6 +166,9 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
   window.draw(x_axis, 2, sf::PrimitiveType::Lines);
   window.draw(y_axis, 2, sf::PrimitiveType::Lines);
   window.draw(z_axis, 2, sf::PrimitiveType::Lines);
+
+  std::cout << "Camera pos: " << camera.position.x << " " << camera.position.y << camera.position.z << std::endl;
+  std::cout << "Camera rot: " << camera.rotation.x << " " << camera.rotation.y << camera.rotation.z << std::endl;
 }
 
 void Maze3DRenderer::draw_path(const Maze3D& maze) {
