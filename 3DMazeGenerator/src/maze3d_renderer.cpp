@@ -54,8 +54,12 @@ sf::Vector3f ortho_projection(const sf::Vector3f& v, const sf::Vector2u& window_
 }
 
 sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f) {
-  if (v.z <= 0.0001) {
-    return {-1.0f, -1.0f, -1.0f};
+  // Dont ask me why I dont know it better
+  // float z = v.z * (-1.0f);
+  float z = v.z;
+
+  if (z >= -0.001) {
+    return {1.0f, 1.0f, 1.0f};
   }
 
   float aspect_ratio = static_cast<float>(window_size.x) / static_cast<float>(window_size.y);
@@ -63,13 +67,13 @@ sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_s
   float fov_rad = fov_deg * M_PI / 180.0f;
   float fov = 1.0 / std::tan(fov_rad / 2.0f);
 
-  float x_proj = (v.x * fov) / (v.z * aspect_ratio);
-  float y_proj = (v.y * fov) / v.z;
+  float x_proj = (v.x * fov) / (z * aspect_ratio);
+  float y_proj = (v.y * fov) / z;
 
-  float screen_x = (x_proj + 1.0f) * 0.5 * window_size.x;
-  float screen_y = (1.0f - y_proj) * 0.5 * window_size.y;
+  float screen_x = (1.0f - x_proj) * 0.5 * window_size.x;
+  float screen_y = (y_proj + 1.0f) * 0.5 * window_size.y;
 
-  return {screen_x, screen_y, v.z};
+  return {screen_x, screen_y, z};
 }
 
 void Maze3DRenderer::draw_grid(const Maze3D& maze) {
@@ -113,8 +117,6 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
           v += center;
           v = translate(v, -center);
 
-          v = translate(v, {0.0f, 0.0f, 500.0f});
-
           v = apply_camera(v, camera);
 
           v = pers_projection(v, window.getSize());
@@ -128,13 +130,11 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
               sf::Vector3f pos1 = vertex_pos[walls[i][j]];
               sf::Vector3f pos2 = vertex_pos[walls[i][j + 1]];
 
-              if (pos1.x != -1.0f && pos2.x != -1.0f) {
-                lines[cell_vertex + vertex_offset].position = {pos1.x, pos1.y};
-                lines[cell_vertex + vertex_offset + 1].position = {pos2.x, pos2.y};
+              lines[cell_vertex + vertex_offset].position = {pos1.x, pos1.y};
+              lines[cell_vertex + vertex_offset + 1].position = {pos2.x, pos2.y};
 
-                lines[cell_vertex + vertex_offset].color = wall_colors[i];
-                lines[cell_vertex + vertex_offset + 1].color = wall_colors[i];
-              }
+              lines[cell_vertex + vertex_offset].color = wall_colors[i];
+              lines[cell_vertex + vertex_offset + 1].color = wall_colors[i];
 
               vertex_offset += 2;
             }
@@ -245,10 +245,6 @@ void Maze3DRenderer::move_camera_rel(const sf::Vector3f& movement) {
   forward = forward.normalized();
   right = right.normalized();
   up = up.normalized();
-
-  std::cout << "Camera forward: " << forward.x << " " << forward.y << " " << forward.z << std::endl;
-  std::cout << "Camera right: " << right.x << " " << right.y << " " << right.z << std::endl;
-  std::cout << "Camera up: " << up.x << " " << up.y << " " << up.z << std::endl;
 
   camera.position += right * movement.x;
   camera.position += up * movement.y;

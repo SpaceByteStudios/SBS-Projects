@@ -9,7 +9,7 @@
 #include "maze3d.hh"
 #include "maze3d_renderer.hh"
 
-const sf::Vector3i maze_size{1, 1, 1};
+const sf::Vector3i maze_size{2, 2, 2};
 const sf::Vector3f cell_size{1.0f, 1.0f, 1.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
@@ -60,7 +60,7 @@ int main() {
     }
   }
 
-  renderer.camera.position = {0.0f, 1.0f, -5.0f};
+  renderer.camera.position = {1.0f, 1.0f, 5.0f};
   renderer.camera.rotation = {0.0f, 0.0f, 0.0f};
 
   while (window.isOpen()) {
@@ -129,8 +129,9 @@ int main() {
 
     renderer.draw_axis();
 
-    renderer.draw_plane(plane_pos, sf::Color{255, 0, 255});
-    renderer.draw_plane(front_plane_pos, sf::Color{0, 255, 0});
+    // renderer.draw_plane(plane_pos, sf::Color{255, 0, 255});
+    // renderer.draw_plane(front_plane_pos, sf::Color{0, 255, 0});
+    renderer.draw_grid(maze);
 
     window.display();
   }
