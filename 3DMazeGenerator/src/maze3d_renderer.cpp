@@ -38,38 +38,38 @@ sf::Vector3f translate(const sf::Vector3f& v, const sf::Vector3f& t) {
 }
 
 sf::Vector3f apply_camera(sf::Vector3f v, Camera camera) {
-  v = translate(v, -camera.position);
-  v = rotate_x(v, -camera.rotation.x);
-  v = rotate_y(v, -camera.rotation.y);
+  v -= camera.position;
+
   v = rotate_z(v, -camera.rotation.z);
+  v = rotate_y(v, -camera.rotation.y);
+  v = rotate_x(v, -camera.rotation.x);
 
   return v;
 }
 
-sf::Vector3f ortho_projection(const sf::Vector3f& v, const sf::Vector2u& window_size) {
-  float normalized_x = v.x * (2.0 / window_size.x);
-  float normalized_y = v.y * (2.0 / window_size.y);
-
-  float new_x = (normalized_x + 1.0f) * 0.5f * window_size.x;
-  float new_y = (1.0f - (normalized_y + 1.0f) * 0.5f) * window_size.y;
-  return {new_x, new_y, v.z};
+sf::Vector3f ortho_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float zoom = 100.0f) {
+  float screen_x = (v.x * zoom) + (window_size.x / 2.0f);
+  float screen_y = (window_size.y / 2.0f) - (v.y * zoom);
+  return {screen_x, screen_y, v.z};
 }
 
-sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 120.0f) {
-  float fov_rad = fov_deg * 3.14159 / 180.0f;
-  float fov = window_size.y / (2.0f * std::tan(fov_rad / 2.0f));
-
-  if (v.z <= 0.1) {
+sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f) {
+  if (v.z <= 0.0001) {
     return {-1.0f, -1.0f, -1.0f};
   }
 
-  float x_proj = (v.x * fov) / v.z;
+  float aspect_ratio = static_cast<float>(window_size.x) / static_cast<float>(window_size.y);
+
+  float fov_rad = fov_deg * M_PI / 180.0f;
+  float fov = 1.0 / std::tan(fov_rad / 2.0f);
+
+  float x_proj = (v.x * fov) / (v.z * aspect_ratio);
   float y_proj = (v.y * fov) / v.z;
 
-  float screen_x = (x_proj + 1.0f) * 0.5f * window_size.x;
-  float screen_y = (1.0f - (y_proj + 1.0f) * 0.5f) * window_size.y;
+  float screen_x = (x_proj + 1.0f) * 0.5 * window_size.x;
+  float screen_y = (1.0f - y_proj) * 0.5 * window_size.y;
 
-  return {screen_x, screen_y, 0.0};
+  return {screen_x, screen_y, v.z};
 }
 
 void Maze3DRenderer::draw_grid(const Maze3D& maze) {
@@ -86,7 +86,7 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
   std::vector<std::vector<int>> walls = {{2, 3, 7, 6, 2, 7}, {4, 5, 7, 6, 4, 7}, {1, 3, 7, 5, 1, 7},
                                          {0, 1, 3, 2, 0, 3}, {0, 2, 6, 4, 0, 6}, {0, 1, 5, 4, 0, 5}};
 
-  // Top: Green, Front: Red, Right: Blue, Back: Cyan,  Left: Yellow,  Bottom: Purple
+  // Top: Green, Right: Red, Front: Blue, Left: Cyan,  Back: Yellow,  Bottom: Purple
   std::vector<sf::Color> wall_colors = {sf::Color{0, 255, 0},   sf::Color{255, 0, 0},   sf::Color{0, 0, 255},
                                         sf::Color{0, 255, 255}, sf::Color{255, 255, 0}, sf::Color{255, 0, 255}};
 
@@ -112,11 +112,12 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
           v = rotate_z(v, cube_rotation.z);
           v += center;
           v = translate(v, -center);
-          v = translate(v, {0.0f, 0.0f, 0.0f});
+
+          v = translate(v, {0.0f, 0.0f, 500.0f});
 
           v = apply_camera(v, camera);
 
-          v = pers_projection(v, window.getSize(), 100.0f);
+          v = pers_projection(v, window.getSize());
         }
 
         // Each Wall
@@ -124,8 +125,6 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
         for (int i = 0; i < 6; i++) {
           if (maze.grid[index].walls_bitmap & (1 << i)) {
             for (int j = 0; j < 5; j++) {
-              int point = i * 6 + j * 2;
-
               sf::Vector3f pos1 = vertex_pos[walls[i][j]];
               sf::Vector3f pos2 = vertex_pos[walls[i][j + 1]];
 
@@ -149,26 +148,8 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
   window.draw(lines);
 
-  sf::Vector3f center_pos = pers_projection(apply_camera({0.0f, 0.0f, 0.0f}, camera), window.getSize());
-  sf::Vector3f x_pos = pers_projection(apply_camera({200.0f, 0.0f, 0.0f}, camera), window.getSize());
-  sf::Vector3f y_pos = pers_projection(apply_camera({0.0f, 200.0f, 0.0f}, camera), window.getSize());
-  sf::Vector3f z_pos = pers_projection(apply_camera({0.0f, 0.0f, 200.0f}, camera), window.getSize());
-
-  sf::Vertex x_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Red),
-                         sf::Vertex({x_pos.x, x_pos.y}, sf::Color::Red)};
-
-  sf::Vertex y_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Green),
-                         sf::Vertex({y_pos.x, y_pos.y}, sf::Color::Green)};
-
-  sf::Vertex z_axis[] = {sf::Vertex({center_pos.x, center_pos.y}, sf::Color::Blue),
-                         sf::Vertex({z_pos.x, z_pos.y}, sf::Color::Blue)};
-
-  window.draw(x_axis, 2, sf::PrimitiveType::Lines);
-  window.draw(y_axis, 2, sf::PrimitiveType::Lines);
-  window.draw(z_axis, 2, sf::PrimitiveType::Lines);
-
-  std::cout << "Camera pos: " << camera.position.x << " " << camera.position.y << camera.position.z << std::endl;
-  std::cout << "Camera rot: " << camera.rotation.x << " " << camera.rotation.y << camera.rotation.z << std::endl;
+  //  std::cout << "Camera rot: " << camera.rotation.x << " " << camera.rotation.y << " " << camera.rotation.z <<
+  //  std::endl;
 }
 
 void Maze3DRenderer::draw_path(const Maze3D& maze) {
@@ -198,7 +179,82 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
   window.draw(line_path);
 }
 
+void Maze3DRenderer::draw_axis() {
+  sf::Vector3f center_pos = {0.0f, 0.0f, 0.0f};
+  sf::Vector3f x_pos = {2.0f, 0.0f, 0.0f};
+  sf::Vector3f y_pos = {0.0f, 2.0f, 0.0f};
+  sf::Vector3f z_pos = {0.0f, 0.0f, 2.0f};
+
+  sf::Vector3f proj_center = pers_projection(apply_camera(center_pos, camera), window.getSize());
+  sf::Vector3f proj_x = pers_projection(apply_camera(x_pos, camera), window.getSize());
+  sf::Vector3f proj_y = pers_projection(apply_camera(y_pos, camera), window.getSize());
+  sf::Vector3f proj_z = pers_projection(apply_camera(z_pos, camera), window.getSize());
+
+  sf::Vertex x_axis[] = {sf::Vertex({proj_center.x, proj_center.y}, sf::Color::Red),
+                         sf::Vertex({proj_x.x, proj_x.y}, sf::Color::Red)};
+
+  sf::Vertex y_axis[] = {sf::Vertex({proj_center.x, proj_center.y}, sf::Color::Green),
+                         sf::Vertex({proj_y.x, proj_y.y}, sf::Color::Green)};
+
+  sf::Vertex z_axis[] = {sf::Vertex({proj_center.x, proj_center.y}, sf::Color::Blue),
+                         sf::Vertex({proj_z.x, proj_z.y}, sf::Color::Blue)};
+
+  window.draw(x_axis, 2, sf::PrimitiveType::Lines);
+  window.draw(y_axis, 2, sf::PrimitiveType::Lines);
+  window.draw(z_axis, 2, sf::PrimitiveType::Lines);
+}
+
+void Maze3DRenderer::draw_plane(std::vector<sf::Vector3f> vertex_pos, const sf::Color& color) {
+  sf::VertexArray lines(sf::PrimitiveType::Lines, vertex_pos.size() * 2);
+
+  for (sf::Vector3f& v : vertex_pos) {
+    v = apply_camera(v, camera);
+
+    v = pers_projection(v, window.getSize());
+  }
+
+  for (int i = 0; i < vertex_pos.size() - 1; i++) {
+    int offset = i * 2;
+    lines[offset].position = {vertex_pos[i].x, vertex_pos[i].y};
+    lines[offset + 1].position = {vertex_pos[i + 1].x, vertex_pos[i + 1].y};
+
+    lines[offset].color = color;
+    lines[offset + 1].color = color;
+  }
+
+  window.draw(lines);
+}
+
 void Maze3DRenderer::set_color(const sf::Color& new_grid_color, const sf::Color& new_path_color) {
   grid_color = new_grid_color;
   path_color = new_path_color;
+}
+
+void Maze3DRenderer::move_camera(const sf::Vector3f& movement) {
+  camera.position += movement;
+}
+
+void Maze3DRenderer::move_camera_rel(const sf::Vector3f& movement) {
+  float pitch = camera.rotation.x;
+  float yaw = camera.rotation.y;
+
+  sf::Vector3f forward = {std::cos(pitch) * std::sin(yaw), -std::sin(pitch), std::cos(pitch) * std::cos(yaw)};
+  sf::Vector3f right = {std::cos(yaw), 0.0f, -std::sin(yaw)};
+  sf::Vector3f up = {std::sin(pitch) * std::sin(yaw), std::cos(pitch), std::sin(pitch) * std::cos(yaw)};
+
+  forward = forward.normalized();
+  right = right.normalized();
+  up = up.normalized();
+
+  std::cout << "Camera forward: " << forward.x << " " << forward.y << " " << forward.z << std::endl;
+  std::cout << "Camera right: " << right.x << " " << right.y << " " << right.z << std::endl;
+  std::cout << "Camera up: " << up.x << " " << up.y << " " << up.z << std::endl;
+
+  camera.position += right * movement.x;
+  camera.position += up * movement.y;
+  camera.position += forward * movement.z;
+}
+
+void Maze3DRenderer::rotate_camera(const sf::Vector3f& rotation) {
+  camera.rotation += rotation;
 }

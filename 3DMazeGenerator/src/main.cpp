@@ -4,14 +4,28 @@
 #include <SFML/System/Vector3.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <cmath>
+#include <vector>
 
 #include "maze3d.hh"
 #include "maze3d_renderer.hh"
 
-sf::Vector3i maze_size{1, 1, 1};
-sf::Vector3f cell_size{10.0f, 10.0f, 10.0f};
+const sf::Vector3i maze_size{1, 1, 1};
+const sf::Vector3f cell_size{1.0f, 1.0f, 1.0f};
+
+std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
+                                       {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}};
+
+std::vector<sf::Vector3f> front_plane_pos = {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f},
+                                             {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}};
 
 sf::Clock deltaClock;
+
+sf::Vector3f Right{1.0f, 0.0f, 0.0f};
+sf::Vector3f Up{0.0f, 1.0f, 0.0f};
+sf::Vector3f Front{0.0f, 0.0f, 1.0f};
+
+const float movement_speed = 5.0f;
+const float rotation_speed = M_PI / 4.0f;
 
 int main() {
   srand(time(nullptr));
@@ -29,6 +43,10 @@ int main() {
 
   renderer.set_color(grid_color, path_color);
 
+  Right *= movement_speed;
+  Up *= movement_speed;
+  Front *= movement_speed;
+
   maze.start_cell = sf::Vector3i(0, 0, 0);
   maze.end_cell = sf::Vector3i(maze.grid_size.x - 1, maze.grid_size.y - 1, maze.grid_size.z - 1);
   maze.cell_size = cell_size;
@@ -42,7 +60,8 @@ int main() {
     }
   }
 
-  renderer.camera.position = {0, 0, -500};
+  renderer.camera.position = {0.0f, 1.0f, -5.0f};
+  renderer.camera.rotation = {0.0f, 0.0f, 0.0f};
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -51,6 +70,10 @@ int main() {
       } else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
         if (keyPressed->scancode == sf::Keyboard::Scancode::Escape) {
           window.close();
+        } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
+          renderer.camera.position = {0.0f, 0.0f, 0.0f};
+          renderer.camera.rotation = {0.0f, 0.0f, 0.0f};
+          renderer.cube_rotation = {0.0f, 0.0f, 0.0f};
         }
       }
     }
@@ -62,49 +85,52 @@ int main() {
 
     // Camera Movement
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-      renderer.camera.position.z -= 500.0f * delta_time;
+      renderer.move_camera_rel(-Front * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-      renderer.camera.position.z += 500.0f * delta_time;
+      renderer.move_camera_rel(Front * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-      renderer.camera.position.x -= 500.0f * delta_time;
+      renderer.move_camera_rel(-Right * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-      renderer.camera.position.x += 500.0f * delta_time;
+      renderer.move_camera_rel(Right * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift)) {
-      renderer.camera.position.y += 500.0f * delta_time;
+      renderer.move_camera_rel(Up * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl)) {
-      renderer.camera.position.y -= 500.0f * delta_time;
+      renderer.move_camera_rel(-Up * delta_time);
     }
 
     // Camera rotation
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-      renderer.camera.rotation.x -= (M_PI / 32.0f) * delta_time;
+      renderer.rotate_camera(sf::Vector3f{-rotation_speed, 0.0, 0.0} * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
-      renderer.camera.rotation.x += (M_PI / 32.0f) * delta_time;
+      renderer.rotate_camera(sf::Vector3f{rotation_speed, 0.0, 0.0} * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-      renderer.camera.rotation.y += (M_PI / 32.0f) * delta_time;
+      renderer.rotate_camera(sf::Vector3f{0.0, -rotation_speed, 0.0} * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-      renderer.camera.rotation.y -= (M_PI / 32.0f) * delta_time;
+      renderer.rotate_camera(sf::Vector3f{0.0, rotation_speed, 0.0} * delta_time);
     }
 
     window.clear();
 
-    renderer.draw_grid(maze);
+    renderer.draw_axis();
+
+    renderer.draw_plane(plane_pos, sf::Color{255, 0, 255});
+    renderer.draw_plane(front_plane_pos, sf::Color{0, 255, 0});
 
     window.display();
   }
