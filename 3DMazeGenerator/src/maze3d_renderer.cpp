@@ -54,8 +54,6 @@ sf::Vector3f ortho_projection(const sf::Vector3f& v, const sf::Vector2u& window_
 }
 
 sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f) {
-  // Dont ask me why I dont know it better
-  // float z = v.z * (-1.0f);
   float z = v.z;
 
   if (z >= -0.001) {
@@ -119,7 +117,11 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
           v = apply_camera(v, camera);
 
-          v = pers_projection(v, window.getSize());
+          if (project_perspective) {
+            v = pers_projection(v, window.getSize());
+          } else {
+            v = ortho_projection(v, window.getSize());
+          }
         }
 
         // Each Wall
@@ -147,9 +149,6 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
   }
 
   window.draw(lines);
-
-  //  std::cout << "Camera rot: " << camera.rotation.x << " " << camera.rotation.y << " " << camera.rotation.z <<
-  //  std::endl;
 }
 
 void Maze3DRenderer::draw_path(const Maze3D& maze) {
@@ -180,24 +179,26 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
 }
 
 void Maze3DRenderer::draw_axis() {
-  sf::Vector3f center_pos = {0.0f, 0.0f, 0.0f};
-  sf::Vector3f x_pos = {2.0f, 0.0f, 0.0f};
-  sf::Vector3f y_pos = {0.0f, 2.0f, 0.0f};
-  sf::Vector3f z_pos = {0.0f, 0.0f, 2.0f};
+  std::vector<sf::Vector3f> pos = {{0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {0.0f, 2.0f, 0.0f}, {0.0f, 0.0f, 2.0f}};
 
-  sf::Vector3f proj_center = pers_projection(apply_camera(center_pos, camera), window.getSize());
-  sf::Vector3f proj_x = pers_projection(apply_camera(x_pos, camera), window.getSize());
-  sf::Vector3f proj_y = pers_projection(apply_camera(y_pos, camera), window.getSize());
-  sf::Vector3f proj_z = pers_projection(apply_camera(z_pos, camera), window.getSize());
+  for (sf::Vector3f& p : pos) {
+    p = apply_camera(p, camera);
 
-  sf::Vertex x_axis[] = {sf::Vertex({proj_center.x, proj_center.y}, sf::Color::Red),
-                         sf::Vertex({proj_x.x, proj_x.y}, sf::Color::Red)};
+    if (project_perspective) {
+      p = pers_projection(p, window.getSize());
+    } else {
+      p = ortho_projection(p, window.getSize());
+    }
+  }
 
-  sf::Vertex y_axis[] = {sf::Vertex({proj_center.x, proj_center.y}, sf::Color::Green),
-                         sf::Vertex({proj_y.x, proj_y.y}, sf::Color::Green)};
+  sf::Vertex x_axis[] = {sf::Vertex({pos[0].x, pos[0].y}, sf::Color::Red),
+                         sf::Vertex({pos[1].x, pos[1].y}, sf::Color::Red)};
 
-  sf::Vertex z_axis[] = {sf::Vertex({proj_center.x, proj_center.y}, sf::Color::Blue),
-                         sf::Vertex({proj_z.x, proj_z.y}, sf::Color::Blue)};
+  sf::Vertex y_axis[] = {sf::Vertex({pos[0].x, pos[0].y}, sf::Color::Green),
+                         sf::Vertex({pos[2].x, pos[2].y}, sf::Color::Green)};
+
+  sf::Vertex z_axis[] = {sf::Vertex({pos[0].x, pos[0].y}, sf::Color::Blue),
+                         sf::Vertex({pos[3].x, pos[3].y}, sf::Color::Blue)};
 
   window.draw(x_axis, 2, sf::PrimitiveType::Lines);
   window.draw(y_axis, 2, sf::PrimitiveType::Lines);
@@ -210,7 +211,11 @@ void Maze3DRenderer::draw_plane(std::vector<sf::Vector3f> vertex_pos, const sf::
   for (sf::Vector3f& v : vertex_pos) {
     v = apply_camera(v, camera);
 
-    v = pers_projection(v, window.getSize());
+    if (project_perspective) {
+      v = pers_projection(v, window.getSize());
+    } else {
+      v = ortho_projection(v, window.getSize());
+    }
   }
 
   for (int i = 0; i < vertex_pos.size() - 1; i++) {

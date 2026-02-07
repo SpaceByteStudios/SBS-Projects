@@ -74,6 +74,8 @@ int main() {
           renderer.camera.position = {0.0f, 0.0f, 0.0f};
           renderer.camera.rotation = {0.0f, 0.0f, 0.0f};
           renderer.cube_rotation = {0.0f, 0.0f, 0.0f};
+        } else if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
+          renderer.project_perspective = !renderer.project_perspective;
         }
       }
     }
@@ -110,19 +112,19 @@ int main() {
 
     // Camera rotation
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-      renderer.rotate_camera(sf::Vector3f{-rotation_speed, 0.0, 0.0} * delta_time);
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
       renderer.rotate_camera(sf::Vector3f{rotation_speed, 0.0, 0.0} * delta_time);
     }
 
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
+      renderer.rotate_camera(sf::Vector3f{-rotation_speed, 0.0, 0.0} * delta_time);
+    }
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
-      renderer.rotate_camera(sf::Vector3f{0.0, -rotation_speed, 0.0} * delta_time);
+      renderer.rotate_camera(sf::Vector3f{0.0, rotation_speed, 0.0} * delta_time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
-      renderer.rotate_camera(sf::Vector3f{0.0, rotation_speed, 0.0} * delta_time);
+      renderer.rotate_camera(sf::Vector3f{0.0, -rotation_speed, 0.0} * delta_time);
     }
 
     window.clear();
