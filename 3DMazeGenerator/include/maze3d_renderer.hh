@@ -19,7 +19,7 @@ struct Maze3DRenderer {
   void draw_path(const Maze3D& maze);
 
   void draw_axis();
-  void draw_plane(std::vector<sf::Vector3f> vertex_pos, const sf::Color& color);
+  void draw_lines(std::vector<sf::Vector3f> vertex_pos, const sf::Color& color);
 
   void set_color(const sf::Color& new_grid_color, const sf::Color& new_path_color);
 

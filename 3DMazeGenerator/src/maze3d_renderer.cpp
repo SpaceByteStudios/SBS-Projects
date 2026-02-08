@@ -7,7 +7,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <cmath>
-#include <iostream>
+#include <numbers>
 #include <vector>
 
 #include "maze3d.hh"
@@ -15,66 +15,86 @@
 Maze3DRenderer::Maze3DRenderer(sf::RenderWindow& new_window) : window(new_window) {
 }
 
-sf::Vector3f rotate_x(const sf::Vector3f& v, float angle) {
+void rotate_x(sf::Vector3f& v, float angle) {
   float new_y = v.y * std::cos(angle) - v.z * std::sin(angle);
   float new_z = v.y * std::sin(angle) + v.z * std::cos(angle);
-  return {v.x, new_y, new_z};
+  v = {v.x, new_y, new_z};
 }
 
-sf::Vector3f rotate_y(const sf::Vector3f& v, float angle) {
+void rotate_y(sf::Vector3f& v, float angle) {
   float new_x = v.x * std::cos(angle) + v.z * std::sin(angle);
   float new_z = v.z * std::cos(angle) - v.x * std::sin(angle);
-  return {new_x, v.y, new_z};
+  v = {new_x, v.y, new_z};
 }
 
-sf::Vector3f rotate_z(const sf::Vector3f& v, float angle) {
+void rotate_z(sf::Vector3f& v, float angle) {
   float new_x = v.x * std::cos(angle) - v.y * std::sin(angle);
   float new_y = v.x * std::sin(angle) + v.y * std::cos(angle);
-  return {new_x, new_y, v.z};
+  v = {new_x, new_y, v.z};
 }
 
-sf::Vector3f translate(const sf::Vector3f& v, const sf::Vector3f& t) {
-  return v + t;
+void translate(sf::Vector3f& v, const sf::Vector3f& t) {
+  v += t;
 }
 
-sf::Vector3f apply_camera(sf::Vector3f v, Camera camera) {
+void apply_camera(sf::Vector3f& v, Camera& camera) {
   v -= camera.position;
 
-  v = rotate_z(v, -camera.rotation.z);
-  v = rotate_y(v, -camera.rotation.y);
-  v = rotate_x(v, -camera.rotation.x);
-
-  return v;
+  rotate_z(v, -camera.rotation.z);
+  rotate_y(v, -camera.rotation.y);
+  rotate_x(v, -camera.rotation.x);
 }
 
-sf::Vector3f ortho_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float zoom = 100.0f) {
+void ortho_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float zoom = 100.0f) {
   float screen_x = (v.x * zoom) + (window_size.x / 2.0f);
   float screen_y = (window_size.y / 2.0f) - (v.y * zoom);
-  return {screen_x, screen_y, v.z};
+  v = {screen_x, screen_y, v.z};
 }
 
-sf::Vector3f pers_projection(const sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f) {
-  float z = v.z;
-
-  if (z >= -0.001) {
-    return {1.0f, 1.0f, 1.0f};
-  }
-
+void pers_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f) {
   float aspect_ratio = static_cast<float>(window_size.x) / static_cast<float>(window_size.y);
 
-  float fov_rad = fov_deg * M_PI / 180.0f;
+  float fov_rad = fov_deg * std::numbers::pi_v<float> / 180.0f;
   float fov = 1.0 / std::tan(fov_rad / 2.0f);
 
-  float x_proj = (v.x * fov) / (z * aspect_ratio);
-  float y_proj = (v.y * fov) / z;
+  float x_proj = (v.x * fov) / (v.z * aspect_ratio);
+  float y_proj = (v.y * fov) / v.z;
 
   float screen_x = (1.0f - x_proj) * 0.5 * window_size.x;
   float screen_y = (y_proj + 1.0f) * 0.5 * window_size.y;
 
-  return {screen_x, screen_y, z};
+  v = {screen_x, screen_y, v.z};
+}
+
+bool clipLineToNearPlane(sf::Vector3f& v1, sf::Vector3f& v2, float near) {
+  float zNear = -near;
+
+  bool v1_inside = v1.z <= zNear;
+  bool v2_inside = v2.z <= zNear;
+
+  if (v1_inside && v2_inside)
+    return true; // keep line
+
+  if (!v1_inside && !v2_inside)
+    return false; // discard line
+
+  // Exactly one point is outside → clip
+  sf::Vector3f inside = v1_inside ? v1 : v2;
+  sf::Vector3f outside = v1_inside ? v2 : v1;
+
+  float t = (zNear - inside.z) / (outside.z - inside.z);
+  sf::Vector3f clipped = inside + t * (outside - inside);
+
+  if (v1_inside)
+    v2 = clipped;
+  else
+    v1 = clipped;
+
+  return true;
 }
 
 void Maze3DRenderer::draw_grid(const Maze3D& maze) {
+  // 6 Faces * 5 Lines * 2 Vertices per Line
   const int vertices_per_cell = 60;
   sf::VertexArray lines(sf::PrimitiveType::Lines,
                         maze.grid_size.x * maze.grid_size.y * maze.grid_size.z * vertices_per_cell);
@@ -109,38 +129,60 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
         for (sf::Vector3f& v : vertex_pos) {
           v -= center;
-          v = rotate_x(v, cube_rotation.x);
-          v = rotate_y(v, cube_rotation.y);
-          v = rotate_z(v, cube_rotation.z);
+          rotate_x(v, cube_rotation.x);
+          rotate_y(v, cube_rotation.y);
+          rotate_z(v, cube_rotation.z);
           v += center;
-          v = translate(v, -center);
-
-          v = apply_camera(v, camera);
-
-          if (project_perspective) {
-            v = pers_projection(v, window.getSize());
-          } else {
-            v = ortho_projection(v, window.getSize());
-          }
+          translate(v, -center);
         }
 
         // Each Wall
-        int vertex_offset = 0;
+        int wall_offset = 0;
         for (int i = 0; i < 6; i++) {
-          if (maze.grid[index].walls_bitmap & (1 << i)) {
-            for (int j = 0; j < 5; j++) {
-              sf::Vector3f pos1 = vertex_pos[walls[i][j]];
-              sf::Vector3f pos2 = vertex_pos[walls[i][j + 1]];
+          if (!(maze.grid[index].walls_bitmap & (1 << i))) {
+            // continue;
+          }
 
-              lines[cell_vertex + vertex_offset].position = {pos1.x, pos1.y};
-              lines[cell_vertex + vertex_offset + 1].position = {pos2.x, pos2.y};
+          const std::vector<int>& wall = walls[i];
+          const int lines_amount = wall.size() - 1;
 
-              lines[cell_vertex + vertex_offset].color = wall_colors[i];
-              lines[cell_vertex + vertex_offset + 1].color = wall_colors[i];
+          std::vector<bool> visible_lines(lines_amount, true);
+          std::vector<sf::Vector3f> plane_lines(2 * lines_amount);
 
-              vertex_offset += 2;
+          // Construct lines of plane
+          for (int j = 0; j < lines_amount; j++) {
+            plane_lines[2 * j] = vertex_pos[wall[j]];
+            plane_lines[2 * j + 1] = vertex_pos[wall[j + 1]];
+          }
+
+          // Project and clip all lines
+          for (int j = 0; j < lines_amount; j++) {
+            apply_camera(plane_lines[2 * j], camera);
+            apply_camera(plane_lines[2 * j + 1], camera);
+
+            if (project_perspective) {
+              visible_lines[j] = clipLineToNearPlane(plane_lines[2 * j], plane_lines[2 * j + 1], 0.01f);
+              pers_projection(plane_lines[2 * j], window.getSize());
+              pers_projection(plane_lines[2 * j + 1], window.getSize());
+            } else {
+              ortho_projection(plane_lines[2 * j], window.getSize());
+              ortho_projection(plane_lines[2 * j + 1], window.getSize());
             }
           }
+
+          // Add lines to VertexArray
+          for (int j = 0; j < lines_amount; j++) {
+            if (visible_lines[j]) {
+              lines[cell_vertex + wall_offset + 2 * j].position = {plane_lines[2 * j].x, plane_lines[2 * j].y};
+              lines[cell_vertex + wall_offset + 2 * j + 1].position = {plane_lines[2 * j + 1].x,
+                                                                       plane_lines[2 * j + 1].y};
+
+              lines[cell_vertex + wall_offset + 2 * j].color = wall_colors[i];
+              lines[cell_vertex + wall_offset + 2 * j + 1].color = wall_colors[i];
+            }
+          }
+
+          wall_offset += 2 * lines_amount;
         }
 
         cell_vertex += vertices_per_cell;
@@ -179,52 +221,83 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
 }
 
 void Maze3DRenderer::draw_axis() {
-  std::vector<sf::Vector3f> pos = {{0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {0.0f, 2.0f, 0.0f}, {0.0f, 0.0f, 2.0f}};
+  std::vector<sf::Vector3f> line_pos = {{0.0f, 0.0f, 0.0f}, {2.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
+                                        {0.0f, 2.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 2.0f}};
+  std::vector<bool> visible_axis(3, true);
 
-  for (sf::Vector3f& p : pos) {
-    p = apply_camera(p, camera);
+  for (int i = 0; i < 3; i++) {
+    apply_camera(line_pos[2 * i], camera);
+    apply_camera(line_pos[2 * i + 1], camera);
 
     if (project_perspective) {
-      p = pers_projection(p, window.getSize());
+      visible_axis[i] = clipLineToNearPlane(line_pos[2 * i], line_pos[2 * i + 1], 0.01f);
+      pers_projection(line_pos[2 * i], window.getSize());
+      pers_projection(line_pos[2 * i + 1], window.getSize());
+
     } else {
-      p = ortho_projection(p, window.getSize());
+      ortho_projection(line_pos[2 * i], window.getSize());
+      ortho_projection(line_pos[2 * i + 1], window.getSize());
     }
   }
 
-  sf::Vertex x_axis[] = {sf::Vertex({pos[0].x, pos[0].y}, sf::Color::Red),
-                         sf::Vertex({pos[1].x, pos[1].y}, sf::Color::Red)};
+  sf::Vertex x_axis[] = {sf::Vertex({line_pos[0].x, line_pos[0].y}, sf::Color::Red),
+                         sf::Vertex({line_pos[1].x, line_pos[1].y}, sf::Color::Red)};
 
-  sf::Vertex y_axis[] = {sf::Vertex({pos[0].x, pos[0].y}, sf::Color::Green),
-                         sf::Vertex({pos[2].x, pos[2].y}, sf::Color::Green)};
+  sf::Vertex y_axis[] = {sf::Vertex({line_pos[2].x, line_pos[2].y}, sf::Color::Green),
+                         sf::Vertex({line_pos[3].x, line_pos[3].y}, sf::Color::Green)};
 
-  sf::Vertex z_axis[] = {sf::Vertex({pos[0].x, pos[0].y}, sf::Color::Blue),
-                         sf::Vertex({pos[3].x, pos[3].y}, sf::Color::Blue)};
+  sf::Vertex z_axis[] = {sf::Vertex({line_pos[4].x, line_pos[4].y}, sf::Color::Blue),
+                         sf::Vertex({line_pos[5].x, line_pos[5].y}, sf::Color::Blue)};
 
-  window.draw(x_axis, 2, sf::PrimitiveType::Lines);
-  window.draw(y_axis, 2, sf::PrimitiveType::Lines);
-  window.draw(z_axis, 2, sf::PrimitiveType::Lines);
+  if (visible_axis[0]) {
+    window.draw(x_axis, 2, sf::PrimitiveType::Lines);
+  }
+
+  if (visible_axis[1]) {
+    window.draw(y_axis, 2, sf::PrimitiveType::Lines);
+  }
+
+  if (visible_axis[2]) {
+    window.draw(z_axis, 2, sf::PrimitiveType::Lines);
+  }
 }
 
-void Maze3DRenderer::draw_plane(std::vector<sf::Vector3f> vertex_pos, const sf::Color& color) {
+void Maze3DRenderer::draw_lines(std::vector<sf::Vector3f> vertex_pos, const sf::Color& color) {
   sf::VertexArray lines(sf::PrimitiveType::Lines, vertex_pos.size() * 2);
 
-  for (sf::Vector3f& v : vertex_pos) {
-    v = apply_camera(v, camera);
+  int lines_amount = vertex_pos.size() - 1;
+
+  std::vector<bool> visible_lines(lines_amount, true);
+  std::vector<sf::Vector3f> vertex_lines(2 * lines_amount);
+
+  for (int i = 0; i < vertex_pos.size() - 1; i++) {
+    sf::Vector3f& vertex1 = vertex_lines[2 * i];
+    sf::Vector3f& vertex2 = vertex_lines[2 * i + 1];
+
+    vertex1 = vertex_pos[i];
+    vertex2 = vertex_pos[i + 1];
+
+    apply_camera(vertex1, camera);
+    apply_camera(vertex2, camera);
 
     if (project_perspective) {
-      v = pers_projection(v, window.getSize());
+      visible_lines[i] = clipLineToNearPlane(vertex1, vertex2, 0.01f);
+      pers_projection(vertex1, window.getSize());
+      pers_projection(vertex2, window.getSize());
     } else {
-      v = ortho_projection(v, window.getSize());
+      ortho_projection(vertex1, window.getSize());
+      ortho_projection(vertex2, window.getSize());
     }
   }
 
   for (int i = 0; i < vertex_pos.size() - 1; i++) {
-    int offset = i * 2;
-    lines[offset].position = {vertex_pos[i].x, vertex_pos[i].y};
-    lines[offset + 1].position = {vertex_pos[i + 1].x, vertex_pos[i + 1].y};
+    if (visible_lines[i]) {
+      lines[2 * i].position = {vertex_lines[2 * i].x, vertex_lines[2 * i].y};
+      lines[2 * i + 1].position = {vertex_lines[2 * i + 1].x, vertex_lines[2 * i + 1].y};
 
-    lines[offset].color = color;
-    lines[offset + 1].color = color;
+      lines[2 * i].color = color;
+      lines[2 * i + 1].color = color;
+    }
   }
 
   window.draw(lines);

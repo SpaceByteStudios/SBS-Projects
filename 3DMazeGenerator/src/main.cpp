@@ -3,13 +3,13 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <cmath>
+#include <numbers>
 #include <vector>
 
 #include "maze3d.hh"
 #include "maze3d_renderer.hh"
 
-const sf::Vector3i maze_size{2, 2, 2};
+const sf::Vector3i maze_size{5, 5, 5};
 const sf::Vector3f cell_size{1.0f, 1.0f, 1.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
@@ -25,7 +25,7 @@ sf::Vector3f Up{0.0f, 1.0f, 0.0f};
 sf::Vector3f Front{0.0f, 0.0f, 1.0f};
 
 const float movement_speed = 5.0f;
-const float rotation_speed = M_PI / 4.0f;
+const float rotation_speed = std::numbers::pi_v<float> / 4.0f;
 
 int main() {
   srand(time(nullptr));
@@ -60,8 +60,8 @@ int main() {
     }
   }
 
-  renderer.camera.position = {1.0f, 1.0f, 5.0f};
-  renderer.camera.rotation = {0.0f, 0.0f, 0.0f};
+  renderer.camera.position = {7.5f, 2.5f, 7.5f};
+  renderer.camera.rotation = {0.0f, 1.0f, 0.0f};
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -82,8 +82,8 @@ int main() {
 
     float delta_time = deltaClock.restart().asSeconds();
 
-    renderer.cube_rotation.y += (M_PI / 16.0f) * delta_time;
-    renderer.cube_rotation.x += (M_PI / 12.0f) * delta_time;
+    // renderer.cube_rotation.y += (std::numbers::pi_v<float> / 16.0f) * delta_time;
+    // renderer.cube_rotation.x += (std::numbers::pi_v<float> / 12.0f) * delta_time;
 
     // Camera Movement
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
@@ -131,8 +131,8 @@ int main() {
 
     renderer.draw_axis();
 
-    // renderer.draw_plane(plane_pos, sf::Color{255, 0, 255});
-    // renderer.draw_plane(front_plane_pos, sf::Color{0, 255, 0});
+    // renderer.draw_lines(plane_pos, sf::Color{255, 0, 255});
+    // renderer.draw_lines(front_plane_pos, sf::Color{0, 255, 0});
     renderer.draw_grid(maze);
 
     window.display();
