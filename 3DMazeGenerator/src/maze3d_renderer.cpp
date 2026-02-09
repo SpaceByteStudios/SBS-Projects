@@ -94,8 +94,8 @@ bool clipLineToNearPlane(sf::Vector3f& v1, sf::Vector3f& v2, float near) {
 }
 
 void Maze3DRenderer::draw_grid(const Maze3D& maze) {
-  // 6 Faces * 5 Lines * 2 Vertices per Line
-  const int vertices_per_cell = 60;
+  // 6 Faces * 4 Lines * 2 Vertices per Line
+  const int vertices_per_cell = 6 * 4 * 2;
   sf::VertexArray lines(sf::PrimitiveType::Lines,
                         maze.grid_size.x * maze.grid_size.y * maze.grid_size.z * vertices_per_cell);
 
@@ -105,8 +105,8 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
                          maze.cell_size.z * maze.grid_size.z * 0.5f};
 
   // Vertex indeces for walls
-  std::vector<std::vector<int>> walls = {{2, 3, 7, 6, 2, 7}, {4, 5, 7, 6, 4, 7}, {1, 3, 7, 5, 1, 7},
-                                         {0, 1, 3, 2, 0, 3}, {0, 2, 6, 4, 0, 6}, {0, 1, 5, 4, 0, 5}};
+  std::vector<std::vector<int>> walls = {{2, 3, 7, 6, 2}, {4, 5, 7, 6, 4}, {1, 3, 7, 5, 1},
+                                         {0, 1, 3, 2, 0}, {0, 2, 6, 4, 0}, {0, 1, 5, 4, 0}};
 
   // Top: Green, Right: Red, Front: Blue, Left: Cyan,  Back: Yellow,  Bottom: Purple
   std::vector<sf::Color> wall_colors = {sf::Color{0, 255, 0},   sf::Color{255, 0, 0},   sf::Color{0, 0, 255},
@@ -177,8 +177,8 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
               lines[cell_vertex + wall_offset + 2 * j + 1].position = {plane_lines[2 * j + 1].x,
                                                                        plane_lines[2 * j + 1].y};
 
-              lines[cell_vertex + wall_offset + 2 * j].color = wall_colors[i];
-              lines[cell_vertex + wall_offset + 2 * j + 1].color = wall_colors[i];
+              lines[cell_vertex + wall_offset + 2 * j].color = grid_color;
+              lines[cell_vertex + wall_offset + 2 * j + 1].color = grid_color;
             }
           }
 
@@ -194,27 +194,49 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 }
 
 void Maze3DRenderer::draw_path(const Maze3D& maze) {
-  return;
+  // Draw start and end
+  // Project line_path vertices and draw
+  //  Add path rendering
 
-  // Add path rendering
-  sf::CircleShape start_circle(maze.cell_size.x / 2 - 2.0);
-  start_circle.setPosition({maze.start_cell.x * maze.cell_size.x + 3, maze.start_cell.y * maze.cell_size.y + 3});
-  start_circle.setFillColor(sf::Color(0, 128, 255));
+  // sf::CircleShape start_circle(maze.cell_size.x / 2 - 2.0);
+  // start_circle.setPosition({maze.start_cell.x * maze.cell_size.x + 3, maze.start_cell.y * maze.cell_size.y + 3});
+  // start_circle.setFillColor(sf::Color(0, 128, 255));
 
-  sf::CircleShape end_circle(maze.cell_size.x / 2 - 2.0);
-  end_circle.setPosition({maze.end_cell.x * maze.cell_size.x + 3, maze.end_cell.y * maze.cell_size.y + 3});
-  end_circle.setFillColor(sf::Color(255, 128, 0));
+  // sf::CircleShape end_circle(maze.cell_size.x / 2 - 2.0);
+  // end_circle.setPosition({maze.end_cell.x * maze.cell_size.x + 3, maze.end_cell.y * maze.cell_size.y + 3});
+  // end_circle.setFillColor(sf::Color(255, 128, 0));
 
-  window.draw(start_circle);
-  window.draw(end_circle);
+  // window.draw(start_circle);
+  // window.draw(end_circle);
+
+  sf::Vector3f center = {maze.cell_size.x * maze.grid_size.x * 0.5f, maze.cell_size.y * maze.grid_size.y * 0.5f,
+                         maze.cell_size.z * maze.grid_size.z * 0.5f};
 
   sf::VertexArray line_path(sf::PrimitiveType::LineStrip, maze.path.size());
+  int point_index = 0;
 
-  for (int i = 0; i < maze.path.size(); i++) {
-    sf::Vector2f path_point(maze.path[i].x * maze.cell_size.x + maze.cell_size.x / 2,
-                            maze.path[i].y * maze.cell_size.y + maze.cell_size.y / 2);
-    line_path[i].position = path_point + sf::Vector2f(1.0, 1.0);
-    line_path[i].color = path_color;
+  for (sf::Vector3i p : maze.path) {
+    sf::Vector3f path_point(p.x * maze.cell_size.x + maze.cell_size.x / 2,
+                            p.y * maze.cell_size.y + maze.cell_size.y / 2,
+                            p.z * maze.cell_size.z + maze.cell_size.z / 2);
+
+    rotate_x(path_point, cube_rotation.x);
+    rotate_y(path_point, cube_rotation.y);
+    rotate_z(path_point, cube_rotation.z);
+    translate(path_point, -center);
+
+    apply_camera(path_point, camera);
+
+    if (project_perspective) {
+      clipLineToNearPlane(path_point, path_point, 0.01f);
+      pers_projection(path_point, window.getSize());
+    } else {
+      ortho_projection(path_point, window.getSize());
+    }
+
+    line_path[point_index].position = {path_point.x, path_point.y};
+    line_path[point_index].color = path_color;
+    point_index += 1;
   }
 
   window.draw(line_path);

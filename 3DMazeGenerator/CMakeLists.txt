@@ -33,6 +33,8 @@ add_executable(
   src/main.cpp
   src/maze3d.cpp
   src/maze3d_renderer.cpp
+  src/maze3d_generator.cpp
+  src/maze3d_solver.cpp
 )
 
 target_include_directories(3dsimulation PRIVATE ${CMAKE_SOURCE_DIR}/include)

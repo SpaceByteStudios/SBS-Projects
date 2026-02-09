@@ -44,7 +44,7 @@ void solve_depth_first_maze(Maze3D& maze) {
 
   maze.path.push_back(maze.start_cell);
 
-  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y);
+  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y * maze.grid_size.z);
   visited_cells[maze.index_at_pos(maze.start_cell)] = true;
 
   while (!maze.path.empty()) {

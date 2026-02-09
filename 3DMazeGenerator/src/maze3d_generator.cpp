@@ -4,7 +4,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cstdlib>
-#include <iostream>
 #include <random>
 #include <unordered_map>
 #include <vector>
@@ -18,15 +17,15 @@ void generate_depth_first_maze(Maze3D& maze) {
       for (int x = 0; x < maze.grid_size.x; x++) {
         int index = maze.index_at_pos(sf::Vector3i(x, y, z));
 
-        maze.grid[index].walls_bitmap = 15;
+        maze.grid[index].walls_bitmap = 63;
       }
     }
   }
 
   // Randomized Depth First Search
   std::vector<sf::Vector3i> maze_stack(0);
-  maze_stack.reserve((maze.grid_size.x * maze.grid_size.y) / 16);
-  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y);
+  maze_stack.reserve((maze.grid_size.x * maze.grid_size.y * maze.grid_size.z) / 16);
+  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y * maze.grid_size.z);
 
   sf::Vector3i cell_pos = {rand() % maze.grid_size.x, rand() % maze.grid_size.y, rand() % maze.grid_size.z};
 
@@ -34,14 +33,6 @@ void generate_depth_first_maze(Maze3D& maze) {
   visited_cells[maze.index_at_pos(cell_pos)] = true;
   std::vector<sf::Vector3i> next_cells;
   std::vector<sf::Vector3i> unvisited;
-
-  int total_cells = maze.grid_size.x * maze.grid_size.y;
-  int visited_count = 1;
-
-  const double progress_interval = 0.01; // 0,01%
-  double last_displayed_percent = -1.0;
-  const int cells_per_update = std::max(1, static_cast<int>(total_cells * progress_interval / 100.0));
-  int next_update_cell = cells_per_update;
 
   while (!maze_stack.empty()) {
     next_cells.clear();
@@ -60,27 +51,10 @@ void generate_depth_first_maze(Maze3D& maze) {
 
       maze_stack.push_back(rand_cell);
       visited_cells[maze.index_at_pos(rand_cell)] = true;
-
-      visited_count++;
-
-      if (visited_count >= next_update_cell) {
-        double percent = (visited_count * 100.0) / total_cells;
-
-        double displayed_percent = std::floor(percent * 100.0) / 100.0; // 2 Nachkommastellen
-        if (displayed_percent != last_displayed_percent) {
-          last_displayed_percent = displayed_percent;
-          std::cout << "\rGenerating maze: " << std::fixed << std::setprecision(2) << displayed_percent << "% completed"
-                    << std::flush;
-        }
-
-        next_update_cell += cells_per_update;
-      }
     } else {
       maze_stack.pop_back();
     }
   }
-
-  std::cout << "\rGenerating maze: 100% completed" << std::endl;
 }
 
 void animate_generate_depth_first_maze(Maze3DRenderer& renderer, Maze3D& maze) {
