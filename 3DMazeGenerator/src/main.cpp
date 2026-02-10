@@ -11,7 +11,7 @@
 #include "maze3d_renderer.hh"
 #include "maze3d_solver.hh"
 
-const sf::Vector3i maze_size{5, 5, 5};
+const sf::Vector3i maze_size{3, 3, 3};
 const sf::Vector3f cell_size{2.0f, 2.0f, 2.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
@@ -83,7 +83,7 @@ int main() {
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
           renderer.project_perspective = !renderer.project_perspective;
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::G) {
-          generate_depth_first_maze(maze);
+          animate_generate_depth_first_maze(renderer, maze);
           solve_depth_first_maze(maze);
         }
       }

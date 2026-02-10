@@ -15,29 +15,29 @@
 Maze3DRenderer::Maze3DRenderer(sf::RenderWindow& new_window) : window(new_window) {
 }
 
-void rotate_x(sf::Vector3f& v, float angle) {
+void Maze3DRenderer::rotate_x(sf::Vector3f& v, float angle) {
   float new_y = v.y * std::cos(angle) - v.z * std::sin(angle);
   float new_z = v.y * std::sin(angle) + v.z * std::cos(angle);
   v = {v.x, new_y, new_z};
 }
 
-void rotate_y(sf::Vector3f& v, float angle) {
+void Maze3DRenderer::rotate_y(sf::Vector3f& v, float angle) {
   float new_x = v.x * std::cos(angle) + v.z * std::sin(angle);
   float new_z = v.z * std::cos(angle) - v.x * std::sin(angle);
   v = {new_x, v.y, new_z};
 }
 
-void rotate_z(sf::Vector3f& v, float angle) {
+void Maze3DRenderer::rotate_z(sf::Vector3f& v, float angle) {
   float new_x = v.x * std::cos(angle) - v.y * std::sin(angle);
   float new_y = v.x * std::sin(angle) + v.y * std::cos(angle);
   v = {new_x, new_y, v.z};
 }
 
-void translate(sf::Vector3f& v, const sf::Vector3f& t) {
+void Maze3DRenderer::translate(sf::Vector3f& v, const sf::Vector3f& t) {
   v += t;
 }
 
-void apply_camera(sf::Vector3f& v, Camera& camera) {
+void Maze3DRenderer::apply_camera(sf::Vector3f& v, Camera& camera) {
   v -= camera.position;
 
   rotate_z(v, -camera.rotation.z);
@@ -45,13 +45,13 @@ void apply_camera(sf::Vector3f& v, Camera& camera) {
   rotate_x(v, -camera.rotation.x);
 }
 
-void ortho_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float zoom = 100.0f) {
+void Maze3DRenderer::ortho_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float zoom) {
   float screen_x = (v.x * zoom) + (window_size.x / 2.0f);
   float screen_y = (window_size.y / 2.0f) - (v.y * zoom);
   v = {screen_x, screen_y, v.z};
 }
 
-void pers_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f) {
+void Maze3DRenderer::pers_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg) {
   float aspect_ratio = static_cast<float>(window_size.x) / static_cast<float>(window_size.y);
 
   float fov_rad = fov_deg * std::numbers::pi_v<float> / 180.0f;
@@ -66,7 +66,7 @@ void pers_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float fov
   v = {screen_x, screen_y, v.z};
 }
 
-bool clipLineToNearPlane(sf::Vector3f& v1, sf::Vector3f& v2, float near) {
+bool Maze3DRenderer::clipLineToNearPlane(sf::Vector3f& v1, sf::Vector3f& v2, float near) {
   float zNear = -near;
 
   bool v1_inside = v1.z <= zNear;
@@ -95,7 +95,7 @@ bool clipLineToNearPlane(sf::Vector3f& v1, sf::Vector3f& v2, float near) {
 
 void Maze3DRenderer::draw_grid(const Maze3D& maze) {
   // 6 Faces * 2 Lines * 2 Vertices per Line
-  const int vertices_per_cell = 6 * 2 * 2;
+  const int vertices_per_cell = 6 * 6 * 2;
   sf::VertexArray lines(sf::PrimitiveType::Lines,
                         maze.grid_size.x * maze.grid_size.y * maze.grid_size.z * vertices_per_cell);
 
@@ -108,6 +108,10 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
   // 6bit: 0: +y, 1: +x, 2: +z, 3: -x, 4: -z, 5: -y
   std::vector<std::vector<int>> diagonals = {{2, 7, 6, 3}, {4, 7, 6, 5}, {1, 7, 5, 3},
                                              {0, 3, 2, 1}, {0, 6, 4, 2}, {0, 5, 4, 1}};
+
+  std::vector<std::vector<int>> solid_walls = {
+      {2, 3, 3, 7, 7, 6, 6, 2, 2, 7, 6, 3}, {4, 6, 6, 7, 7, 5, 5, 4, 4, 7, 6, 5}, {1, 3, 3, 7, 7, 5, 5, 1, 1, 7, 5, 3},
+      {0, 1, 1, 3, 3, 2, 2, 0, 0, 3, 2, 1}, {0, 2, 2, 6, 6, 4, 4, 0, 0, 6, 4, 2}, {0, 1, 1, 5, 5, 4, 4, 0, 0, 5, 4, 1}};
 
   // For Testing
   // Top: Green, Right: Red, Front: Blue, Left: Cyan,  Back: Yellow,  Bottom: Purple
@@ -158,7 +162,7 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
           // test_color = wall_colors[i];
 
-          const std::vector<int>& wall = diagonals[i];
+          const std::vector<int>& wall = solid_walls[i];
           const int lines_amount = wall.size() / 2;
 
           std::vector<sf::Vector3f> plane_lines(2 * lines_amount);
@@ -301,7 +305,9 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
     circle.setOrigin({10.0f, 10.0f});
     circle.setFillColor(circle_color);
 
-    window.draw(circle);
+    if (visible_circle) {
+      window.draw(circle);
+    }
   }
 
   if (maze.path.size() < 2) {

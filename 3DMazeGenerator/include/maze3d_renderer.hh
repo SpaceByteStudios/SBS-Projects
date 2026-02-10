@@ -14,6 +14,17 @@ struct Camera {
 struct Maze3DRenderer {
   Maze3DRenderer(sf::RenderWindow& window);
 
+  void rotate_x(sf::Vector3f& v, float angle);
+  void rotate_y(sf::Vector3f& v, float angle);
+  void rotate_z(sf::Vector3f& v, float angle);
+  void translate(sf::Vector3f& v, const sf::Vector3f& t);
+  void apply_camera(sf::Vector3f& v, Camera& camera);
+
+  void ortho_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float zoom = 100.0f);
+
+  void pers_projection(sf::Vector3f& v, const sf::Vector2u& window_size, float fov_deg = 90.0f);
+  bool clipLineToNearPlane(sf::Vector3f& v1, sf::Vector3f& v2, float near);
+
   void draw_grid(const Maze3D& maze);
   void draw_path(const Maze3D& maze);
 
