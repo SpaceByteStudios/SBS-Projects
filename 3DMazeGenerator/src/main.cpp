@@ -11,8 +11,8 @@
 #include "maze3d_renderer.hh"
 #include "maze3d_solver.hh"
 
-const sf::Vector3i maze_size{3, 3, 3};
-const sf::Vector3f cell_size{1.0f, 1.0f, 1.0f};
+const sf::Vector3i maze_size{5, 5, 5};
+const sf::Vector3f cell_size{2.0f, 2.0f, 2.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
                                        {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}};
@@ -64,6 +64,7 @@ int main() {
 
   renderer.camera.position = {7.5f, 2.5f, 7.5f};
   renderer.camera.rotation = {0.0f, 1.0f, 0.0f};
+  renderer.ortho_zoom = 40.0f;
 
   // generate_depth_first_maze(maze);
   // solve_depth_first_maze(maze);
@@ -141,7 +142,7 @@ int main() {
 
     // renderer.draw_lines(plane_pos, sf::Color{255, 0, 255});
     // renderer.draw_lines(front_plane_pos, sf::Color{0, 255, 0});
-    renderer.draw_grid_test(maze);
+    renderer.draw_grid(maze);
     renderer.draw_path(maze);
 
     window.display();

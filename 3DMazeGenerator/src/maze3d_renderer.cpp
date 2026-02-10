@@ -181,8 +181,8 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
               pers_projection(plane_lines[2 * j], window.getSize());
               pers_projection(plane_lines[2 * j + 1], window.getSize());
             } else {
-              ortho_projection(plane_lines[2 * j], window.getSize());
-              ortho_projection(plane_lines[2 * j + 1], window.getSize());
+              ortho_projection(plane_lines[2 * j], window.getSize(), ortho_zoom);
+              ortho_projection(plane_lines[2 * j + 1], window.getSize(), ortho_zoom);
             }
 
             // Add lines to VertexArray
@@ -245,8 +245,8 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
       pers_projection(pos1, window.getSize());
       pers_projection(pos2, window.getSize());
     } else {
-      ortho_projection(pos1, window.getSize());
-      ortho_projection(pos2, window.getSize());
+      ortho_projection(pos1, window.getSize(), ortho_zoom);
+      ortho_projection(pos2, window.getSize(), ortho_zoom);
     }
 
     if (visible_line) {
@@ -293,7 +293,7 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
       pers_projection(pos, window.getSize());
 
     } else {
-      ortho_projection(pos, window.getSize());
+      ortho_projection(pos, window.getSize(), ortho_zoom);
     }
 
     sf::CircleShape circle(10.0f);
@@ -339,8 +339,8 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
       pers_projection(path_point2, window.getSize());
 
     } else {
-      ortho_projection(path_point1, window.getSize());
-      ortho_projection(path_point2, window.getSize());
+      ortho_projection(path_point1, window.getSize(), ortho_zoom);
+      ortho_projection(path_point2, window.getSize(), ortho_zoom);
     }
 
     if (visible_line) {
@@ -372,8 +372,8 @@ void Maze3DRenderer::draw_axis() {
       pers_projection(line_pos[2 * i + 1], window.getSize());
 
     } else {
-      ortho_projection(line_pos[2 * i], window.getSize());
-      ortho_projection(line_pos[2 * i + 1], window.getSize());
+      ortho_projection(line_pos[2 * i], window.getSize(), ortho_zoom);
+      ortho_projection(line_pos[2 * i + 1], window.getSize(), ortho_zoom);
     }
   }
 

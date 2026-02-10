@@ -33,4 +33,5 @@ struct Maze3DRenderer {
   sf::Vector3f cube_rotation;
   Camera camera;
   bool project_perspective;
+  float ortho_zoom = 100.0f;
 };
