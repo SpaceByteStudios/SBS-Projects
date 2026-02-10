@@ -11,7 +11,7 @@
 #include "maze3d_renderer.hh"
 #include "maze3d_solver.hh"
 
-const sf::Vector3i maze_size{5, 5, 5};
+const sf::Vector3i maze_size{3, 3, 3};
 const sf::Vector3f cell_size{1.0f, 1.0f, 1.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
@@ -26,8 +26,8 @@ sf::Vector3f Right{1.0f, 0.0f, 0.0f};
 sf::Vector3f Up{0.0f, 1.0f, 0.0f};
 sf::Vector3f Front{0.0f, 0.0f, 1.0f};
 
-const float movement_speed = 5.0f;
-const float rotation_speed = std::numbers::pi_v<float> / 4.0f;
+const float movement_speed = 3.0f;
+const float rotation_speed = std::numbers::pi_v<float> / 3.0f;
 
 int main() {
   srand(time(nullptr));
@@ -65,8 +65,8 @@ int main() {
   renderer.camera.position = {7.5f, 2.5f, 7.5f};
   renderer.camera.rotation = {0.0f, 1.0f, 0.0f};
 
-  generate_depth_first_maze(maze);
-  solve_depth_first_maze(maze);
+  // generate_depth_first_maze(maze);
+  // solve_depth_first_maze(maze);
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -137,11 +137,11 @@ int main() {
 
     window.clear();
 
-    renderer.draw_axis();
+    // renderer.draw_axis();
 
     // renderer.draw_lines(plane_pos, sf::Color{255, 0, 255});
     // renderer.draw_lines(front_plane_pos, sf::Color{0, 255, 0});
-    renderer.draw_grid(maze);
+    renderer.draw_grid_test(maze);
     renderer.draw_path(maze);
 
     window.display();
