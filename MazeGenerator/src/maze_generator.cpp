@@ -34,6 +34,50 @@ void generate_depth_first_maze(Maze& maze) {
   std::vector<sf::Vector2u> next_cells;
   std::vector<sf::Vector2u> unvisited;
 
+  while (!maze_stack.empty()) {
+    next_cells.clear();
+    unvisited.clear();
+    next_cells = maze.get_neighbors(maze_stack.back());
+
+    for (auto& next_cell : next_cells) {
+      if (!visited_cells[maze.index_at_pos(next_cell)])
+        unvisited.push_back(next_cell);
+    }
+
+    if (!unvisited.empty()) {
+      sf::Vector2u rand_cell = unvisited[rand() % unvisited.size()];
+
+      maze.remove_wall(maze_stack.back(), rand_cell);
+
+      maze_stack.push_back(rand_cell);
+      visited_cells[maze.index_at_pos(rand_cell)] = true;
+    } else {
+      maze_stack.pop_back();
+    }
+  }
+}
+
+void generate_depth_first_maze_log(Maze& maze) {
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      int index = maze.index_at_pos(sf::Vector2u(x, y));
+
+      maze.grid[index].walls_bitmap = 15;
+    }
+  }
+
+  // Randomized Depth First Search
+  std::vector<sf::Vector2u> maze_stack(0);
+  maze_stack.reserve((maze.grid_size.x * maze.grid_size.y) / 16);
+  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y);
+
+  sf::Vector2u cell_pos = {rand() % maze.grid_size.x, rand() % maze.grid_size.y};
+
+  maze_stack.push_back(cell_pos);
+  visited_cells[maze.index_at_pos(cell_pos)] = true;
+  std::vector<sf::Vector2u> next_cells;
+  std::vector<sf::Vector2u> unvisited;
+
   int total_cells = maze.grid_size.x * maze.grid_size.y;
   int visited_count = 1;
 

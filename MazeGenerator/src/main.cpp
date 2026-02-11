@@ -6,7 +6,7 @@
 #include "maze_renderer.hh"
 #include "maze_solver.hh"
 
-sf::Vector2u maze_size = {100, 100};
+sf::Vector2u maze_size = {10, 10};
 
 int main() {
   srand(time(nullptr));
@@ -35,10 +35,10 @@ int main() {
   maze2.end_cell = maze.end_cell;
 
   generate_depth_first_maze(maze);
-  maze.remove_random_walls(50);
+  // maze.remove_random_walls(50);
   maze2.grid = maze.grid;
 
-  solve_breadth_first_maze(maze);
+  solve_depth_first_maze(maze);
   solve_dijkstra_maze(maze2);
 
   window.clear();
@@ -58,17 +58,20 @@ int main() {
           window.close();
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::R) {
           generate_depth_first_maze(maze);
-          maze.remove_random_walls(50);
+          // maze.remove_random_walls(50);
           maze2.grid = maze.grid;
 
-          solve_breadth_first_maze(maze);
+          solve_depth_first_maze(maze);
           solve_astar_maze(maze2);
 
           window.clear();
 
           renderer.draw_grid(maze);
-          renderer2.draw_path(maze2);
-          renderer.draw_path(maze);
+
+          // renderer2.draw_path(maze2);
+          // renderer.draw_path(maze);
+
+          renderer.draw_graph(maze);
 
           window.display();
         }

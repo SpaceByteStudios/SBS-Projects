@@ -11,6 +11,8 @@ struct MazeRenderer {
   void draw_grid(const Maze& maze);
   void draw_path(const Maze& maze);
 
+  void draw_graph(const Maze& maze);
+
   void set_color(const sf::Color& new_grid_color, const sf::Color& new_path_color);
 
   sf::RenderWindow& window;

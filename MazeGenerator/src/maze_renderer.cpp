@@ -1,9 +1,12 @@
 #include "maze_renderer.hh"
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <cmath>
 
 #include "maze.hh"
 
@@ -71,6 +74,66 @@ void MazeRenderer::draw_path(const Maze& maze) {
   }
 
   window.draw(line_path);
+}
+
+void MazeRenderer::draw_graph(const Maze& maze) {
+  float outer_circle_radius = maze.cell_size.x / 2.0f - 30.0f;
+  float inner_circle_radius = maze.cell_size.x / 2.0f - 35.0f;
+
+  float rect_width = 5.0f;
+
+  sf::Vector2f offset = {maze.cell_size.x / 2.0f, maze.cell_size.y / 2.0f};
+
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int x = 0; x < maze.grid_size.x; x++) {
+      sf::Vector2f uv = {float(x) / maze.grid_size.x, float(y) / maze.grid_size.y};
+      uv = {sqrtf(uv.x), sqrtf(uv.y)};
+
+      sf::Vector2f circle_pos{x * maze.cell_size.x, y * maze.cell_size.y};
+
+      // Draw Rectangles
+      if (maze.is_path_free(sf::Vector2u(x, y), sf::Vector2u(x, y + 1))) {
+        sf::RectangleShape rect;
+
+        sf::Vector2f rect_pos = circle_pos + sf::Vector2f{0.0f, maze.cell_size.y / 2.0f};
+        rect.setPosition(rect_pos + offset);
+
+        rect.setSize({rect_width, maze.cell_size.y});
+        rect.setOrigin(0.5f * rect.getSize());
+
+        rect.setFillColor(sf::Color::White);
+        window.draw(rect);
+      }
+
+      if (maze.is_path_free(sf::Vector2u(x, y), sf::Vector2u(x + 1, y))) {
+        sf::RectangleShape rect;
+
+        sf::Vector2f rect_pos = circle_pos + sf::Vector2f{maze.cell_size.x / 2.0f, 0.0f};
+        rect.setPosition(rect_pos + offset);
+
+        rect.setSize({maze.cell_size.x, rect_width});
+        rect.setOrigin(0.5f * rect.getSize());
+
+        rect.setFillColor(sf::Color::White);
+        window.draw(rect);
+      }
+
+      // Draw Circles
+      sf::CircleShape outer_circle{outer_circle_radius};
+      outer_circle.setPosition(circle_pos + offset);
+      outer_circle.setOrigin({outer_circle_radius, outer_circle_radius});
+      outer_circle.setFillColor(sf::Color::White);
+
+      sf::CircleShape inner_circle{inner_circle_radius};
+      inner_circle.setPosition(circle_pos + offset);
+      inner_circle.setOrigin({inner_circle_radius, inner_circle_radius});
+      sf::Color inner_color = sf::Color(uv.x * 255, uv.y * 255, 0);
+      inner_circle.setFillColor(inner_color);
+
+      window.draw(outer_circle);
+      window.draw(inner_circle);
+    }
+  }
 }
 
 void MazeRenderer::set_color(const sf::Color& new_grid_color, const sf::Color& new_path_color) {

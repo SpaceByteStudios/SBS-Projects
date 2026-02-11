@@ -6,6 +6,7 @@
 #include "maze_renderer.hh"
 
 void generate_depth_first_maze(Maze& maze);
+void generate_depth_first_maze_log(Maze& maze);
 void animate_generate_depth_first_maze(MazeRenderer& renderer, Maze& maze);
 
 void generate_chunked_depth_first_maze(Maze& maze, int chunk_size);

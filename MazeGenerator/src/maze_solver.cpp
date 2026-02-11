@@ -184,6 +184,57 @@ void solve_breadth_first_maze(Maze& maze) {
 
   std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
 
+  while (!maze_queue.empty()) {
+    sf::Vector2u curr_cell = maze_queue.front();
+    maze_queue.pop();
+
+    int curr_index = maze.index_at_pos(curr_cell);
+
+    if (curr_cell == maze.end_cell) {
+      break;
+    }
+
+    std::vector<sf::Vector2u> next_cells = maze.get_neighbors(curr_cell);
+
+    for (const sf::Vector2u& next_cell : next_cells) {
+      int next_index = maze.index_at_pos(next_cell);
+
+      if (visited_cells[next_index]) {
+        continue;
+      }
+
+      if (!maze.is_path_free(curr_cell, next_cell)) {
+        continue;
+      }
+
+      visited_cells[next_index] = true;
+      parent[next_index] = curr_index;
+      maze_queue.push(next_cell);
+    }
+  }
+
+  int curr_index = maze.index_at_pos(maze.end_cell);
+
+  while (curr_index != -1) {
+    maze.path.push_back(maze.pos_at_index(curr_index));
+    curr_index = parent[curr_index];
+  }
+
+  std::reverse(maze.path.begin(), maze.path.end());
+}
+
+void solve_breadth_first_maze_log(Maze& maze) {
+  maze.path.clear();
+
+  std::queue<sf::Vector2u> maze_queue;
+  maze_queue.push(maze.start_cell);
+
+  const int total_cells = maze.grid_size.x * maze.grid_size.y;
+  std::vector<bool> visited_cells(maze.grid_size.x * maze.grid_size.y, false);
+  visited_cells[maze.index_at_pos(maze_queue.back())] = true;
+
+  std::vector<int> parent(maze.grid_size.x * maze.grid_size.y, -1);
+
   int visited_count = 1;
 
   const double progress_interval = 0.01; // 0,01%

@@ -7,6 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(TEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test)
 
+option(BUILD_TESTS "Build the test executables" OFF)
+
 # Prefer system-installed SFML if available
 find_package(SFML 3 QUIET COMPONENTS Graphics)
 
@@ -38,38 +40,40 @@ add_executable(
 target_include_directories(simulation PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(simulation PRIVATE SFML::Graphics)
 
-# Compile Test Program
-add_executable(
-  test_solve_times
-  test/test_solve_times.cpp
-  src/maze.cpp
-  src/maze_renderer.cpp
-  src/maze_generator.cpp
-  src/maze_solver.cpp
-)
+if(BUILD_TESTS)
+  # Compile Test Program
+  add_executable(
+    test_solve_times
+    test/test_solve_times.cpp
+    src/maze.cpp
+    src/maze_renderer.cpp
+    src/maze_generator.cpp
+    src/maze_solver.cpp
+  )
 
-set_target_properties(test_solve_times PROPERTIES
+  set_target_properties(test_solve_times PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
-)
+  )
 
-target_include_directories(test_solve_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_compile_features(test_solve_times PRIVATE cxx_std_17)
-target_link_libraries(test_solve_times PRIVATE SFML::Graphics)
+  target_include_directories(test_solve_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_compile_features(test_solve_times PRIVATE cxx_std_17)
+  target_link_libraries(test_solve_times PRIVATE SFML::Graphics)
 
-# Compile Test Program
-add_executable(
-  test_generate_times
-  test/test_generate_times.cpp
-  src/maze.cpp
-  src/maze_renderer.cpp
-  src/maze_generator.cpp
-  src/maze_solver.cpp
-)
+  # Compile Test Program
+  add_executable(
+    test_generate_times
+    test/test_generate_times.cpp
+    src/maze.cpp
+    src/maze_renderer.cpp
+    src/maze_generator.cpp
+    src/maze_solver.cpp
+  )
 
-set_target_properties(test_generate_times PROPERTIES
+  set_target_properties(test_generate_times PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTPUT_DIR}
-)
+  )
 
-target_include_directories(test_generate_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_compile_features(test_generate_times PRIVATE cxx_std_17)
-target_link_libraries(test_generate_times PRIVATE SFML::Graphics)
+  target_include_directories(test_generate_times PRIVATE ${CMAKE_SOURCE_DIR}/include)
+  target_compile_features(test_generate_times PRIVATE cxx_std_17)
+  target_link_libraries(test_generate_times PRIVATE SFML::Graphics)
+endif()
