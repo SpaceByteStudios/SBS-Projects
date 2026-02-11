@@ -49,7 +49,7 @@ int Maze3D::index_at_pos(const sf::Vector3i& pos) const {
   }
 }
 
-sf::Vector3i Maze3D::pos_at_index(int index) {
+sf::Vector3i Maze3D::pos_at_index(int index) const {
   if (index > grid.size() - 1) {
     return sf::Vector3i(0, 0, 0);
   } else {
@@ -62,7 +62,7 @@ sf::Vector3i Maze3D::pos_at_index(int index) {
   }
 }
 
-std::vector<sf::Vector3i> Maze3D::get_neighbors(const sf::Vector3i& pos) {
+std::vector<sf::Vector3i> Maze3D::get_neighbors(const sf::Vector3i& pos) const {
   std::vector<sf::Vector3i> cells_pos = {{pos.x, pos.y - 1, pos.z}, {pos.x, pos.y + 1, pos.z},
                                          {pos.x - 1, pos.y, pos.z}, {pos.x + 1, pos.y, pos.z},
                                          {pos.x, pos.y, pos.z - 1}, {pos.x, pos.y, pos.z + 1}};
@@ -78,7 +78,7 @@ std::vector<sf::Vector3i> Maze3D::get_neighbors(const sf::Vector3i& pos) {
   return neigbor_cells;
 }
 
-bool Maze3D::are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
+bool Maze3D::are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2) const {
   int index_cell1 = index_at_pos(pos1);
   int index_cell2 = index_at_pos(pos2);
 
@@ -91,7 +91,7 @@ bool Maze3D::are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
   }
 }
 
-bool Maze3D::is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
+bool Maze3D::is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) const {
   if (!is_inside(pos1)) {
     return false;
   }
@@ -109,8 +109,8 @@ bool Maze3D::is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) {
 
   sf::Vector3i dir = static_cast<sf::Vector3i>(pos2 - pos1);
 
-  unsigned char& cell1_bitmap = grid[index_cell1].walls_bitmap;
-  unsigned char& cell2_bitmap = grid[index_cell2].walls_bitmap;
+  const unsigned char& cell1_bitmap = grid[index_cell1].walls_bitmap;
+  const unsigned char& cell2_bitmap = grid[index_cell2].walls_bitmap;
 
   //       Top,   Right, Front, Left,  Back,  Bottom
   // 6bit: 0: +y, 1: +x, 2: +z, 3: -x, 4: -z, 5: -y

@@ -21,11 +21,11 @@ struct Maze3D {
   bool is_inside(const sf::Vector3i& pos) const;
   int index_at_pos(const sf::Vector3i& pos) const;
 
-  sf::Vector3i pos_at_index(int index);
+  sf::Vector3i pos_at_index(int index) const;
 
-  std::vector<sf::Vector3i> get_neighbors(const sf::Vector3i& pos);
-  bool are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
-  bool is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
+  std::vector<sf::Vector3i> get_neighbors(const sf::Vector3i& pos) const;
+  bool are_neighbors(const sf::Vector3i& pos1, const sf::Vector3i& pos2) const;
+  bool is_path_free(const sf::Vector3i& pos1, const sf::Vector3i& pos2) const;
 
   void set_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2);
   void remove_wall(const sf::Vector3i& pos1, const sf::Vector3i& pos2);

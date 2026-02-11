@@ -27,6 +27,7 @@ struct Maze3DRenderer {
 
   void draw_grid(const Maze3D& maze);
   void draw_path(const Maze3D& maze);
+  void draw_graph(const Maze3D& maze);
 
   void draw_axis();
 

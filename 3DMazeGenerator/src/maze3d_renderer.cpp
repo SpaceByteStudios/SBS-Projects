@@ -3,7 +3,9 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/System/Angle.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <cmath>
@@ -361,6 +363,160 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
   }
 
   window.draw(line_path);
+}
+
+struct RenderItem {
+  float depth; // z after camera transform
+  enum Type { Circle, Connection } type;
+
+  // circle_date
+  sf::Vector2f screenPos; // after projection
+  sf::Color color;
+
+  // connection data
+  sf::Vector2f point1; // after projection
+  sf::Vector2f point2; // after projection
+};
+
+void Maze3DRenderer::draw_graph(const Maze3D& maze) {
+  sf::Vector3f center = {maze.cell_size.x * maze.grid_size.x * 0.5f, maze.cell_size.y * maze.grid_size.y * 0.5f,
+                         maze.cell_size.z * maze.grid_size.z * 0.5f};
+
+  float outer_circle_radius = maze.cell_size.x / 2.0f - 30.0f;
+  float inner_circle_radius = maze.cell_size.x / 2.0f - 27.5f;
+
+  sf::CircleShape outer_circle{outer_circle_radius};
+  outer_circle.setOrigin({outer_circle_radius, outer_circle_radius});
+  outer_circle.setFillColor(sf::Color::White);
+
+  sf::CircleShape inner_circle{inner_circle_radius};
+  inner_circle.setOrigin({inner_circle_radius, inner_circle_radius});
+
+  sf::RectangleShape rect;
+  rect.setFillColor(sf::Color::White);
+
+  std::vector<RenderItem> items;
+  std::vector<sf::Vector3f> transformed_pos(maze.grid_size.x * maze.grid_size.y * maze.grid_size.z);
+
+  std::vector<sf::Vector3i> dir{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+
+  float rect_width = 5.0f;
+
+  sf::Vector3f offset = {maze.cell_size.x / 2.0f, maze.cell_size.y / 2.0f, maze.cell_size.z / 2.0f};
+
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int z = 0; z < maze.grid_size.z; z++) {
+      for (int x = 0; x < maze.grid_size.x; x++) {
+        int index = maze.index_at_pos({x, y, z});
+
+        sf::Vector3f circle_pos{x * maze.cell_size.x, y * maze.cell_size.y, z * maze.cell_size.z};
+        circle_pos += offset;
+
+        rotate_x(circle_pos, cube_rotation.x);
+        rotate_y(circle_pos, cube_rotation.y);
+        rotate_z(circle_pos, cube_rotation.z);
+        translate(circle_pos, -center);
+
+        apply_camera(circle_pos, camera);
+
+        transformed_pos[index] = circle_pos;
+      }
+    }
+  }
+
+  for (int y = 0; y < maze.grid_size.y; y++) {
+    for (int z = 0; z < maze.grid_size.z; z++) {
+      for (int x = 0; x < maze.grid_size.x; x++) {
+        int index = maze.index_at_pos({x, y, z});
+
+        sf::Vector3f uv{float(x) / maze.grid_size.x, float(y) / maze.grid_size.y, float(z) / maze.grid_size.z};
+        uv = {sqrtf(uv.x), sqrtf(uv.y), sqrtf(uv.z)};
+
+        sf::Vector3f circle_pos = transformed_pos[index];
+
+        RenderItem circle;
+        circle.type = RenderItem::Type::Circle;
+        circle.depth = circle_pos.z;
+        circle.color = sf::Color(uv.x * 255, uv.y * 255, uv.z * 255);
+
+        if (project_perspective) {
+          if (!clipLineToNearPlane(circle_pos, circle_pos, 0.01f)) {
+            continue;
+          }
+
+          pers_projection(circle_pos, window.getSize());
+
+        } else {
+          ortho_projection(circle_pos, window.getSize(), ortho_zoom);
+        }
+
+        circle.screenPos = {circle_pos.x, circle_pos.y};
+        items.push_back(circle);
+
+        for (sf::Vector3i& d : dir) {
+          sf::Vector3i pos1{x, y, z};
+          sf::Vector3i pos2 = pos1 + d;
+
+          if (pos2.x >= maze.grid_size.x || pos2.y >= maze.grid_size.y || pos2.z >= maze.grid_size.z) {
+            continue;
+          }
+
+          if (maze.is_path_free(pos1, pos2)) {
+            sf::Vector3f p1 = transformed_pos[maze.index_at_pos(pos1)];
+            sf::Vector3f p2 = transformed_pos[maze.index_at_pos(pos2)];
+
+            RenderItem connection;
+            connection.type = RenderItem::Type::Connection;
+            connection.depth = (p1.z + p2.z) * 0.5f;
+
+            if (project_perspective) {
+              if (clipLineToNearPlane(p1, p2, 0.01f)) {
+                pers_projection(p1, window.getSize());
+                pers_projection(p2, window.getSize());
+              }
+            } else {
+              ortho_projection(p1, window.getSize(), ortho_zoom);
+              ortho_projection(p2, window.getSize(), ortho_zoom);
+            }
+
+            connection.point1 = {p1.x, p1.y};
+            connection.point2 = {p2.x, p2.y};
+
+            items.push_back(connection);
+          }
+        }
+      }
+    }
+  }
+
+  std::sort(items.begin(), items.end(), [](const RenderItem& a, const RenderItem& b) {
+    return a.depth < b.depth; // farthest first
+  });
+
+  for (RenderItem& i : items) {
+    if (i.type == RenderItem::Type::Circle) {
+      // Draw Circles
+      outer_circle.setPosition(i.screenPos);
+
+      inner_circle.setPosition(i.screenPos);
+      inner_circle.setFillColor(i.color);
+
+      window.draw(outer_circle);
+      window.draw(inner_circle);
+    } else {
+      sf::Vector2f dir = i.point2 - i.point1;
+      float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+
+      rect.setSize({length, rect_width});
+      rect.setOrigin({0, rect_width * 0.5f});
+      rect.setPosition(i.point1);
+
+      float angle = std::atan2(dir.y, dir.x) * 180.0f / 3.14159265f;
+      rect.setRotation(sf::degrees(angle));
+
+      window.draw(rect);
+    }
+  }
 }
 
 void Maze3DRenderer::draw_axis() {
