@@ -77,8 +77,15 @@ void MazeRenderer::draw_path(const Maze& maze) {
 }
 
 void MazeRenderer::draw_graph(const Maze& maze) {
-  float outer_circle_radius = maze.cell_size.x / 2.0f - 30.0f;
-  float inner_circle_radius = maze.cell_size.x / 2.0f - 35.0f;
+  float outer_circle_radius = maze.cell_size.x / 2.0f - 15.0f;
+  float inner_circle_radius = maze.cell_size.x / 2.0f - 19.0f;
+
+  sf::CircleShape outer_circle{outer_circle_radius};
+  outer_circle.setOrigin({outer_circle_radius, outer_circle_radius});
+  outer_circle.setFillColor(sf::Color::White);
+
+  sf::CircleShape inner_circle{inner_circle_radius};
+  inner_circle.setOrigin({inner_circle_radius, inner_circle_radius});
 
   float rect_width = 5.0f;
 
@@ -101,7 +108,7 @@ void MazeRenderer::draw_graph(const Maze& maze) {
         rect.setSize({rect_width, maze.cell_size.y});
         rect.setOrigin(0.5f * rect.getSize());
 
-        rect.setFillColor(sf::Color::White);
+        rect.setFillColor(sf::Color(225, 225, 225));
         window.draw(rect);
       }
 
@@ -114,19 +121,14 @@ void MazeRenderer::draw_graph(const Maze& maze) {
         rect.setSize({maze.cell_size.x, rect_width});
         rect.setOrigin(0.5f * rect.getSize());
 
-        rect.setFillColor(sf::Color::White);
+        rect.setFillColor(sf::Color(225, 225, 225));
         window.draw(rect);
       }
 
       // Draw Circles
-      sf::CircleShape outer_circle{outer_circle_radius};
       outer_circle.setPosition(circle_pos + offset);
-      outer_circle.setOrigin({outer_circle_radius, outer_circle_radius});
-      outer_circle.setFillColor(sf::Color::White);
 
-      sf::CircleShape inner_circle{inner_circle_radius};
       inner_circle.setPosition(circle_pos + offset);
-      inner_circle.setOrigin({inner_circle_radius, inner_circle_radius});
       sf::Color inner_color = sf::Color(uv.x * 255, uv.y * 255, 0);
       inner_circle.setFillColor(inner_color);
 
