@@ -13,7 +13,7 @@ Maze3D::Maze3D() : grid_size(sf::Vector3i(3, 3, 3)) {
       for (int x = 0; x < grid_size.x; x++) {
         int index = index_at_pos(sf::Vector3i(x, y, z));
 
-        grid[index].walls_bitmap = 15;
+        grid[index].walls_bitmap = 63;
       }
     }
   }
@@ -27,7 +27,7 @@ Maze3D::Maze3D(sf::Vector3i new_grid_size) : grid_size(new_grid_size) {
       for (int x = 0; x < grid_size.x; x++) {
         int index = index_at_pos(sf::Vector3i(x, y, z));
 
-        grid[index].walls_bitmap = 15;
+        grid[index].walls_bitmap = 63;
       }
     }
   }

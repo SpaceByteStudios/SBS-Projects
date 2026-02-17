@@ -1,6 +1,7 @@
 #include "maze3d_renderer.hh"
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -15,6 +16,10 @@
 #include "maze3d.hh"
 
 Maze3DRenderer::Maze3DRenderer(sf::RenderWindow& new_window) : window(new_window) {
+}
+
+void Maze3DRenderer::scale(sf::Vector3f& v, const sf::Vector3f& s) {
+  v = v.componentWiseMul(s);
 }
 
 void Maze3DRenderer::rotate_x(sf::Vector3f& v, float angle) {
@@ -137,11 +142,13 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
         for (sf::Vector3f& v : vertex_pos) {
           v -= center;
+          scale(v, cube_scale);
           rotate_x(v, cube_rotation.x);
           rotate_y(v, cube_rotation.y);
           rotate_z(v, cube_rotation.z);
           v += center;
           translate(v, -center);
+          translate(v, cube_position);
         }
 
         // Each Wall
@@ -151,7 +158,7 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
           // Skip outer Walls
           // Top, Right, Front, Left, Back, Bottom
           if ((x == 0 && i == 3) || (x == maze.grid_size.x - 1 && i == 1) || (y == 0 && i == 5) ||
-              (y == maze.grid_size.y - 1 && i == 0) || (z == 0 && i == 4) || (z == maze.grid_size.z - 1) && i == 2) {
+              (y == maze.grid_size.y - 1 && i == 0) || (z == 0 && i == 4) || (z == maze.grid_size.z - 1 && i == 2)) {
             continue;
           }
 
@@ -229,11 +236,13 @@ void Maze3DRenderer::draw_grid(const Maze3D& maze) {
 
   for (sf::Vector3f& v : vertex_pos) {
     v -= center;
+    scale(v, cube_scale);
     rotate_x(v, cube_rotation.x);
     rotate_y(v, cube_rotation.y);
     rotate_z(v, cube_rotation.z);
     v += center;
     translate(v, -center);
+    translate(v, cube_position);
   }
 
   int vertex_index = 0;
@@ -285,10 +294,12 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
     sf::Vector3f& pos = circle_pos[i];
     sf::Color& circle_color = circle_colors[i];
 
+    scale(pos, cube_scale);
     rotate_x(pos, cube_rotation.x);
     rotate_y(pos, cube_rotation.y);
     rotate_z(pos, cube_rotation.z);
     translate(pos, -center);
+    translate(pos, cube_position);
 
     apply_camera(pos, camera);
 
@@ -325,10 +336,12 @@ void Maze3DRenderer::draw_path(const Maze3D& maze) {
                             p.y * maze.cell_size.y + maze.cell_size.y / 2,
                             p.z * maze.cell_size.z + maze.cell_size.z / 2);
 
+    scale(path_point, cube_scale);
     rotate_x(path_point, cube_rotation.x);
     rotate_y(path_point, cube_rotation.y);
     rotate_z(path_point, cube_rotation.z);
     translate(path_point, -center);
+    translate(path_point, cube_position);
 
     apply_camera(path_point, camera);
 
@@ -412,10 +425,12 @@ void Maze3DRenderer::draw_graph(const Maze3D& maze) {
         sf::Vector3f circle_pos{x * maze.cell_size.x, y * maze.cell_size.y, z * maze.cell_size.z};
         circle_pos += offset;
 
+        scale(circle_pos, cube_scale);
         rotate_x(circle_pos, cube_rotation.x);
         rotate_y(circle_pos, cube_rotation.y);
         rotate_z(circle_pos, cube_rotation.z);
         translate(circle_pos, -center);
+        translate(circle_pos, cube_position);
 
         apply_camera(circle_pos, camera);
 
@@ -558,6 +573,27 @@ void Maze3DRenderer::draw_axis() {
 
   if (visible_axis[2]) {
     window.draw(z_axis, 2, sf::PrimitiveType::Lines);
+  }
+}
+
+void Maze3DRenderer::draw_point(sf::Vector3f& v, const sf::Color& point_color) {
+  bool is_visible = true;
+
+  apply_camera(v, camera);
+
+  if (project_perspective) {
+    is_visible = clipLineToNearPlane(v, v, 0.01f);
+    pers_projection(v, window.getSize());
+  } else {
+    ortho_projection(v, window.getSize(), ortho_zoom);
+  }
+
+  if (is_visible) {
+    sf::CircleShape circle{10.0f};
+    circle.setOrigin({10.0f, 10.0f});
+    circle.setFillColor(point_color);
+    circle.setPosition({v.x, v.y});
+    window.draw(circle);
   }
 }
 

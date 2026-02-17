@@ -1,8 +1,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Font.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <iostream>
 #include <numbers>
 #include <vector>
 
@@ -11,8 +13,8 @@
 #include "maze3d_renderer.hh"
 #include "maze3d_solver.hh"
 
-const sf::Vector3i maze_size{5, 5, 5};
-const sf::Vector3f cell_size{2.0f, 2.0f, 2.0f};
+const sf::Vector3i maze_size{20, 20, 20};
+const sf::Vector3f cell_size{4.0f, 4.0f, 4.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
                                        {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}};
@@ -20,13 +22,18 @@ std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {
 std::vector<sf::Vector3f> front_plane_pos = {{0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f},
                                              {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}};
 
+std::vector<sf::Vector3f> corner_points = {{-1.0f, -1.0f, -1.0f}, {-1.0f, 1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f},
+                                           {-1.0f, 1.0f, 1.0f},   {1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, -1.0f},
+                                           {1.0f, -1.0f, 1.0f},   {1.0f, 1.0f, 1.0f}};
+
 sf::Clock deltaClock;
+float total_time = 0.0f;
 
 sf::Vector3f Right{1.0f, 0.0f, 0.0f};
 sf::Vector3f Up{0.0f, 1.0f, 0.0f};
 sf::Vector3f Front{0.0f, 0.0f, 1.0f};
 
-const float movement_speed = 3.0f;
+const float movement_speed = 6.0f;
 const float rotation_speed = std::numbers::pi_v<float> / 3.0f;
 
 int main() {
@@ -35,7 +42,18 @@ int main() {
   sf::RenderWindow window(sf::VideoMode({1000, 1000}), "Maze Generator");
   window.setPosition({1920 - (int)window.getSize().x - 25, 25});
 
-  window.setFramerateLimit(60);
+  window.setFramerateLimit(0);
+
+  sf::Font font;
+  if (!font.openFromFile("0xProtoNerdFont.ttf")) {
+    std::cout << "Failed to load font\n";
+    return -1;
+  }
+
+  sf::Text fpsText(font, "FPS:");
+  fpsText.setCharacterSize(10);
+  fpsText.setFillColor(sf::Color::White);
+  fpsText.setPosition({3, 3});
 
   Maze3D maze(maze_size);
   Maze3DRenderer renderer(window);
@@ -53,21 +71,13 @@ int main() {
   maze.end_cell = sf::Vector3i(maze.grid_size.x - 1, maze.grid_size.y - 1, maze.grid_size.z - 1);
   maze.cell_size = cell_size;
 
-  for (int y = 0; y < maze.grid_size.y; y++) {
-    for (int z = 0; z < maze.grid_size.z; z++) {
-      for (int x = 0; x < maze.grid_size.x; x++) {
-        int index = maze.index_at_pos({x, y, z});
-        maze.grid[index].walls_bitmap = 63;
-      }
-    }
-  }
-
-  renderer.camera.position = {7.5f, 2.5f, 7.5f};
-  renderer.camera.rotation = {0.0f, 1.0f, 0.0f};
+  renderer.camera.position = {0.0f, 0.0f, 0.0f};
+  renderer.camera.rotation = {-std::numbers::pi_v<float> / 8.0f, 0.0f, 0.0f};
   renderer.ortho_zoom = 40.0f;
+  renderer.project_perspective = true;
 
-  generate_depth_first_maze(maze);
-  solve_depth_first_maze(maze);
+  bool render_path = false;
+  bool render_graph = false;
 
   while (window.isOpen()) {
     while (const std::optional event = window.pollEvent()) {
@@ -83,13 +93,18 @@ int main() {
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
           renderer.project_perspective = !renderer.project_perspective;
         } else if (keyPressed->scancode == sf::Keyboard::Scancode::G) {
+          render_path = false;
           generate_depth_first_maze(maze);
           solve_depth_first_maze(maze);
+          render_path = true;
+        } else if (keyPressed->scancode == sf::Keyboard::Scancode::T) {
+          render_graph = !render_graph;
         }
       }
     }
 
     float delta_time = deltaClock.restart().asSeconds();
+    total_time += delta_time;
 
     // renderer.cube_rotation.y += (std::numbers::pi_v<float> / 16.0f) * delta_time;
     // renderer.cube_rotation.x += (std::numbers::pi_v<float> / 12.0f) * delta_time;
@@ -138,14 +153,34 @@ int main() {
 
     window.clear();
 
-    renderer.draw_graph(maze);
+    float fps = 1.0f / delta_time;
+
+    std::stringstream ss;
+    ss << "FPS:" << static_cast<int>(fps);
+    fpsText.setString(ss.str());
+    window.draw(fpsText);
 
     // renderer.draw_axis();
 
-    // renderer.draw_lines(plane_pos, sf::Color{255, 0, 255});
-    // renderer.draw_lines(front_plane_pos, sf::Color{0, 255, 0});
-    // renderer.draw_grid(maze);
-    // renderer.draw_path(maze);
+    if (render_graph) {
+      renderer.draw_graph(maze);
+    } else {
+      renderer.draw_grid(maze);
+
+      if (render_path) {
+        renderer.draw_path(maze);
+      }
+    }
+
+    for (sf::Vector3f p : corner_points) {
+      // renderer.scale(p, renderer.cube_scale);
+      // renderer.rotate_x(p, renderer.cube_rotation.x);
+      // renderer.rotate_y(p, renderer.cube_rotation.y);
+      // renderer.rotate_z(p, renderer.cube_rotation.z);
+      // renderer.translate(p, renderer.cube_position);
+
+      // renderer.draw_point(p, sf::Color(255, 32, 32));
+    }
 
     window.display();
   }

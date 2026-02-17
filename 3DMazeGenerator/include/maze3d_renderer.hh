@@ -14,6 +14,7 @@ struct Camera {
 struct Maze3DRenderer {
   Maze3DRenderer(sf::RenderWindow& window);
 
+  void scale(sf::Vector3f& v, const sf::Vector3f& s);
   void rotate_x(sf::Vector3f& v, float angle);
   void rotate_y(sf::Vector3f& v, float angle);
   void rotate_z(sf::Vector3f& v, float angle);
@@ -30,6 +31,7 @@ struct Maze3DRenderer {
   void draw_graph(const Maze3D& maze);
 
   void draw_axis();
+  void draw_point(sf::Vector3f& v, const sf::Color& point_color);
 
   void set_color(const sf::Color& new_grid_color, const sf::Color& new_path_color);
 
@@ -42,6 +44,8 @@ struct Maze3DRenderer {
   sf::Color grid_color;
   sf::Color path_color;
 
+  sf::Vector3f cube_position;
+  sf::Vector3f cube_scale = {1.0f, 1.0f, 1.0f};
   sf::Vector3f cube_rotation;
   Camera camera;
   bool project_perspective;
