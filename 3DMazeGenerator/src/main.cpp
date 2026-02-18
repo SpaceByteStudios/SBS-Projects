@@ -13,7 +13,7 @@
 #include "maze3d_renderer.hh"
 #include "maze3d_solver.hh"
 
-const sf::Vector3i maze_size{20, 20, 20};
+const sf::Vector3i maze_size{4, 4, 4};
 const sf::Vector3f cell_size{4.0f, 4.0f, 4.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
@@ -42,7 +42,7 @@ int main() {
   sf::RenderWindow window(sf::VideoMode({1000, 1000}), "Maze Generator");
   window.setPosition({1920 - (int)window.getSize().x - 25, 25});
 
-  window.setFramerateLimit(0);
+  window.setFramerateLimit(60);
 
   sf::Font font;
   if (!font.openFromFile("0xProtoNerdFont.ttf")) {
