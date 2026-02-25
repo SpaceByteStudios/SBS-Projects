@@ -12,7 +12,7 @@
 #include "maze_solver.hh"
 
 // sf::Vector2u maze_size = {96, 54};
-sf::Vector2u maze_size = {5, 5};
+sf::Vector2u maze_size = {256, 256};
 
 const int remove_walls_amount = 50;
 std::vector<sf::Vector2u> rand_cells(remove_walls_amount * 2);
@@ -61,7 +61,7 @@ int main() {
   sf::RenderWindow window(sf::VideoMode({720, 720}), "Maze Generator");
   window.setPosition({1920 - (int)window.getSize().x - 25, 25});
 
-  window.setFramerateLimit(60);
+  window.setFramerateLimit(0);
 
   Maze maze(maze_size);
   Maze maze2(maze_size);

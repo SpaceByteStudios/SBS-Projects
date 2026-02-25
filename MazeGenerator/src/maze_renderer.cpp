@@ -60,8 +60,8 @@ void MazeRenderer::draw_path(const Maze& maze) {
   end_circle.setPosition({maze.end_cell.x * maze.cell_size.x + 3, maze.end_cell.y * maze.cell_size.y + 3});
   end_circle.setFillColor(sf::Color(255, 128, 0));
 
-  window.draw(start_circle);
-  window.draw(end_circle);
+  // window.draw(start_circle);
+  // window.draw(end_circle);
 
   sf::VertexArray line_path(sf::PrimitiveType::LineStrip, maze.path.size());
 

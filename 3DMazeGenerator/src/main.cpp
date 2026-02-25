@@ -4,6 +4,7 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <cmath>
 #include <iostream>
 #include <numbers>
 #include <vector>
@@ -13,8 +14,8 @@
 #include "maze3d_renderer.hh"
 #include "maze3d_solver.hh"
 
-const sf::Vector3i maze_size{4, 4, 4};
-const sf::Vector3f cell_size{4.0f, 4.0f, 4.0f};
+const sf::Vector3i maze_size{3, 3, 3};
+const sf::Vector3f cell_size{2.0f, 2.0f, 2.0f};
 
 std::vector<sf::Vector3f> plane_pos = {{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
                                        {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}};
@@ -73,7 +74,7 @@ int main() {
 
   renderer.camera.position = {0.0f, 0.0f, 0.0f};
   renderer.camera.rotation = {-std::numbers::pi_v<float> / 8.0f, 0.0f, 0.0f};
-  renderer.ortho_zoom = 40.0f;
+  renderer.ortho_zoom = 100.0f;
   renderer.project_perspective = true;
 
   bool render_path = false;
@@ -105,9 +106,6 @@ int main() {
 
     float delta_time = deltaClock.restart().asSeconds();
     total_time += delta_time;
-
-    // renderer.cube_rotation.y += (std::numbers::pi_v<float> / 16.0f) * delta_time;
-    // renderer.cube_rotation.x += (std::numbers::pi_v<float> / 12.0f) * delta_time;
 
     // Camera Movement
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
@@ -154,13 +152,20 @@ int main() {
     window.clear();
 
     float fps = 1.0f / delta_time;
-
     std::stringstream ss;
     ss << "FPS:" << static_cast<int>(fps);
     fpsText.setString(ss.str());
-    window.draw(fpsText);
+    // window.draw(fpsText);
 
-    // renderer.draw_axis();
+    //renderer.draw_axis();
+
+    //renderer.cube_scale =
+        //sf::Vector3f(std::cos(1.5f * total_time), std::cos(1.5f * total_time), std::cos(1.5 * total_time));
+    //renderer.cube_position =
+        //sf::Vector3f(std::cos(2.0f * total_time), std::sin(0.5 * total_time), -std::cos(total_time));
+
+	//renderer.cube_rotation.y += (std::numbers::pi_v<float> / 4.0f) * delta_time;
+    //renderer.cube_rotation.x += (std::numbers::pi_v<float> / 3.0f) * delta_time;
 
     if (render_graph) {
       renderer.draw_graph(maze);
@@ -173,13 +178,13 @@ int main() {
     }
 
     for (sf::Vector3f p : corner_points) {
-      // renderer.scale(p, renderer.cube_scale);
-      // renderer.rotate_x(p, renderer.cube_rotation.x);
-      // renderer.rotate_y(p, renderer.cube_rotation.y);
-      // renderer.rotate_z(p, renderer.cube_rotation.z);
-      // renderer.translate(p, renderer.cube_position);
+      //renderer.scale(p, renderer.cube_scale);
+      //renderer.rotate_x(p, renderer.cube_rotation.x);
+      //renderer.rotate_y(p, renderer.cube_rotation.y);
+      //renderer.rotate_z(p, renderer.cube_rotation.z);
+      //renderer.translate(p, renderer.cube_position);
 
-      // renderer.draw_point(p, sf::Color(255, 32, 32));
+      //renderer.draw_point(p, sf::Color(255, 32, 32));
     }
 
     window.display();

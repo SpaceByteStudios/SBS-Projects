@@ -147,3 +147,183 @@ class Cells(Scene):
         )
 
         self.wait(0.5)
+
+
+class MazeGenVideoText(Scene):
+    def construct(self):
+
+        text = Text(
+            "Generate Mazes",
+            font = "Great Vibes",
+            font_size = 140,
+            color ="#aa0000",
+            stroke_color = "#aa0000"
+        )
+
+        self.play(Write(text), run_time = 3)
+
+        self.wait(0.5)
+
+
+class Maze3Table(Scene):
+    def construct(self):
+        mid_line = Line(UP * 2.5, DOWN * 3.5)
+        mid_line.set_stroke(PURE_GREEN, 5.0)
+
+        vert_lines = VGroup()
+
+        for i in range(5):
+            height = (-2 + i) * DOWN + DOWN * 0.5
+            vert_line = Line(LEFT * 5.5 + height, RIGHT * 2.5 + height)
+            vert_line.set_stroke(PURE_GREEN, 2.0)
+            vert_lines.add(vert_line)
+        
+        vert_lines[0].set_stroke(PURE_GREEN, 5.0)
+
+        maze_title = Text(
+            "Maze 3",
+            font = "0xProto Nerd Font",
+            font_size = 60,
+            weight = BOLD,
+            stroke_color = PURE_GREEN,
+            color = PURE_GREEN
+        )
+        maze_title.next_to(mid_line, UP, buff = 0.4)
+        maze_title.set_x(vert_lines.get_center()[0])
+
+        self.play(
+            Write(maze_title),
+            Write(mid_line), 
+            
+            LaggedStart(
+                *[Write(line) for line in vert_lines],
+                lag_ratio = 0.15
+            )
+        )
+
+        self.wait(0.5)
+
+        time_text = Text(
+            "Time",
+            font = "0xProto Nerd Font",
+            font_size = 48,
+            stroke_color = PURE_GREEN,
+            color = PURE_GREEN
+        )
+        time_text.next_to(vert_lines[0], UP, buff = 0.1)
+        time_text.align_to(vert_lines[0], RIGHT)
+
+        algorithm_text = Text(
+            "Algorithm",
+            font = "0xProto Nerd Font",
+            font_size = 48,
+            stroke_color = PURE_GREEN,
+            color = PURE_GREEN
+        )
+        algorithm_text.align_to(time_text, UP)
+        algorithm_text.align_to(vert_lines[0], LEFT)
+
+        self.play(Write(algorithm_text), Write(time_text))
+
+        self.wait(0.5)
+
+        algorithms = [
+            "Random walk", "DFS",
+            "Astar", "BFS",
+            "Wall follower"
+        ]
+
+        times = [
+            "-", "17,2s", "6,2s",
+            "5,1s", "1,7s"
+        ]
+
+        for i in range(len(algorithms)):
+            times_text = Text(
+                times[i],
+                font = "0xProto Nerd Font",
+                font_size = 48,
+                stroke_color = PURE_GREEN,
+                color = PURE_GREEN
+            )
+            times_text.move_to(time_text)
+            times_text.align_to(time_text, RIGHT)
+            times_text.shift(DOWN * (i + 1))
+
+            alg_text = Text(
+                algorithms[i],
+                font = "0xProto Nerd Font",
+                font_size = 48,
+                stroke_color = PURE_GREEN,
+                color = PURE_GREEN
+            )
+            alg_text.align_to(times_text, UP)
+            alg_text.align_to(algorithm_text, LEFT)
+
+            if i == 0:
+                alg_text.shift(UP * 0.25)
+
+            self.play(Write(times_text), Write(alg_text))
+            self.wait(0.5)
+
+        self.wait(0.5)
+
+
+class MazeGenVideoTitle(Scene):
+    def construct(self):
+
+        self.camera.background_color = "#040805" 
+
+        step_text = Text(
+            "Step 5",
+            font = "0xProto Nerd Font",
+            font_size = 72,
+            color = "#00ff66",
+            stroke_color = "#00ff66"
+        )
+        step_text.to_edge(UP)
+
+        cursor = Rectangle(
+            color = "#00ff66",
+            fill_color = "#00ff66",
+            fill_opacity = 1.0,
+            height = 1.1,
+            width = 0.5,
+        ).move_to(step_text[0])
+
+        self.play(TypeWithCursor(step_text, cursor))
+        self.play(Blink(cursor, blinks = 2))
+
+        cursor.move_to(step_text)
+        cursor.shift(DOWN * 1.5)
+        self.wait(0.25)
+
+        biggest_text = Text(
+            "Biggest Maze in",
+            font = "IBM Plex Mono",
+            font_size = 90,
+            color = "#00ff66",
+            stroke_color = "#00ff66"
+        )
+        biggest_text.move_to(step_text)
+        biggest_text.shift(DOWN * 2.0)
+
+        world_text = Text(
+            "the World",
+            font = "IBM Plex Mono",
+            font_size = 90,
+            color = "#00ff66",
+            stroke_color = "#00ff66"
+        )
+        world_text.move_to(biggest_text)
+        world_text.shift(DOWN * 1.5)
+
+        cursor.shift(DOWN * 1.4)
+        self.wait(0.5)
+        cursor.move_to(biggest_text[0])
+
+        self.play(TypeWithCursor(biggest_text, cursor))
+
+        cursor.move_to(world_text[0])
+        self.play(TypeWithCursor(world_text, cursor))
+        self.play(Blink(cursor, blinks = 4))
