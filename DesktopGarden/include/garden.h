@@ -2,25 +2,29 @@
 
 #include <vector>
 
+#include "field.h"
 #include "raylib.h"
+
 struct Garden {
-  Garden(float tilesWidth, float tilesHeight, int potsRows, int potsColumns);
+  Garden(float tilesWidth, float tilesHeight);
 
   void drawGarden();
 
   float tilesWidth = 0;
   float tilesHeight = 0;
 
-  int potsRows = 0;
-  int potsColumns = 0;
-
   int tilesRows = 0;
   int tilesColumns = 0;
 
-  Texture2D grass_tileset;
-  Texture2D fence_tileset;
-  Texture2D props_atlas;
+  Texture2D grassTileset;
+  Texture2D fenceTileset;
+  Texture2D propsAtlas;
 
-  std::vector<int> props_map;
-  std::vector<int> props_flips_map;
+  const int fenceOffset = 24;
+  const int propsOffset = 48;
+
+  std::vector<int> propsMap;
+  std::vector<int> propsFlipsMap;
+
+  std::vector<Field> fields;
 };

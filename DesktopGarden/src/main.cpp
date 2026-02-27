@@ -35,7 +35,7 @@ int main() {
   float tileWidth = 32;
   float tileHeight = 32;
 
-  Garden garden{32.0f, 32.0f, 1, 1};
+  Garden garden{32.0f, 32.0f};
 
   while (!WindowShouldClose()) {
     BeginDrawing();
