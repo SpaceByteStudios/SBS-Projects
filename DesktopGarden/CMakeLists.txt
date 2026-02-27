@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.11)
-project(RaylibTest LANGUAGES CXX)
+project(DesktopGarden LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Dependencies
 set(RAYLIB_VERSION 5.5)
-find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
+find_package(raylib ${RAYLIB_VERSION} QUIET)
 
 if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   include(FetchContent)
@@ -23,9 +22,13 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   endif()
 endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/win_overlay.cpp src/garden.cpp)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+
 #set(raylib_VERBOSE 1)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
