@@ -18,7 +18,7 @@ void Game::init() {
   plantsData.addType(PlantType{1, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/Strawberry.png")});
   plantsData.addType(PlantType{2, 100, 1, 6, 1, 2, LoadTexture("assets/sprites/Sunflower.png")});
   plantsData.addType(PlantType{3, 100, 1, 7, 1, 1, LoadTexture("assets/sprites/Blackberry.png")});
-  garden.init(plantsData);
+  garden.init(plantsData, ui);
 }
 
 void Game::run() {
@@ -27,7 +27,7 @@ void Game::run() {
     ClearBackground(BLANK);
     BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
     garden.drawGarden();
-    DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
+    // DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
     EndBlendMode();
     EndDrawing();
   }

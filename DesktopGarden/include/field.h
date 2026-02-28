@@ -10,8 +10,10 @@ struct Field {
   Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, PlantsData plantsData);
 
   void drawField();
+  void drawPlants();
   bool cellIsWatered(int x, int y);
   Vector2 getWateredTile(int x, int y);
+  bool mouseIsOnField();
 
   const int fieldPosX;
   const int fieldPosY;

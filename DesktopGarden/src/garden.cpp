@@ -9,7 +9,9 @@
 #include "raylib.h"
 #include "raymath.h"
 
-void Garden::init(PlantsData plantsData) {
+void Garden::init(PlantsData plantsData, UI ui) {
+  this->ui = ui;
+
   tilesColumns = GetScreenWidth() / TILE_SIZE;
   tilesRows = GetScreenHeight() / TILE_SIZE - 1;
 
@@ -97,5 +99,13 @@ void Garden::drawGarden() {
 
   for (const std::unique_ptr<Field>& field : fields) {
     field->drawField();
+
+    if (field->mouseIsOnField()) {
+      ui.drawSelection();
+    }
+  }
+
+  for (const std::unique_ptr<Field>& field : fields) {
+    field->drawPlants();
   }
 }

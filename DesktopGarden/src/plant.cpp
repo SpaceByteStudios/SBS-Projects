@@ -15,7 +15,7 @@ Plant::Plant(int plantPosX, int plantPosY, PlantType plantType, Field* field) {
 }
 
 void Plant::drawPlant() {
-  const int plantOffset = 12;
+  const int plantOffset = 10;
   int tileIndexX = currentStage;
 
   if (!field || currentStage >= plantType.growthStages) {

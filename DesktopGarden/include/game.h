@@ -2,6 +2,7 @@
 
 #include "garden.h"
 #include "plantsData.h"
+#include "ui.h"
 
 class Game {
  public:
@@ -12,4 +13,5 @@ class Game {
  private:
   Garden garden;
   PlantsData plantsData;
+  UI ui;
 };

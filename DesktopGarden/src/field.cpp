@@ -182,8 +182,22 @@ void Field::drawField() {
       }
     }
   }
+}
 
+void Field::drawPlants() {
   for (Plant& plant : plants) {
     plant.drawPlant();
   }
+}
+
+bool Field::mouseIsOnField() {
+  Rectangle bounds = Rectangle(fieldPosX * TILE_SIZE + 2, fieldPosY * TILE_SIZE + 2, fieldWidth * TILE_SIZE - 4,
+                               fieldHeight * TILE_SIZE - 4);
+
+  Vector2 mousePos = GetMousePosition();
+
+  bool isMouseInBounds = (mousePos.x >= bounds.x && mousePos.x <= bounds.x + bounds.width) &&
+                         (mousePos.y >= bounds.y && mousePos.y <= bounds.y + bounds.height);
+
+  return isMouseInBounds;
 }
