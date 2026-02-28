@@ -1,5 +1,7 @@
 #include "field.h"
 
+#include <memory>
+
 #include "constants.h"
 #include "plant.h"
 #include "plantType.h"
@@ -7,34 +9,16 @@
 #include "raylib.h"
 #include "raymath.h"
 
-Field::Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, PlantsData plantsData)
-    : fieldPosX(fieldPosX), fieldPosY(fieldPosY), fieldWidth(fieldWidth), fieldHeight(fieldHeight) {
+Field::Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, PlantsData& plantsData)
+    : fieldPosX(fieldPosX),
+      fieldPosY(fieldPosY),
+      fieldWidth(fieldWidth),
+      fieldHeight(fieldHeight),
+      plantsData(plantsData) {
   fieldTileset = LoadTexture("assets/sprites/Soil.png");
 
   isWatered.resize(fieldWidth * fieldHeight);
   plants.resize(fieldWidth * fieldHeight);
-
-  for (int y = 0; y < fieldHeight; y++) {
-    for (int x = 0; x < fieldWidth; x++) {
-      int index = y * fieldWidth + x;
-
-      isWatered[index] = (y + x) % 2;
-
-      isWatered[index] = 1;
-    }
-  }
-
-  isWatered[2] = 1;
-  isWatered[6] = 1;
-
-  for (int y = 0; y < fieldHeight; y++) {
-    for (int x = 0; x < fieldWidth; x++) {
-      int index = y * fieldWidth + x;
-
-      plants[index] = Plant{x, y, *plantsData.get(0), this};
-      plants[index].currentStage = 5;
-    }
-  }
 }
 
 bool Field::cellIsWatered(int x, int y) {
@@ -194,10 +178,5 @@ bool Field::mouseIsOnField() {
   Rectangle bounds = Rectangle(fieldPosX * TILE_SIZE + 2, fieldPosY * TILE_SIZE + 2, fieldWidth * TILE_SIZE - 4,
                                fieldHeight * TILE_SIZE - 4);
 
-  Vector2 mousePos = GetMousePosition();
-
-  bool isMouseInBounds = (mousePos.x >= bounds.x && mousePos.x <= bounds.x + bounds.width) &&
-                         (mousePos.y >= bounds.y && mousePos.y <= bounds.y + bounds.height);
-
-  return isMouseInBounds;
+  return CheckCollisionPointRec(GetMousePosition(), bounds);
 }

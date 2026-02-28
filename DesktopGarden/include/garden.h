@@ -9,7 +9,8 @@
 #include "ui.h"
 
 struct Garden {
-  void init(PlantsData plantsData, UI ui);
+  Garden(UI& ui, PlantsData& plantsData);
+
   void drawGarden();
 
   int tilesRows = 0;
@@ -26,5 +27,5 @@ struct Garden {
   std::vector<int> propsFlipsMap;
 
   std::vector<std::unique_ptr<Field>> fields;
-  UI ui;
+  UI& ui;
 };

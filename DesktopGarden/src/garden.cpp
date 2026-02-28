@@ -1,5 +1,6 @@
 #include "garden.h"
 
+#include <cstddef>
 #include <cstdlib>
 #include <memory>
 #include <vector>
@@ -9,9 +10,7 @@
 #include "raylib.h"
 #include "raymath.h"
 
-void Garden::init(PlantsData plantsData, UI ui) {
-  this->ui = ui;
-
+Garden::Garden(UI& ui, PlantsData& plantsData) : ui(ui) {
   tilesColumns = GetScreenWidth() / TILE_SIZE;
   tilesRows = GetScreenHeight() / TILE_SIZE - 1;
 
@@ -33,12 +32,12 @@ void Garden::init(PlantsData plantsData, UI ui) {
     }
   }
 
-  for (int i = 0; i < 0; i++) {
+  for (int i = 0; i < 1; i++) {
     int fieldPosX = 5 + i * 9;
-    fields.push_back(std::make_unique<Field>(5, 2, 5, 5, plantsData));
+    fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
   }
 
-  fields.push_back(std::make_unique<Field>(5, 2, 5, 5, plantsData));
+  // fields.push_back(std::make_unique<Field>(5, 2, 5, 5, plantsData));
 }
 
 void Garden::drawGarden() {

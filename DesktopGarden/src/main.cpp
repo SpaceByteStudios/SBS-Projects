@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "constants.h"
 #include "game.h"
 #include "raylib.h"
 // #include "win_overlay.h"
@@ -15,10 +16,12 @@ int main() {
   SetWindowState(FLAG_WINDOW_UNDECORATED);
   SetWindowState(FLAG_WINDOW_TOPMOST);
 
+  SetExitKey(KEY_NULL);
+
   int screenWidth = GetMonitorWidth(0);
   int screenHeight = GetMonitorHeight(0);
 
-  int windowHeight = 256;
+  int windowHeight = SCREEN_HEIGHT;
   int windowPosHeight = screenHeight - windowHeight;
 
   SetWindowSize(screenWidth, windowHeight);

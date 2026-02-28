@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory.h>
+
+#include <memory>
 #include <vector>
 
 #include "plant.h"
@@ -7,7 +10,7 @@
 #include "raylib.h"
 
 struct Field {
-  Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, PlantsData plantsData);
+  Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, PlantsData& plantsData);
 
   void drawField();
   void drawPlants();
@@ -25,4 +28,6 @@ struct Field {
   std::vector<Plant> plants;
 
   Texture2D fieldTileset;
+
+  PlantsData& plantsData;
 };
