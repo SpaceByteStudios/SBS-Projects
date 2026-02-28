@@ -22,7 +22,7 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   endif()
 endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp src/win_overlay.cpp src/garden.cpp src/field.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/win_overlay.cpp src/garden.cpp src/field.cpp src/plant.cpp src/game.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)

@@ -2,23 +2,25 @@
 
 #include <vector>
 
+#include "plant.h"
+#include "plantsData.h"
 #include "raylib.h"
 
 struct Field {
-  Field(float tilesWidth, float tilesHeight, int fieldPosX, int fieldPosY);
+  Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, PlantsData plantsData);
 
   void drawField();
+  bool cellIsWatered(int x, int y);
+  Vector2 getWateredTile(int x, int y);
 
-  float tilesWidth;
-  float tilesHeight;
+  const int fieldPosX;
+  const int fieldPosY;
 
-  int fieldPosX;
-  int fieldPosY;
-
-  const int fieldWidth = 5;
-  const int fieldHeight = 5;
+  const int fieldWidth;
+  const int fieldHeight;
 
   std::vector<int> isWatered;
+  std::vector<Plant> plants;
 
   Texture2D fieldTileset;
 };

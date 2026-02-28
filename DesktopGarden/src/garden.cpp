@@ -1,17 +1,17 @@
 #include "garden.h"
 
 #include <cstdlib>
+#include <memory>
 #include <vector>
 
+#include "constants.h"
+#include "plantsData.h"
 #include "raylib.h"
 #include "raymath.h"
 
-Garden::Garden(float tilesWidth, float tilesHeight) {
-  this->tilesWidth = tilesWidth;
-  this->tilesHeight = tilesHeight;
-
-  tilesColumns = GetScreenWidth() / tilesWidth;
-  tilesRows = GetScreenHeight() / tilesHeight - 1;
+void Garden::init(PlantsData plantsData) {
+  tilesColumns = GetScreenWidth() / TILE_SIZE;
+  tilesRows = GetScreenHeight() / TILE_SIZE - 1;
 
   grassTileset = LoadTexture("assets/sprites/Grass.png");
   fenceTileset = LoadTexture("assets/sprites/Fences.png");
@@ -31,10 +31,12 @@ Garden::Garden(float tilesWidth, float tilesHeight) {
     }
   }
 
-  for (int i = 0; i < 8; i++) {
-    int fieldPosX = 2 + i * 7;
-    fields.push_back(Field{tilesWidth, tilesHeight, fieldPosX, 2});
+  for (int i = 0; i < 0; i++) {
+    int fieldPosX = 5 + i * 9;
+    fields.push_back(std::make_unique<Field>(5, 2, 5, 5, plantsData));
   }
+
+  fields.push_back(std::make_unique<Field>(5, 2, 5, 5, plantsData));
 }
 
 void Garden::drawGarden() {
@@ -47,10 +49,10 @@ void Garden::drawGarden() {
         tileIndexY = 0;
       }
 
-      Rectangle source = {tileIndexX * tilesWidth, tileIndexY * tilesHeight, tilesWidth, tilesHeight};
-      Vector2 position = {x * tilesWidth, y * tilesHeight};
+      Rectangle source = {tileIndexX * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+      Vector2 position = {x * TILE_SIZE, y * TILE_SIZE};
 
-      DrawTextureRec(grassTileset, source, Vector2Add(position, {0, tilesHeight}), WHITE);
+      DrawTextureRec(grassTileset, source, Vector2Add(position, {0, TILE_SIZE}), WHITE);
     }
   }
 
@@ -65,8 +67,8 @@ void Garden::drawGarden() {
       }
 
       if (tileIndexX != -1 && tileIndexY != -1) {
-        Rectangle source = {tileIndexX * tilesWidth, tileIndexY * tilesHeight, tilesWidth, tilesHeight};
-        Vector2 position = {x * tilesWidth, y * tilesHeight + fenceOffset};
+        Rectangle source = {tileIndexX * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+        Vector2 position = {x * TILE_SIZE, y * TILE_SIZE + fenceOffset};
 
         DrawTextureRec(fenceTileset, source, position, WHITE);
       }
@@ -81,19 +83,19 @@ void Garden::drawGarden() {
         Rectangle source;
 
         if (propsFlipsMap[y * tilesColumns + x]) {
-          source = {prop_id * tilesWidth + tilesWidth, 0, -tilesWidth, tilesHeight};
+          source = {prop_id * TILE_SIZE + TILE_SIZE, 0, -TILE_SIZE, TILE_SIZE};
         } else {
-          source = {prop_id * tilesWidth, 0, tilesWidth, tilesHeight};
+          source = {prop_id * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
         }
 
-        Vector2 position = {x * tilesWidth, y * tilesHeight + propsOffset};
+        Vector2 position = {x * TILE_SIZE, y * TILE_SIZE + propsOffset};
 
         DrawTextureRec(propsAtlas, source, position, WHITE);
       }
     }
   }
 
-  for (Field& field : fields) {
-    field.drawField();
+  for (const std::unique_ptr<Field>& field : fields) {
+    field->drawField();
   }
 }

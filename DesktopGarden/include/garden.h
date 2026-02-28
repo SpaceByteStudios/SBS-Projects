@@ -1,17 +1,15 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "field.h"
+#include "plantsData.h"
 #include "raylib.h"
 
 struct Garden {
-  Garden(float tilesWidth, float tilesHeight);
-
+  void init(PlantsData plantsData);
   void drawGarden();
-
-  float tilesWidth = 0;
-  float tilesHeight = 0;
 
   int tilesRows = 0;
   int tilesColumns = 0;
@@ -26,5 +24,5 @@ struct Garden {
   std::vector<int> propsMap;
   std::vector<int> propsFlipsMap;
 
-  std::vector<Field> fields;
+  std::vector<std::unique_ptr<Field>> fields;
 };
