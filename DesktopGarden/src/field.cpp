@@ -1,7 +1,5 @@
 #include "field.h"
 
-#include <iostream>
-
 #include "constants.h"
 #include "plant.h"
 #include "plantType.h"
@@ -21,10 +19,22 @@ Field::Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, Plan
       int index = y * fieldWidth + x;
 
       isWatered[index] = (y + x) % 2;
+
+      isWatered[index] = 1;
     }
   }
 
-  plants[7] = Plant{0, 0, *plantsData.get(2), this};
+  isWatered[2] = 1;
+  isWatered[6] = 1;
+
+  for (int y = 0; y < fieldHeight; y++) {
+    for (int x = 0; x < fieldWidth; x++) {
+      int index = y * fieldWidth + x;
+
+      plants[index] = Plant{x, y, *plantsData.get(0), this};
+      plants[index].currentStage = 5;
+    }
+  }
 }
 
 bool Field::cellIsWatered(int x, int y) {
