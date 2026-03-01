@@ -8,17 +8,19 @@
 #include "constants.h"
 #include "game.h"
 #include "moneySystem.h"
+#include "plantsData.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "shop.h"
 
-UI::UI(Game& game, MoneySystem& moneySystem) : game(game), moneySystem(moneySystem) {
-  shop = std::make_unique<Shop>();
+UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData) : game(game), moneySystem(moneySystem) {
+  shop = std::make_unique<Shop>(game, moneySystem, plantsData);
 
   selectionTexture = LoadTexture("assets/sprites/ui/Selection.png");
   buttonsTexture = LoadTexture("assets/sprites/ui/Buttons.png");
   cursorTexture = LoadTexture("assets/sprites/ui/Cursor.png");
   wateringTexture = LoadTexture("assets/sprites/ui/Watering.png");
+  seedsTexture = LoadTexture("assets/sprites/crop/Seeds.png");
 
   moneyDisplayFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
   SetTextureFilter(moneyDisplayFont.texture, TEXTURE_FILTER_POINT);
@@ -40,6 +42,10 @@ void UI::updateUI() {
   Vector2 mousePos = GetMousePosition();
   if (game.getState() == GameState::Watering) {
     mousePos += mouseWaterOffset;
+  }
+
+  if (game.getState() == GameState::Planting) {
+    shop->isOpen = false;
   }
 
   for (int i = 0; i < 3; i++) {
@@ -132,13 +138,30 @@ void UI::drawShop() {
 
 void UI::drawButtons() {
   for (int i = 0; i < 3; i++) {
+    if (i == 1 && game.getState() == GameState::Planting) {
+      float tileIndexY = pressedButton[i] ? 1.0f : 0.0f;
+
+      Rectangle seedSource = {game.getPlantID() * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+      Rectangle buttonSource = {3 * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+      Vector2 buttonCenter = {buttonsSize[i].x / 2, buttonsSize[i].y / 2};
+      Rectangle buttonDest = {buttonsPos[i].x, buttonsPos[i].y, buttonsSize[i].x, buttonsSize[i].y};
+
+      Color tint = hoversButton[i] ? Color{230, 230, 230, 255} : WHITE;
+      tint = pressedButton[i] ? Color{196, 196, 196, 255} : tint;
+
+      DrawTexturePro(buttonsTexture, buttonSource, buttonDest, buttonCenter, 0.0f, tint);
+      DrawTexturePro(seedsTexture, seedSource, buttonDest, buttonCenter, 0.0f, tint);
+
+      continue;
+    }
+
     float tileIndexY = pressedButton[i] ? 1.0f : 0.0f;
 
     Rectangle source = {i * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
     Vector2 center = {buttonsSize[i].x / 2, buttonsSize[i].y / 2};
     Rectangle dest = {buttonsPos[i].x, buttonsPos[i].y, buttonsSize[i].x, buttonsSize[i].y};
 
-    Color tint = hoversButton[i] ? Color{240, 240, 240, 255} : WHITE;
+    Color tint = hoversButton[i] ? Color{230, 230, 230, 255} : WHITE;
     tint = pressedButton[i] ? Color{196, 196, 196, 255} : tint;
 
     DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, tint);
@@ -197,6 +220,16 @@ void UI::drawCursor() {
     Vector2 waterOrigin = {TILE_SIZE / 2, TILE_SIZE / 2};
 
     DrawTexturePro(wateringTexture, waterSource, waterDest, waterOrigin, 0.0f, WHITE);
+  }
+
+  if (game.getState() == GameState::Planting) {
+    cursorType = 1;
+
+    Rectangle seedSource = {game.getPlantID() * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+    Rectangle seedDest = {mousePos.x, mousePos.y, TILE_SIZE * 2, TILE_SIZE * 2};
+    Vector2 seedOrigin = {TILE_SIZE, TILE_SIZE};
+
+    DrawTexturePro(seedsTexture, seedSource, seedDest, seedOrigin, 0.0f, WHITE);
   }
 
   Rectangle mouseSource = {cursorType * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};

@@ -18,6 +18,9 @@ class Game {
   void setState(GameState gameState);
   GameState getState();
 
+  void setPlantID(int plantID);
+  int getPlantID();
+
  private:
   std::unique_ptr<PlantsData> plantsData;
   std::unique_ptr<UI> ui;
@@ -25,4 +28,6 @@ class Game {
   std::unique_ptr<MoneySystem> moneySystem;
 
   GameState currentState = GameState::Idle;
+
+  int plantingPlantID;
 };

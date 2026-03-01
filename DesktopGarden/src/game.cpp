@@ -21,16 +21,16 @@ void DrawDebugGrid(int screenWidth, int screenHeight, int gridSize, Color color)
 
 Game::Game() {
   moneySystem = std::make_unique<MoneySystem>();
-  ui = std::make_unique<UI>(*this, *moneySystem);
   plantsData = std::make_unique<PlantsData>();
+  ui = std::make_unique<UI>(*this, *moneySystem, *plantsData);
   garden = std::make_unique<Garden>(*this, *ui, *plantsData);
 }
 
 void Game::init() {
-  plantsData->addType(PlantType{0, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
-  plantsData->addType(PlantType{1, 100, 1, 7, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
-  plantsData->addType(PlantType{2, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
-  plantsData->addType(PlantType{3, 100, 1, 6, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
+  plantsData->addType(PlantType{0, 1, 6, 1, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
+  plantsData->addType(PlantType{1, 1, 6, 3, 12, 1, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
+  plantsData->addType(PlantType{2, 1, 6, 2, 20, 1, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
+  plantsData->addType(PlantType{3, 1, 6, 2, 45, 1, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
 }
 
 void Game::run() {
@@ -61,4 +61,12 @@ void Game::setState(GameState gameState) {
 
 GameState Game::getState() {
   return currentState;
+}
+
+void Game::setPlantID(int plantID) {
+  plantingPlantID = plantID;
+}
+
+int Game::getPlantID() {
+  return plantingPlantID;
 }

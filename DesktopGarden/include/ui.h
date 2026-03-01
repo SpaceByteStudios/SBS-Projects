@@ -4,13 +4,14 @@
 #include <vector>
 
 #include "moneySystem.h"
+#include "plantsData.h"
 #include "raylib.h"
 #include "shop.h"
 
 class Game;
 
 struct UI {
-  UI(Game& game, MoneySystem& moneySystem);
+  UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData);
 
   void updateUI();
 
@@ -36,6 +37,7 @@ struct UI {
   Texture2D buttonsTexture;
   Texture2D cursorTexture;
   Texture2D wateringTexture;
+  Texture2D seedsTexture;
 
   Font moneyDisplayFont;
   Texture2D moneyDisplayTexture;

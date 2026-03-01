@@ -2,10 +2,14 @@
 
 #include <vector>
 
+#include "moneySystem.h"
+#include "plantsData.h"
 #include "raylib.h"
 
+class Game;
+
 struct Shop {
-  Shop();
+  Shop(Game& game, MoneySystem& moneySystem, PlantsData& plantsData);
 
   void drawShop();
   void updateShop();
@@ -21,4 +25,8 @@ struct Shop {
 
   Texture2D shopTexture;
   Texture2D shopButtonsTexture;
+
+  Game& game;
+  MoneySystem& moneySystem;
+  PlantsData& plantsData;
 };

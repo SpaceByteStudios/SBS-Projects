@@ -5,9 +5,13 @@
 struct PlantType {
   int id;
 
-  float growthAmount;
   float growthSpeed;
   int growthStages;
+
+  float waterConsumption;
+
+  int plantCost;
+  int plantValue;
 
   int tileSizeX;
   int tileSizeY;
