@@ -25,13 +25,13 @@ endif()
 add_executable(
   ${PROJECT_NAME}
   src/main.cpp
-  src/win_overlay.cpp
   src/garden.cpp
   src/field.cpp
   src/plant.cpp
   src/plantsData.cpp
   src/game.cpp
   src/ui.cpp
+  src/moneySystem.cpp
   src/shop.cpp
 )
 

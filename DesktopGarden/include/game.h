@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "garden.h"
+#include "moneySystem.h"
 #include "plantsData.h"
 #include "ui.h"
 
@@ -21,6 +22,7 @@ class Game {
   std::unique_ptr<PlantsData> plantsData;
   std::unique_ptr<UI> ui;
   std::unique_ptr<Garden> garden;
+  std::unique_ptr<MoneySystem> moneySystem;
 
   GameState currentState = GameState::Idle;
 };

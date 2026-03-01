@@ -3,13 +3,14 @@
 #include <memory>
 #include <vector>
 
+#include "moneySystem.h"
 #include "raylib.h"
 #include "shop.h"
 
 class Game;
 
 struct UI {
-  UI(Game& game);
+  UI(Game& game, MoneySystem& moneySystem);
 
   void updateUI();
 
@@ -36,6 +37,9 @@ struct UI {
   Texture2D cursorTexture;
   Texture2D wateringTexture;
 
+  Font moneyDisplayFont;
+  Texture2D moneyDisplayTexture;
+
   int cursorType = 0;
 
   int wateringFrame = 0;
@@ -47,5 +51,6 @@ struct UI {
   const Vector2 mouseWaterOffset = {16, -32};
   const Vector2 waterOffset = {6, -46};
 
+  MoneySystem& moneySystem;
   std::unique_ptr<Shop> shop;
 };

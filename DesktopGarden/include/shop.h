@@ -14,7 +14,6 @@ struct Shop {
 
   bool isOpen = false;
 
-  std::vector<bool> pressedButton;
   std::vector<bool> hoversButton;
 
   std::vector<Vector2> buttonsPos;

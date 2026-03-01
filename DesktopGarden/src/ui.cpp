@@ -3,20 +3,26 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <string>
 
 #include "constants.h"
 #include "game.h"
+#include "moneySystem.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "shop.h"
 
-UI::UI(Game& game) : game(game) {
+UI::UI(Game& game, MoneySystem& moneySystem) : game(game), moneySystem(moneySystem) {
   shop = std::make_unique<Shop>();
 
   selectionTexture = LoadTexture("assets/sprites/ui/Selection.png");
   buttonsTexture = LoadTexture("assets/sprites/ui/Buttons.png");
   cursorTexture = LoadTexture("assets/sprites/ui/Cursor.png");
   wateringTexture = LoadTexture("assets/sprites/ui/Watering.png");
+
+  moneyDisplayFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
+  SetTextureFilter(moneyDisplayFont.texture, TEXTURE_FILTER_POINT);
+  moneyDisplayTexture = LoadTexture("assets/sprites/ui/MoneyDisplay.png");
 
   pressedButton.resize(3, false);
   hoversButton.resize(3, false);
@@ -27,7 +33,7 @@ UI::UI(Game& game) : game(game) {
     buttonsSize.push_back(Vector2(buttonSize * TILE_SIZE, buttonSize * TILE_SIZE));
   }
 
-  // HideCursor();
+  HideCursor();
 }
 
 void UI::updateUI() {
@@ -82,10 +88,20 @@ void UI::updateUI() {
           SetMousePosition(mousePos.x - mouseWaterOffset.x, mousePos.y - mouseWaterOffset.y);
           break;
         case 1:
+          if (game.getState() == GameState::Watering) {
+            Vector2 mousePos = GetMousePosition();
+            SetMousePosition(mousePos.x + mouseWaterOffset.x, mousePos.y + mouseWaterOffset.y);
+            playingAnimation = false;
+          }
           game.setState(GameState::Shopping);
           shop->isOpen = true;
           break;
         case 2:
+          if (game.getState() == GameState::Watering) {
+            Vector2 mousePos = GetMousePosition();
+            SetMousePosition(mousePos.x + mouseWaterOffset.x, mousePos.y + mouseWaterOffset.y);
+            playingAnimation = false;
+          }
           game.setState(GameState::Settings);
           break;
       }
@@ -106,6 +122,8 @@ void UI::updateUI() {
       waterAnimationTimer = 0.0f;
     }
   }
+
+  shop->updateShop();
 }
 
 void UI::drawShop() {
@@ -125,6 +143,26 @@ void UI::drawButtons() {
 
     DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, tint);
   }
+
+  Vector2 displayPos = {28 * TILE_SIZE, 7 * TILE_SIZE};
+
+  DrawTexture(moneyDisplayTexture, displayPos.x, displayPos.y, WHITE);
+
+  BeginBlendMode(BLEND_ALPHA);
+
+  std::string moneyText = std::to_string(moneySystem.money);
+
+  for (int i = moneyText.length() - 3; i > 0; i -= 3) {
+    moneyText.insert(i, ".");
+  }
+
+  Vector2 rightPos = displayPos + Vector2(4 * TILE_SIZE, TILE_SIZE / 4);
+
+  Vector2 textSize = MeasureTextEx(moneyDisplayFont, moneyText.c_str(), 20, 0.5f);
+  Vector2 textPos = Vector2(rightPos.x - textSize.x - 7, rightPos.y);
+
+  DrawTextEx(moneyDisplayFont, moneyText.c_str(), textPos, 20, 0.5f, WHITE);
+  EndBlendMode();
 }
 
 void UI::drawSelection() {

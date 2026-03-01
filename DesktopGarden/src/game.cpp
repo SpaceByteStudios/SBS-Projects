@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "garden.h"
+#include "moneySystem.h"
 #include "plantType.h"
 #include "raylib.h"
 #include "ui.h"
@@ -19,16 +20,17 @@ void DrawDebugGrid(int screenWidth, int screenHeight, int gridSize, Color color)
 }
 
 Game::Game() {
-  ui = std::make_unique<UI>(*this);
+  moneySystem = std::make_unique<MoneySystem>();
+  ui = std::make_unique<UI>(*this, *moneySystem);
   plantsData = std::make_unique<PlantsData>();
   garden = std::make_unique<Garden>(*this, *ui, *plantsData);
 }
 
 void Game::init() {
-  plantsData->addType(PlantType{0, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
-  plantsData->addType(PlantType{1, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
-  plantsData->addType(PlantType{2, 100, 1, 6, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
-  plantsData->addType(PlantType{3, 100, 1, 7, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
+  plantsData->addType(PlantType{0, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
+  plantsData->addType(PlantType{1, 100, 1, 7, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
+  plantsData->addType(PlantType{2, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
+  plantsData->addType(PlantType{3, 100, 1, 6, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
 }
 
 void Game::run() {
@@ -46,7 +48,7 @@ void Game::run() {
     ui->drawButtons();
     ui->drawCursor();
 
-    DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
+    // DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
 
     EndBlendMode();
     EndDrawing();
