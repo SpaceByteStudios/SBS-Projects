@@ -1,10 +1,7 @@
 #include "field.h"
 
-#include <memory>
-
 #include "constants.h"
 #include "plant.h"
-#include "plantType.h"
 #include "plantsData.h"
 #include "raylib.h"
 #include "raymath.h"
@@ -19,6 +16,69 @@ Field::Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, Plan
 
   isWatered.resize(fieldWidth * fieldHeight);
   plants.resize(fieldWidth * fieldHeight);
+}
+
+void Field::drawField() {
+  Vector2 offset = {fieldPosX * TILE_SIZE, fieldPosY * TILE_SIZE};
+
+  for (int y = 0; y < fieldHeight; y++) {
+    for (int x = 0; x < fieldWidth; x++) {
+      int tileIndexX = 2;
+      int tileIndexY = 1;
+
+      if (x == 0) {
+        tileIndexX = 1;
+      }
+      if (x == fieldWidth - 1) {
+        tileIndexX = 3;
+      }
+
+      if (y == 0) {
+        tileIndexY = 0;
+      }
+      if (y == fieldHeight - 1) {
+        tileIndexY = 2;
+      }
+
+      Rectangle source = {tileIndexX * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+      Vector2 position = {x * TILE_SIZE, y * TILE_SIZE};
+
+      DrawTextureRec(fieldTileset, source, Vector2Add(position, offset), WHITE);
+    }
+  }
+
+  for (int y = 0; y < fieldHeight; y++) {
+    for (int x = 0; x < fieldWidth; x++) {
+      Vector2 tileIndex = getWateredTile(x, y);
+
+      if (tileIndex.x != -1) {
+        Rectangle source = {(tileIndex.x + 4) * TILE_SIZE, tileIndex.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+        Vector2 position = {x * TILE_SIZE, y * TILE_SIZE};
+
+        DrawTextureRec(fieldTileset, source, Vector2Add(position, offset), WHITE);
+      }
+    }
+  }
+}
+
+void Field::drawPlants() {
+  for (Plant& plant : plants) {
+    plant.drawPlant();
+  }
+}
+
+void Field::waterCell() {
+  Vector2 mousePos = GetMousePosition();
+
+  int mouseX = mousePos.x / TILE_SIZE;
+  int mouseY = mousePos.y / TILE_SIZE;
+
+  int fieldX = mouseX - fieldPosX;
+  int fieldY = mouseY - fieldPosY;
+
+  int index = fieldY * fieldWidth + fieldX;
+
+  isWatered[index] = true;
 }
 
 bool Field::cellIsWatered(int x, int y) {
@@ -123,55 +183,6 @@ Vector2 Field::getWateredTile(int x, int y) {
   }
 
   return {(float)tileX, (float)tileY};
-}
-
-void Field::drawField() {
-  Vector2 offset = {fieldPosX * TILE_SIZE, fieldPosY * TILE_SIZE};
-
-  for (int y = 0; y < fieldHeight; y++) {
-    for (int x = 0; x < fieldWidth; x++) {
-      int tileIndexX = 2;
-      int tileIndexY = 1;
-
-      if (x == 0) {
-        tileIndexX = 1;
-      }
-      if (x == fieldWidth - 1) {
-        tileIndexX = 3;
-      }
-
-      if (y == 0) {
-        tileIndexY = 0;
-      }
-      if (y == fieldHeight - 1) {
-        tileIndexY = 2;
-      }
-
-      Rectangle source = {tileIndexX * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-      Vector2 position = {x * TILE_SIZE, y * TILE_SIZE};
-
-      DrawTextureRec(fieldTileset, source, Vector2Add(position, offset), WHITE);
-    }
-  }
-
-  for (int y = 0; y < fieldHeight; y++) {
-    for (int x = 0; x < fieldWidth; x++) {
-      Vector2 tileIndex = getWateredTile(x, y);
-
-      if (tileIndex.x != -1) {
-        Rectangle source = {(tileIndex.x + 4) * TILE_SIZE, tileIndex.y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-        Vector2 position = {x * TILE_SIZE, y * TILE_SIZE};
-
-        DrawTextureRec(fieldTileset, source, Vector2Add(position, offset), WHITE);
-      }
-    }
-  }
-}
-
-void Field::drawPlants() {
-  for (Plant& plant : plants) {
-    plant.drawPlant();
-  }
 }
 
 bool Field::mouseIsOnField() {

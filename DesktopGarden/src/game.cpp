@@ -21,7 +21,7 @@ void DrawDebugGrid(int screenWidth, int screenHeight, int gridSize, Color color)
 Game::Game() {
   ui = std::make_unique<UI>(*this);
   plantsData = std::make_unique<PlantsData>();
-  garden = std::make_unique<Garden>(*ui, *plantsData);
+  garden = std::make_unique<Garden>(*this, *ui, *plantsData);
 }
 
 void Game::init() {
@@ -37,6 +37,7 @@ void Game::run() {
     ClearBackground(BLANK);
     BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
 
+    garden->updateGarden();
     ui->updateUI();
 
     garden->drawGarden();

@@ -23,17 +23,16 @@ UI::UI(Game& game) : game(game) {
     buttonsSize.push_back(Vector2(buttonSize * TILE_SIZE, buttonSize * TILE_SIZE));
   }
 
-  HideCursor();
+  // HideCursor();
 }
 
 void UI::updateUI() {
   Vector2 mousePos = GetMousePosition();
+  if (game.getState() == GameState::Watering) {
+    mousePos += mouseWaterOffset;
+  }
 
   for (int i = 0; i < 3; i++) {
-    if (game.getState() == GameState::Watering) {
-      mousePos += mouseWaterOffset;
-    }
-
     float sizeX = buttonsSize[i].x;
     float sizeY = buttonsSize[i].y;
     Rectangle bounds = {buttonsPos[i].x - sizeX / 2, buttonsPos[i].y - sizeY / 2, sizeX, sizeY};
@@ -60,6 +59,7 @@ void UI::updateUI() {
       if (game.getState() == GameState::Watering) {
         Vector2 mousePos = GetMousePosition();
         SetMousePosition(mousePos.x + mouseWaterOffset.x, mousePos.y + mouseWaterOffset.y);
+        playingAnimation = false;
       }
 
       std::fill(pressedButton.begin(), pressedButton.end(), false);
@@ -80,6 +80,21 @@ void UI::updateUI() {
           game.setState(GameState::Settings);
           break;
       }
+    }
+  }
+
+  if (playingAnimation) {
+    waterAnimationTimer += GetFrameTime();
+
+    if (waterAnimationTimer >= waterFrameTime) {
+      waterAnimationTimer = 0.0f;
+      wateringFrame += 1;
+    }
+
+    if (wateringFrame >= 7) {
+      wateringFrame = 0;
+      playingAnimation = false;
+      waterAnimationTimer = 0.0f;
     }
   }
 }
@@ -126,7 +141,7 @@ void UI::drawCursor() {
     cursorType = 1;
     mouseOffset = mouseWaterOffset;
 
-    Rectangle waterSource = {0 * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+    Rectangle waterSource = {wateringFrame * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
     Rectangle waterDest = {mousePos.x + waterOffset.x, mousePos.y + waterOffset.y, TILE_SIZE * 2, TILE_SIZE * 2};
     Vector2 waterOrigin = {TILE_SIZE / 2, TILE_SIZE / 2};
 
@@ -136,4 +151,10 @@ void UI::drawCursor() {
   Rectangle mouseSource = {cursorType * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
 
   DrawTextureRec(cursorTexture, mouseSource, Vector2Add(mousePos, mouseOffset), WHITE);
+}
+
+void UI::playWaterAnimation() {
+  wateringFrame = 0;
+  playingAnimation = true;
+  waterAnimationTimer = 0.0f;
 }

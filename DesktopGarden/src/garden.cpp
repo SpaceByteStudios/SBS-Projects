@@ -1,16 +1,16 @@
 #include "garden.h"
 
-#include <cstddef>
 #include <cstdlib>
 #include <memory>
 #include <vector>
 
 #include "constants.h"
+#include "game.h"
 #include "plantsData.h"
 #include "raylib.h"
 #include "raymath.h"
 
-Garden::Garden(UI& ui, PlantsData& plantsData) : ui(ui) {
+Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui) {
   tilesColumns = GetScreenWidth() / TILE_SIZE;
   tilesRows = GetScreenHeight() / TILE_SIZE - 1;
 
@@ -32,7 +32,7 @@ Garden::Garden(UI& ui, PlantsData& plantsData) : ui(ui) {
     }
   }
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 1; i++) {
     int fieldPosX = 5 + i * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
   }
@@ -106,5 +106,23 @@ void Garden::drawGarden() {
 
   for (const std::unique_ptr<Field>& field : fields) {
     field->drawPlants();
+  }
+}
+
+void Garden::updateGarden() {
+  // LATER: Update all Fields that contain all plants
+
+  if (game.getState() == GameState::Watering && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    for (const std::unique_ptr<Field>& field : fields) {
+      if (!field->mouseIsOnField()) {
+        continue;
+      }
+
+      // Play Watering Animation
+      // Water that specific Tile
+
+      ui.playWaterAnimation();
+      field->waterCell();
+    }
   }
 }

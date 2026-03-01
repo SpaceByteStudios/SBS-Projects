@@ -2,7 +2,6 @@
 
 #include <memory.h>
 
-#include <memory>
 #include <vector>
 
 #include "plant.h"
@@ -14,6 +13,8 @@ struct Field {
 
   void drawField();
   void drawPlants();
+  void waterCell();
+
   bool cellIsWatered(int x, int y);
   Vector2 getWateredTile(int x, int y);
   bool mouseIsOnField();

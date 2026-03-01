@@ -15,6 +15,8 @@ struct UI {
   void drawSelection();
   void drawCursor();
 
+  void playWaterAnimation();
+
   float buttonSize = 1.6f;
   float buttonSpacing = 0.25f;
 
@@ -32,6 +34,11 @@ struct UI {
   Texture2D wateringTexture;
 
   int cursorType = 0;
+
+  int wateringFrame = 0;
+  float waterAnimationTimer = 0.0f;
+  float waterFrameTime = 0.05f;
+  bool playingAnimation = false;
 
   const Vector2 mouseNormalOffset = {-6, -4};
   const Vector2 mouseWaterOffset = {16, -32};
