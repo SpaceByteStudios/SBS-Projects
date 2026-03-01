@@ -14,8 +14,8 @@ Garden::Garden(UI& ui, PlantsData& plantsData) : ui(ui) {
   tilesColumns = GetScreenWidth() / TILE_SIZE;
   tilesRows = GetScreenHeight() / TILE_SIZE - 1;
 
-  grassTileset = LoadTexture("assets/sprites/Grass.png");
-  fenceTileset = LoadTexture("assets/sprites/Fences.png");
+  grassTileset = LoadTexture("assets/sprites/tileset/Grass.png");
+  fenceTileset = LoadTexture("assets/sprites/tileset/Fences.png");
   propsAtlas = LoadTexture("assets/sprites/Props.png");
 
   propsMap.resize(tilesColumns * tilesRows, -1);
@@ -32,7 +32,7 @@ Garden::Garden(UI& ui, PlantsData& plantsData) : ui(ui) {
     }
   }
 
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 6; i++) {
     int fieldPosX = 5 + i * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
   }

@@ -1,5 +1,6 @@
 #include "game.h"
 
+#include <iostream>
 #include <memory>
 
 #include "garden.h"
@@ -24,10 +25,10 @@ Game::Game() {
 }
 
 void Game::init() {
-  plantsData->addType(PlantType{0, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/Wheat.png")});
-  plantsData->addType(PlantType{1, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/Strawberry.png")});
-  plantsData->addType(PlantType{2, 100, 1, 6, 1, 2, LoadTexture("assets/sprites/Sunflower.png")});
-  plantsData->addType(PlantType{3, 100, 1, 7, 1, 1, LoadTexture("assets/sprites/Blackberry.png")});
+  plantsData->addType(PlantType{0, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
+  plantsData->addType(PlantType{1, 100, 1, 6, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
+  plantsData->addType(PlantType{2, 100, 1, 6, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
+  plantsData->addType(PlantType{3, 100, 1, 7, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
 }
 
 void Game::run() {
@@ -35,6 +36,8 @@ void Game::run() {
     BeginDrawing();
     ClearBackground(BLANK);
     BeginBlendMode(BLEND_ALPHA_PREMULTIPLY);
+
+    ui->updateUI();
 
     garden->drawGarden();
 

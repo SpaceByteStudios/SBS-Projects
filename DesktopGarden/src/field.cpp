@@ -15,7 +15,7 @@ Field::Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, Plan
       fieldWidth(fieldWidth),
       fieldHeight(fieldHeight),
       plantsData(plantsData) {
-  fieldTileset = LoadTexture("assets/sprites/Soil.png");
+  fieldTileset = LoadTexture("assets/sprites/tileset/Soil.png");
 
   isWatered.resize(fieldWidth * fieldHeight);
   plants.resize(fieldWidth * fieldHeight);

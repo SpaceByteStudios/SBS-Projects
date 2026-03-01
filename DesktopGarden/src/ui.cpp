@@ -1,5 +1,6 @@
 #include "ui.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "constants.h"
@@ -8,26 +9,93 @@
 #include "raymath.h"
 
 UI::UI(Game& game) : game(game) {
-  selectionTexture = LoadTexture("assets/sprites/Selection.png");
-  buttonsTexture = LoadTexture("assets/sprites/Buttons.png");
-  cursorTexture = LoadTexture("assets/sprites/Cursor.png");
+  selectionTexture = LoadTexture("assets/sprites/ui/Selection.png");
+  buttonsTexture = LoadTexture("assets/sprites/ui/Buttons.png");
+  cursorTexture = LoadTexture("assets/sprites/ui/Cursor.png");
+  wateringTexture = LoadTexture("assets/sprites/ui/Watering.png");
+
+  pressedButton.resize(3, false);
+  hoversButton.resize(3, false);
 
   for (int i = 0; i < 3; i++) {
     Vector2 position = {59 * TILE_SIZE, (3.0f + i * (buttonSize + buttonSpacing)) * TILE_SIZE};
-    buttonPositions.push_back(position);
-    buttonSizes.push_back(Vector2(buttonSize * TILE_SIZE, buttonSize * TILE_SIZE));
+    buttonsPos.push_back(position);
+    buttonsSize.push_back(Vector2(buttonSize * TILE_SIZE, buttonSize * TILE_SIZE));
   }
 
   HideCursor();
 }
 
+void UI::updateUI() {
+  Vector2 mousePos = GetMousePosition();
+
+  for (int i = 0; i < 3; i++) {
+    if (game.getState() == GameState::Watering) {
+      mousePos += mouseWaterOffset;
+    }
+
+    float sizeX = buttonsSize[i].x;
+    float sizeY = buttonsSize[i].y;
+    Rectangle bounds = {buttonsPos[i].x - sizeX / 2, buttonsPos[i].y - sizeY / 2, sizeX, sizeY};
+
+    if (CheckCollisionPointRec(mousePos, bounds)) {
+      buttonsSize[i] = Vector2(1.15 * buttonSize * TILE_SIZE, 1.15 * buttonSize * TILE_SIZE);
+      hoversButton[i] = true;
+    } else {
+      buttonsSize[i] = Vector2(buttonSize * TILE_SIZE, buttonSize * TILE_SIZE);
+      hoversButton[i] = false;
+    }
+  }
+
+  for (int i = 0; i < 3; i++) {
+    if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      break;
+    }
+
+    if (!hoversButton[i]) {
+      continue;
+    }
+
+    if (pressedButton[i]) {
+      if (game.getState() == GameState::Watering) {
+        Vector2 mousePos = GetMousePosition();
+        SetMousePosition(mousePos.x + mouseWaterOffset.x, mousePos.y + mouseWaterOffset.y);
+      }
+
+      std::fill(pressedButton.begin(), pressedButton.end(), false);
+      game.setState(GameState::Idle);
+    } else {
+      std::fill(pressedButton.begin(), pressedButton.end(), false);
+      pressedButton[i] = true;
+
+      switch (i) {
+        case 0:
+          game.setState(GameState::Watering);
+          SetMousePosition(mousePos.x - mouseWaterOffset.x, mousePos.y - mouseWaterOffset.y);
+          break;
+        case 1:
+          game.setState(GameState::Shopping);
+          break;
+        case 2:
+          game.setState(GameState::Settings);
+          break;
+      }
+    }
+  }
+}
+
 void UI::drawButtons() {
   for (int i = 0; i < 3; i++) {
-    Rectangle source = {i * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
-    Vector2 center = {buttonSizes[i].x / 2, buttonSizes[i].y / 2};
-    Rectangle dest = {buttonPositions[i].x, buttonPositions[i].y, buttonSizes[i].x, buttonSizes[i].y};
+    float tileIndexY = pressedButton[i] ? 1.0f : 0.0f;
 
-    DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, WHITE);
+    Rectangle source = {i * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+    Vector2 center = {buttonsSize[i].x / 2, buttonsSize[i].y / 2};
+    Rectangle dest = {buttonsPos[i].x, buttonsPos[i].y, buttonsSize[i].x, buttonsSize[i].y};
+
+    Color tint = hoversButton[i] ? Color{240, 240, 240, 255} : WHITE;
+    tint = pressedButton[i] ? Color{196, 196, 196, 255} : tint;
+
+    DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, tint);
   }
 }
 
@@ -50,8 +118,22 @@ void UI::drawCursor() {
   }
 
   Vector2 mousePos = GetMousePosition();
-  Vector2 offset = {-6, -4};
-  Rectangle source = {cursorType * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
 
-  DrawTextureRec(cursorTexture, source, Vector2Add(mousePos, offset), WHITE);
+  cursorType = 0;
+  Vector2 mouseOffset = mouseNormalOffset;
+
+  if (game.getState() == GameState::Watering) {
+    cursorType = 1;
+    mouseOffset = mouseWaterOffset;
+
+    Rectangle waterSource = {0 * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+    Rectangle waterDest = {mousePos.x + waterOffset.x, mousePos.y + waterOffset.y, TILE_SIZE * 2, TILE_SIZE * 2};
+    Vector2 waterOrigin = {TILE_SIZE / 2, TILE_SIZE / 2};
+
+    DrawTexturePro(wateringTexture, waterSource, waterDest, waterOrigin, 0.0f, WHITE);
+  }
+
+  Rectangle mouseSource = {cursorType * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+
+  DrawTextureRec(cursorTexture, mouseSource, Vector2Add(mousePos, mouseOffset), WHITE);
 }
