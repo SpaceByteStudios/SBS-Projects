@@ -2,13 +2,17 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
 #include "constants.h"
 #include "game.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "shop.h"
 
 UI::UI(Game& game) : game(game) {
+  shop = std::make_unique<Shop>();
+
   selectionTexture = LoadTexture("assets/sprites/ui/Selection.png");
   buttonsTexture = LoadTexture("assets/sprites/ui/Buttons.png");
   cursorTexture = LoadTexture("assets/sprites/ui/Cursor.png");
@@ -56,6 +60,8 @@ void UI::updateUI() {
     }
 
     if (pressedButton[i]) {
+      shop->isOpen = false;
+
       if (game.getState() == GameState::Watering) {
         Vector2 mousePos = GetMousePosition();
         SetMousePosition(mousePos.x + mouseWaterOffset.x, mousePos.y + mouseWaterOffset.y);
@@ -65,6 +71,8 @@ void UI::updateUI() {
       std::fill(pressedButton.begin(), pressedButton.end(), false);
       game.setState(GameState::Idle);
     } else {
+      shop->isOpen = false;
+
       std::fill(pressedButton.begin(), pressedButton.end(), false);
       pressedButton[i] = true;
 
@@ -75,6 +83,7 @@ void UI::updateUI() {
           break;
         case 1:
           game.setState(GameState::Shopping);
+          shop->isOpen = true;
           break;
         case 2:
           game.setState(GameState::Settings);
@@ -97,6 +106,10 @@ void UI::updateUI() {
       waterAnimationTimer = 0.0f;
     }
   }
+}
+
+void UI::drawShop() {
+  shop->drawShop();
 }
 
 void UI::drawButtons() {

@@ -20,6 +20,7 @@ struct Garden {
   Texture2D grassTileset;
   Texture2D fenceTileset;
   Texture2D propsAtlas;
+  Texture2D treeAtlas;
 
   const int fenceOffset = 24;
   const int propsOffset = 48;

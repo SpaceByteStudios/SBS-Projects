@@ -1,8 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "raylib.h"
+#include "shop.h"
 
 class Game;
 
@@ -11,6 +13,7 @@ struct UI {
 
   void updateUI();
 
+  void drawShop();
   void drawButtons();
   void drawSelection();
   void drawCursor();
@@ -43,4 +46,6 @@ struct UI {
   const Vector2 mouseNormalOffset = {-6, -4};
   const Vector2 mouseWaterOffset = {16, -32};
   const Vector2 waterOffset = {6, -46};
+
+  std::unique_ptr<Shop> shop;
 };

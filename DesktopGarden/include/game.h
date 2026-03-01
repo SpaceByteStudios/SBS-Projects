@@ -6,7 +6,7 @@
 #include "plantsData.h"
 #include "ui.h"
 
-enum class GameState { Idle, Watering, Shopping, Settings };
+enum class GameState { Idle, Watering, Shopping, Planting, Settings };
 
 class Game {
  public:

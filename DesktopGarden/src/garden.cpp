@@ -17,22 +17,27 @@ Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui) 
   grassTileset = LoadTexture("assets/sprites/tileset/Grass.png");
   fenceTileset = LoadTexture("assets/sprites/tileset/Fences.png");
   propsAtlas = LoadTexture("assets/sprites/Props.png");
+  treeAtlas = LoadTexture("assets/sprites/Trees.png");
 
   propsMap.resize(tilesColumns * tilesRows, -1);
   propsFlipsMap.resize(tilesColumns * tilesRows, -1);
 
   for (int y = 0; y < tilesRows; y++) {
     for (int x = 0; x < tilesColumns; x++) {
-      if (rand() % 4 == 0) {
-        int index = y * tilesColumns + x;
+      int index = y * tilesColumns + x;
 
-        propsMap[index] = rand() % 4;
+      if (rand() % 100 >= 10) {
+        propsMap[index] = 0;
         propsFlipsMap[index] = rand() % 2;
+      }
+
+      if (rand() % 8 == 0) {
+        propsMap[index] = rand() % 3 + 1;
       }
     }
   }
 
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 6; i++) {
     int fieldPosX = 5 + i * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
   }
@@ -99,14 +104,23 @@ void Garden::drawGarden() {
   for (const std::unique_ptr<Field>& field : fields) {
     field->drawField();
 
-    if (field->mouseIsOnField()) {
-      ui.drawSelection();
+    if (game.getState() != GameState::Shopping) {
+      if (field->mouseIsOnField()) {
+        ui.drawSelection();
+      }
     }
   }
 
   for (const std::unique_ptr<Field>& field : fields) {
     field->drawPlants();
   }
+
+  Rectangle source = {3 * TILE_SIZE * 2, 0, TILE_SIZE * 2, TILE_SIZE * 3};
+  Vector2 tree1Position = {2 * TILE_SIZE, 0 * TILE_SIZE};
+  Vector2 tree2Position = {56 * TILE_SIZE, 0 * TILE_SIZE};
+
+  DrawTextureRec(treeAtlas, source, tree1Position, WHITE);
+  DrawTextureRec(treeAtlas, source, tree2Position, WHITE);
 }
 
 void Garden::updateGarden() {

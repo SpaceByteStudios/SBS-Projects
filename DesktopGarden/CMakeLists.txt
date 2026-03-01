@@ -32,6 +32,7 @@ add_executable(
   src/plantsData.cpp
   src/game.cpp
   src/ui.cpp
+  src/shop.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)

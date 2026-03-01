@@ -42,10 +42,11 @@ void Game::run() {
 
     garden->drawGarden();
 
+    ui->drawShop();
     ui->drawButtons();
     ui->drawCursor();
 
-    // DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
+    DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
 
     EndBlendMode();
     EndDrawing();
