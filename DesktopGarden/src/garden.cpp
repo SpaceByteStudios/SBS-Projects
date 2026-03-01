@@ -125,6 +125,9 @@ void Garden::drawGarden() {
 
 void Garden::updateGarden() {
   // LATER: Update all Fields that contain all plants
+  for (const std::unique_ptr<Field>& field : fields) {
+    field->updateField();
+  }
 
   if (game.getState() == GameState::Watering && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     for (const std::unique_ptr<Field>& field : fields) {

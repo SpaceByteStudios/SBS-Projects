@@ -1,5 +1,7 @@
 #include "plant.h"
 
+#include <iostream>
+
 #include "constants.h"
 #include "field.h"
 #include "plantType.h"
@@ -30,4 +32,22 @@ void Plant::drawPlant() {
   Vector2 plantPos = Vector2Add(position, Vector2Add(field_offset, tile_offset));
 
   DrawTextureRec(plantType.plantTexture, source, plantPos, WHITE);
+}
+
+void Plant::updatePlant() {
+  if (!field.isCellWatered(plantPosX, plantPosY)) {
+    return;
+  }
+
+  float delta = GetFrameTime();
+
+  if (currentStage + 1 < plantType.growthStages) {
+    field.useWater(plantPosX, plantPosY, plantType.waterConsumption * delta);
+    growth += plantType.growthSpeed * delta;
+  }
+
+  if (growth >= 100.0f) {
+    growth = 0.0f;
+    currentStage += 1;
+  }
 }

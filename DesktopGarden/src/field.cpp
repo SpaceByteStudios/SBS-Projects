@@ -17,7 +17,7 @@ Field::Field(int fieldPosX, int fieldPosY, int fieldWidth, int fieldHeight, Plan
       plantsData(plantsData) {
   fieldTileset = LoadTexture("assets/sprites/tileset/Soil.png");
 
-  isWatered.resize(fieldWidth * fieldHeight);
+  waterAmount.resize(fieldWidth * fieldHeight, 0.0f);
   plants.resize(fieldWidth * fieldHeight);
 }
 
@@ -72,6 +72,14 @@ void Field::drawPlants() {
   }
 }
 
+void Field::updateField() {
+  for (std::optional<Plant>& plant : plants) {
+    if (plant.has_value()) {
+      plant->updatePlant();
+    }
+  }
+}
+
 Vector2 Field::getMouseField() {
   Vector2 mousePos = GetMousePosition();
 
@@ -89,7 +97,7 @@ void Field::waterCell() {
 
   int index = fieldPos.y * fieldWidth + fieldPos.x;
 
-  isWatered[index] = true;
+  waterAmount[index] = 100.0f;
 }
 
 void Field::plantSeed(int plantID) {
@@ -102,15 +110,25 @@ void Field::plantSeed(int plantID) {
   }
 }
 
+void Field::useWater(int posX, int posY, float amount) {
+  int index = posY * fieldWidth + posX;
+
+  waterAmount[index] -= amount;
+
+  if (waterAmount[index] < 0.0f) {
+    waterAmount[index] = 0.0f;
+  }
+}
+
 bool Field::isCellWatered(int x, int y) {
   if (x < 0 || y < 0 || x >= fieldWidth || y >= fieldHeight)
     return false;
 
-  return isWatered[y * fieldWidth + x];
+  return waterAmount[y * fieldWidth + x] > 0.0f;
 }
 
 Vector2 Field::getWateredTile(int x, int y) {
-  if (!isWatered[y * fieldWidth + x]) {
+  if (waterAmount[y * fieldWidth + x] <= 0.0f) {
     return Vector2(-1, -1);
   }
 
