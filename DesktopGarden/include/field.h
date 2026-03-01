@@ -2,6 +2,7 @@
 
 #include <memory.h>
 
+#include <optional>
 #include <vector>
 
 #include "plant.h"
@@ -13,9 +14,15 @@ struct Field {
 
   void drawField();
   void drawPlants();
-  void waterCell();
 
-  bool cellIsWatered(int x, int y);
+  void updateField();
+
+  Vector2 getMouseField();
+
+  void waterCell();
+  void plantSeed(int plantID);
+
+  bool isCellWatered(int x, int y);
   Vector2 getWateredTile(int x, int y);
   bool mouseIsOnField();
 
@@ -26,7 +33,7 @@ struct Field {
   const int fieldHeight;
 
   std::vector<int> isWatered;
-  std::vector<Plant> plants;
+  std::vector<std::optional<Plant>> plants;
 
   Texture2D fieldTileset;
 

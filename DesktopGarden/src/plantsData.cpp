@@ -1,9 +1,13 @@
 #include "plantsData.h"
 
+#include <cassert>
+
 void PlantsData::addType(const PlantType& type) {
   types[type.id] = type;
 }
 
-const PlantType* PlantsData::get(const int id) const {
-  return &types.at(id);
+PlantType PlantsData::get(const int id) {
+  assert(types.contains(id));
+
+  return types.at(id);
 }

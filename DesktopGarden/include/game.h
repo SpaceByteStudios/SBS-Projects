@@ -29,5 +29,5 @@ class Game {
 
   GameState currentState = GameState::Idle;
 
-  int plantingPlantID;
+  int plantingPlantID = 0;
 };

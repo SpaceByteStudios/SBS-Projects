@@ -5,8 +5,7 @@
 struct Field;
 
 struct Plant {
-  Plant() = default;
-  Plant(int plantPosX, int plantPosY, PlantType plantType, Field* field);
+  Plant(int plantPosX, int plantPosY, PlantType plantType, Field& field);
 
   void drawPlant();
 
@@ -14,8 +13,8 @@ struct Plant {
   int plantPosY;
 
   float growth;
-  int currentStage;
+  int currentStage = 0;
 
   PlantType plantType;
-  Field* field = nullptr;
+  Field& field;
 };

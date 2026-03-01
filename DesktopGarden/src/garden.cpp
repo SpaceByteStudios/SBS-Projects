@@ -132,11 +132,21 @@ void Garden::updateGarden() {
         continue;
       }
 
-      // Play Watering Animation
-      // Water that specific Tile
-
       ui.playWaterAnimation();
       field->waterCell();
+    }
+  }
+
+  if (game.getState() == GameState::Planting && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    for (const std::unique_ptr<Field>& field : fields) {
+      if (!field->mouseIsOnField()) {
+        continue;
+      }
+
+      // Lose Money Animation
+      // Plant Seed
+
+      field->plantSeed(game.getPlantID());
     }
   }
 }

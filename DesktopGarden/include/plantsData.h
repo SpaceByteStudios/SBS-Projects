@@ -8,7 +8,7 @@ class PlantsData {
  public:
   void addType(const PlantType& type);
 
-  const PlantType* get(const int id) const;
+  PlantType get(const int id);
 
  private:
   std::unordered_map<int, PlantType> types;

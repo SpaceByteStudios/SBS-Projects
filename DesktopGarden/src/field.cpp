@@ -1,5 +1,8 @@
 #include "field.h"
 
+#include <iostream>
+#include <optional>
+
 #include "constants.h"
 #include "plant.h"
 #include "plantsData.h"
@@ -62,12 +65,14 @@ void Field::drawField() {
 }
 
 void Field::drawPlants() {
-  for (Plant& plant : plants) {
-    plant.drawPlant();
+  for (std::optional<Plant>& plant : plants) {
+    if (plant.has_value()) {
+      plant->drawPlant();
+    }
   }
 }
 
-void Field::waterCell() {
+Vector2 Field::getMouseField() {
   Vector2 mousePos = GetMousePosition();
 
   int mouseX = mousePos.x / TILE_SIZE;
@@ -76,12 +81,28 @@ void Field::waterCell() {
   int fieldX = mouseX - fieldPosX;
   int fieldY = mouseY - fieldPosY;
 
-  int index = fieldY * fieldWidth + fieldX;
+  return Vector2(fieldX, fieldY);
+}
+
+void Field::waterCell() {
+  Vector2 fieldPos = getMouseField();
+
+  int index = fieldPos.y * fieldWidth + fieldPos.x;
 
   isWatered[index] = true;
 }
 
-bool Field::cellIsWatered(int x, int y) {
+void Field::plantSeed(int plantID) {
+  Vector2 fieldPos = getMouseField();
+
+  int index = fieldPos.y * fieldWidth + fieldPos.x;
+
+  if (!plants[index].has_value()) {
+    plants[index].emplace(Plant(fieldPos.x, fieldPos.y, plantsData.get(plantID), *this));
+  }
+}
+
+bool Field::isCellWatered(int x, int y) {
   if (x < 0 || y < 0 || x >= fieldWidth || y >= fieldHeight)
     return false;
 
@@ -93,10 +114,10 @@ Vector2 Field::getWateredTile(int x, int y) {
     return Vector2(-1, -1);
   }
 
-  bool up = cellIsWatered(x, y - 1);
-  bool down = cellIsWatered(x, y + 1);
-  bool left = cellIsWatered(x - 1, y);
-  bool right = cellIsWatered(x + 1, y);
+  bool up = isCellWatered(x, y - 1);
+  bool down = isCellWatered(x, y + 1);
+  bool left = isCellWatered(x - 1, y);
+  bool right = isCellWatered(x + 1, y);
 
   int tileX = 0;
   int tileY = 0;

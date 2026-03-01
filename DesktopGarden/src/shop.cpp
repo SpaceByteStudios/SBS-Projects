@@ -37,7 +37,7 @@ void Shop::drawShop() {
     for (int x = 0; x < 2; x++) {
       int i = y * 2 + x;
 
-      PlantType plantType = *plantsData.get(i);
+      PlantType plantType = plantsData.get(i);
       int cost = plantType.plantCost;
 
       Rectangle source = {i * TILE_SIZE * 1.5f, 0, TILE_SIZE * 1.5f, TILE_SIZE * 1.5f};
@@ -60,7 +60,7 @@ void Shop::updateShop() {
   Vector2 mousePos = GetMousePosition();
 
   for (int i = 0; i < 4; i++) {
-    PlantType plantType = *plantsData.get(i);
+    PlantType plantType = plantsData.get(i);
     int cost = plantType.plantCost;
 
     if (!moneySystem.hasEnoughMoney(cost)) {
