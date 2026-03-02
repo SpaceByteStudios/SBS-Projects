@@ -21,6 +21,7 @@ struct UI {
   void drawCursor();
 
   void playWaterAnimation();
+  void playLoseMoneyAnimation();
 
   float buttonSize = 1.6f;
   float buttonSpacing = 0.25f;
@@ -38,6 +39,7 @@ struct UI {
   Texture2D cursorTexture;
   Texture2D wateringTexture;
   Texture2D seedsTexture;
+  Texture2D moneyTexture;
 
   Font moneyDisplayFont;
   Texture2D moneyDisplayTexture;

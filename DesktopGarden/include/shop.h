@@ -26,6 +26,9 @@ struct Shop {
   Texture2D shopTexture;
   Texture2D shopButtonsTexture;
 
+  Font moneyFont;
+  Texture2D moneyTexture;
+
   Game& game;
   MoneySystem& moneySystem;
   PlantsData& plantsData;

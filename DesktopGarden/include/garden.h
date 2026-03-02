@@ -32,4 +32,5 @@ struct Garden {
 
   Game& game;
   UI& ui;
+  PlantsData& plantsData;
 };

@@ -19,10 +19,6 @@ void Plant::drawPlant() {
   const int plantOffset = 8;
   int tileIndexX = currentStage;
 
-  if (currentStage >= plantType.growthStages) {
-    return;
-  }
-
   Rectangle source = {tileIndexX * TILE_SIZE, 0, plantType.tileSizeX * TILE_SIZE, plantType.tileSizeY * TILE_SIZE};
   Vector2 position = {plantPosX * TILE_SIZE, plantPosY * TILE_SIZE - plantOffset};
 
@@ -41,7 +37,7 @@ void Plant::updatePlant() {
 
   float delta = GetFrameTime();
 
-  if (currentStage + 1 < plantType.growthStages) {
+  if (currentStage < 5) {
     field.useWater(plantPosX, plantPosY, plantType.waterConsumption * delta);
     growth += plantType.growthSpeed * delta;
   }

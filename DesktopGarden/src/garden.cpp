@@ -10,7 +10,7 @@
 #include "raylib.h"
 #include "raymath.h"
 
-Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui) {
+Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui), plantsData(plantsData) {
   tilesColumns = GetScreenWidth() / TILE_SIZE;
   tilesRows = GetScreenHeight() / TILE_SIZE - 1;
 
@@ -124,7 +124,6 @@ void Garden::drawGarden() {
 }
 
 void Garden::updateGarden() {
-  // LATER: Update all Fields that contain all plants
   for (const std::unique_ptr<Field>& field : fields) {
     field->updateField();
   }
@@ -146,10 +145,15 @@ void Garden::updateGarden() {
         continue;
       }
 
-      // Lose Money Animation
-      // Plant Seed
+      int plantID = game.getPlantID();
+      int plantCost = plantsData.get(plantID).plantCost;
 
-      field->plantSeed(game.getPlantID());
+      if (game.hasEnoughMoney(plantCost)) {
+        game.removeMoney(plantCost);
+        ui.playLoseMoneyAnimation();
+
+        field->plantSeed(plantID);
+      }
     }
   }
 }

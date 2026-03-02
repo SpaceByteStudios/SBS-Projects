@@ -7,10 +7,7 @@ struct PlantType {
 
   // 100.0 to reach next Stage
   // value/Second
-
   float growthSpeed;
-  int growthStages;
-
   float waterConsumption;
 
   int plantCost;

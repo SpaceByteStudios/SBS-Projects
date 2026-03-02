@@ -1,16 +1,24 @@
 #include "shop.h"
 
+#include <iostream>
+#include <string>
+
 #include "constants.h"
 #include "game.h"
 #include "moneySystem.h"
 #include "plantType.h"
 #include "plantsData.h"
 #include "raylib.h"
+#include "raymath.h"
 
 Shop::Shop(Game& game, MoneySystem& moneySystem, PlantsData& plantsData)
     : game(game), moneySystem(moneySystem), plantsData(plantsData) {
   shopTexture = LoadTexture("assets/sprites/ui/Shop.png");
   shopButtonsTexture = LoadTexture("assets/sprites/ui/ShopButtons.png");
+
+  moneyFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
+  SetTextureFilter(moneyFont.texture, TEXTURE_FILTER_POINT);
+  moneyTexture = LoadTexture("assets/sprites/ui/Money.png");
 
   hoversButton.resize(4, false);
 
@@ -48,6 +56,20 @@ void Shop::drawShop() {
       tint = moneySystem.hasEnoughMoney(cost) ? tint : Color{128, 128, 128, 255};
 
       DrawTexturePro(shopButtonsTexture, source, dest, center, 0.0f, tint);
+
+      std::string costText = std::to_string(cost);
+
+      Vector2 textSize = MeasureTextEx(moneyFont, costText.c_str(), 12.0, 1.0f);
+      Vector2 textPos =
+          Vector2Add(buttonsPos[i], Vector2{-textSize.x / 2.0f, TILE_SIZE * 1.5f / 2.0f + textSize.y / 2.0f});
+
+      BeginBlendMode(BLEND_ALPHA);
+      DrawTextEx(moneyFont, costText.c_str(), textPos, 12.0f, 1.0f, WHITE);
+      EndBlendMode();
+
+      Rectangle coinSource = {0, 0, TILE_SIZE, TILE_SIZE};
+      Vector2 coinPos = Vector2Add(textPos, Vector2{textSize.x / 2, -textSize.y});
+      DrawTextureRec(moneyTexture, coinSource, coinPos, WHITE);
     }
   }
 }
@@ -63,16 +85,15 @@ void Shop::updateShop() {
     PlantType plantType = plantsData.get(i);
     int cost = plantType.plantCost;
 
-    if (!moneySystem.hasEnoughMoney(cost)) {
-      continue;
-    }
-
     float sizeX = buttonsSize[i].x;
     float sizeY = buttonsSize[i].y;
     Rectangle bounds = {buttonsPos[i].x - sizeX / 2, buttonsPos[i].y - sizeY / 2, sizeX, sizeY};
 
     if (CheckCollisionPointRec(mousePos, bounds)) {
-      buttonsSize[i] = Vector2(1.15 * 1.5f * TILE_SIZE, 1.15 * 1.5f * TILE_SIZE);
+      if (!moneySystem.hasEnoughMoney(cost)) {
+        buttonsSize[i] = Vector2(1.15 * 1.5f * TILE_SIZE, 1.15 * 1.5f * TILE_SIZE);
+      }
+
       hoversButton[i] = true;
     } else {
       buttonsSize[i] = Vector2(1.5f * TILE_SIZE, 1.5f * TILE_SIZE);
@@ -85,7 +106,10 @@ void Shop::updateShop() {
       break;
     }
 
-    if (!hoversButton[i]) {
+    PlantType plantType = plantsData.get(i);
+    int cost = plantType.plantCost;
+
+    if (!hoversButton[i] || !moneySystem.hasEnoughMoney(cost)) {
       continue;
     }
 

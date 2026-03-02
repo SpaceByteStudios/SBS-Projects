@@ -21,6 +21,10 @@ class Game {
   void setPlantID(int plantID);
   int getPlantID();
 
+  void addMoney(int amount);
+  void removeMoney(int amount);
+  bool hasEnoughMoney(int neededAmount);
+
  private:
   std::unique_ptr<PlantsData> plantsData;
   std::unique_ptr<UI> ui;

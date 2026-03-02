@@ -12,5 +12,5 @@ void MoneySystem::removeMoney(int moneyAmount) {
 }
 
 bool MoneySystem::hasEnoughMoney(int neededMoney) {
-  return neededMoney < money;
+  return neededMoney <= money;
 }

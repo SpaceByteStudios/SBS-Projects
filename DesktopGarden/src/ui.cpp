@@ -21,6 +21,7 @@ UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData) : game(game
   cursorTexture = LoadTexture("assets/sprites/ui/Cursor.png");
   wateringTexture = LoadTexture("assets/sprites/ui/Watering.png");
   seedsTexture = LoadTexture("assets/sprites/crop/Seeds.png");
+  moneyTexture = LoadTexture("assets/sprites/ui/Money.png");
 
   moneyDisplayFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
   SetTextureFilter(moneyDisplayFont.texture, TEXTURE_FILTER_POINT);
@@ -171,8 +172,6 @@ void UI::drawButtons() {
 
   DrawTexture(moneyDisplayTexture, displayPos.x, displayPos.y, WHITE);
 
-  BeginBlendMode(BLEND_ALPHA);
-
   std::string moneyText = std::to_string(moneySystem.money);
 
   for (int i = moneyText.length() - 3; i > 0; i -= 3) {
@@ -184,6 +183,7 @@ void UI::drawButtons() {
   Vector2 textSize = MeasureTextEx(moneyDisplayFont, moneyText.c_str(), 20, 0.5f);
   Vector2 textPos = Vector2(rightPos.x - textSize.x - 7, rightPos.y);
 
+  BeginBlendMode(BLEND_ALPHA);
   DrawTextEx(moneyDisplayFont, moneyText.c_str(), textPos, 20, 0.5f, WHITE);
   EndBlendMode();
 }
@@ -235,6 +235,10 @@ void UI::drawCursor() {
   Rectangle mouseSource = {cursorType * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
 
   DrawTextureRec(cursorTexture, mouseSource, Vector2Add(mousePos, mouseOffset), WHITE);
+}
+
+void UI::playLoseMoneyAnimation() {
+  Vector2 mousePos = GetMousePosition();
 }
 
 void UI::playWaterAnimation() {
