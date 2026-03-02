@@ -203,7 +203,7 @@ void UI::drawWaterIcon(int posX, int posY) {
   float iconX = posX;
   float iconY = posY;
 
-  iconY += -1.0f;
+  iconY += -0.75f;
   iconY += 0.1f * std::sin(GetTime());
 
   DrawTexture(waterIconTexture, iconX * TILE_SIZE, iconY * TILE_SIZE, WHITE);

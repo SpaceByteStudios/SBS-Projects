@@ -18,17 +18,30 @@ Plant::Plant(int plantPosX, int plantPosY, PlantType plantType, Field& field) : 
 }
 
 void Plant::drawPlant() {
-  const int plantOffset = 8;
+  const int plantOffset = 12;
+
   int tileIndexX = currentStage;
 
-  Rectangle source = {tileIndexX * TILE_SIZE, 0, plantType.tileSizeX * TILE_SIZE, plantType.tileSizeY * TILE_SIZE};
+  float width = plantType.tileSizeX * TILE_SIZE;
+  float height = plantType.tileSizeY * TILE_SIZE;
 
-  Vector2 position = getGlobalPosition() * TILE_SIZE + Vector2(0.0f, -plantOffset);
-  Vector2 tile_offset = {-(plantType.tileSizeX - 1) * TILE_SIZE, -(plantType.tileSizeY - 1) * TILE_SIZE};
+  Rectangle plantSource = {tileIndexX * TILE_SIZE, 0, width, height};
 
-  Vector2 plantPos = Vector2Add(position, tile_offset);
+  float scale = 1.25f;
 
-  DrawTextureRec(plantType.plantTexture, source, plantPos, WHITE);
+  Vector2 worldPos = getGlobalPosition() * TILE_SIZE;
+
+  worldPos.x += TILE_SIZE / 2.0f;
+  worldPos.y += TILE_SIZE;
+
+  if (currentStage > 0) {
+    worldPos.y -= plantOffset;
+  }
+
+  Rectangle dest = {worldPos.x, worldPos.y, width * scale, height * scale};
+  Vector2 origin = {(width * scale) / 2.0f, height * scale};
+
+  DrawTexturePro(plantType.plantTexture, plantSource, dest, origin, 0.0f, WHITE);
 }
 
 void Plant::updatePlant() {
