@@ -10,6 +10,26 @@
 
 class Game;
 
+struct MoneyParticle {
+  MoneyParticle(Texture2D& texture, Font& font, float lifetime);
+
+  void drawParticle();
+  void updateParticle();
+
+  bool lifetimeOver();
+  Vector2 moneyPos = {0, 0};
+  int number = 0;
+
+  Texture2D* moneyTexture;
+  Font* moneyFont;
+
+  float timer = 0.0f;
+  float totalLifetime;
+
+  int currentFrame = 0;
+  float frameTimer = 0.0f;
+};
+
 struct UI {
   UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData);
 
@@ -19,9 +39,10 @@ struct UI {
   void drawButtons();
   void drawSelection();
   void drawCursor();
+  void drawMoney();
 
   void playWaterAnimation();
-  void playLoseMoneyAnimation();
+  void playMoneyAnimation(int amount);
 
   float buttonSize = 1.6f;
   float buttonSpacing = 0.25f;
@@ -57,4 +78,6 @@ struct UI {
 
   MoneySystem& moneySystem;
   std::unique_ptr<Shop> shop;
+
+  std::vector<MoneyParticle> moneyParticles;
 };

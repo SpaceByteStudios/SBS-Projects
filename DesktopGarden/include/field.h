@@ -27,6 +27,7 @@ struct Field {
 
   Vector2 getWateredTile(int x, int y);
   bool mouseIsOnField();
+  bool isCellFree();
 
   const int fieldPosX;
   const int fieldPosY;

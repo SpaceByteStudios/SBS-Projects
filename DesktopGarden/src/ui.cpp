@@ -131,6 +131,20 @@ void UI::updateUI() {
   }
 
   shop->updateShop();
+
+  for (MoneyParticle& particle : moneyParticles) {
+    particle.updateParticle();
+  }
+
+  for (auto it = moneyParticles.begin(); it != moneyParticles.end();) {
+    it->updateParticle();
+
+    if (it->lifetimeOver()) {
+      it = moneyParticles.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void UI::drawShop() {
@@ -167,25 +181,6 @@ void UI::drawButtons() {
 
     DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, tint);
   }
-
-  Vector2 displayPos = {28 * TILE_SIZE, 7 * TILE_SIZE};
-
-  DrawTexture(moneyDisplayTexture, displayPos.x, displayPos.y, WHITE);
-
-  std::string moneyText = std::to_string(moneySystem.money);
-
-  for (int i = moneyText.length() - 3; i > 0; i -= 3) {
-    moneyText.insert(i, ".");
-  }
-
-  Vector2 rightPos = displayPos + Vector2(4 * TILE_SIZE, TILE_SIZE / 4);
-
-  Vector2 textSize = MeasureTextEx(moneyDisplayFont, moneyText.c_str(), 20, 0.5f);
-  Vector2 textPos = Vector2(rightPos.x - textSize.x - 7, rightPos.y);
-
-  BeginBlendMode(BLEND_ALPHA);
-  DrawTextEx(moneyDisplayFont, moneyText.c_str(), textPos, 20, 0.5f, WHITE);
-  EndBlendMode();
 }
 
 void UI::drawSelection() {
@@ -237,12 +232,83 @@ void UI::drawCursor() {
   DrawTextureRec(cursorTexture, mouseSource, Vector2Add(mousePos, mouseOffset), WHITE);
 }
 
-void UI::playLoseMoneyAnimation() {
+void UI::drawMoney() {
+  Vector2 displayPos = {28 * TILE_SIZE, 7 * TILE_SIZE};
+
+  DrawTexture(moneyDisplayTexture, displayPos.x, displayPos.y, WHITE);
+
+  std::string moneyText = std::to_string(moneySystem.money);
+
+  for (int i = moneyText.length() - 3; i > 0; i -= 3) {
+    moneyText.insert(i, ".");
+  }
+
+  Vector2 rightPos = displayPos + Vector2(4 * TILE_SIZE, TILE_SIZE / 4);
+
+  Vector2 textSize = MeasureTextEx(moneyDisplayFont, moneyText.c_str(), 20, 0.5f);
+  Vector2 textPos = Vector2(rightPos.x - textSize.x - 7, rightPos.y);
+
+  BeginBlendMode(BLEND_ALPHA);
+  DrawTextEx(moneyDisplayFont, moneyText.c_str(), textPos, 20, 0.5f, WHITE);
+  EndBlendMode();
+
+  for (MoneyParticle& particle : moneyParticles) {
+    particle.drawParticle();
+  }
+}
+
+void UI::playMoneyAnimation(int amount) {
   Vector2 mousePos = GetMousePosition();
+
+  MoneyParticle particle = {moneyTexture, moneyDisplayFont, 3.0f};
+
+  particle.number = amount;
+  particle.moneyPos = mousePos + Vector2{0.0f, -36.0f};
+
+  moneyParticles.push_back(particle);
 }
 
 void UI::playWaterAnimation() {
   wateringFrame = 0;
   playingAnimation = true;
   waterAnimationTimer = 0.0f;
+}
+
+MoneyParticle::MoneyParticle(Texture2D& texture, Font& font, float lifetime)
+    : moneyTexture(&texture), moneyFont(&font) {
+  totalLifetime = lifetime;
+}
+
+void MoneyParticle::drawParticle() {
+  std::string moneyText = std::to_string(number);
+  Vector2 textSize = MeasureTextEx(*moneyFont, moneyText.c_str(), 12.0f, 1.0f);
+  Vector2 textOffset = {-textSize.x / 2.0f, 0.0f};
+
+  Rectangle moneySource = {(currentFrame % 6) * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE};
+  Rectangle moneyDest = {moneyPos.x + textSize.x + 4.0f, moneyPos.y + textSize.y / 3.0f, TILE_SIZE, TILE_SIZE};
+  Vector2 moneyCenter = {TILE_SIZE / 2, TILE_SIZE / 2};
+
+  BeginBlendMode(BLEND_ALPHA);
+  DrawTextEx(*moneyFont, moneyText.c_str(), Vector2Add(moneyPos, textOffset), 12.0f, 1.0f, WHITE);
+  EndBlendMode();
+
+  DrawTexturePro(*moneyTexture, moneySource, moneyDest, moneyCenter, 0.0f, WHITE);
+}
+
+void MoneyParticle::updateParticle() {
+  float delta = GetFrameTime();
+
+  timer += delta;
+  frameTimer += delta;
+
+  if (frameTimer >= 0.1f) {
+    frameTimer = 0.0f;
+    currentFrame += 1;
+  }
+
+  moneyPos += Vector2{0.0f, -7.5f} * delta;
+}
+
+bool MoneyParticle::lifetimeOver() {
+  return timer >= totalLifetime;
 }

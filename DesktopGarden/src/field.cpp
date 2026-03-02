@@ -230,3 +230,11 @@ bool Field::mouseIsOnField() {
 
   return CheckCollisionPointRec(GetMousePosition(), bounds);
 }
+
+bool Field::isCellFree() {
+  Vector2 fieldPos = getMouseField();
+
+  int index = fieldPos.y * fieldWidth + fieldPos.x;
+
+  return !plants[index].has_value();
+}

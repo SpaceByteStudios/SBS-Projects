@@ -148,9 +148,9 @@ void Garden::updateGarden() {
       int plantID = game.getPlantID();
       int plantCost = plantsData.get(plantID).plantCost;
 
-      if (game.hasEnoughMoney(plantCost)) {
+      if (game.hasEnoughMoney(plantCost) && field->isCellFree()) {
         game.removeMoney(plantCost);
-        ui.playLoseMoneyAnimation();
+        ui.playMoneyAnimation(-plantCost);
 
         field->plantSeed(plantID);
       }
