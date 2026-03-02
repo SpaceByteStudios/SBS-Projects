@@ -23,11 +23,12 @@ struct Field {
   void plantSeed(int plantID);
 
   void useWater(int posX, int posY, float waterAmount);
-  bool isCellWatered(int x, int y);
-
   Vector2 getWateredTile(int x, int y);
+
   bool mouseIsOnField();
+
   bool isCellFree();
+  bool isCellWatered(int x, int y);
 
   const int fieldPosX;
   const int fieldPosY;

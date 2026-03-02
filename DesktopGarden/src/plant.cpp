@@ -15,6 +15,7 @@ Plant::Plant(int plantPosX, int plantPosY, PlantType plantType, Field& field) : 
   this->plantType = plantType;
 
   growthFactor = 0.85f + (float)rand() / RAND_MAX * 0.3f;
+  waterFactor = 0.85f + (float)rand() / RAND_MAX * 0.3f;
 }
 
 void Plant::drawPlant() {
@@ -52,7 +53,7 @@ void Plant::updatePlant() {
   float delta = GetFrameTime();
 
   if (currentStage < 5) {
-    field.useWater(plantPosX, plantPosY, plantType.waterConsumption * growthFactor * delta);
+    field.useWater(plantPosX, plantPosY, plantType.waterConsumption * waterFactor * delta);
     growth += plantType.growthSpeed * growthFactor * delta;
   }
 
@@ -67,4 +68,8 @@ Vector2 Plant::getGlobalPosition() {
   Vector2 field_offset = Vector2(field.fieldPosX, field.fieldPosY);
 
   return Vector2Add(position, field_offset);
+}
+
+bool Plant::isGrown() {
+  return currentStage >= 5;
 }

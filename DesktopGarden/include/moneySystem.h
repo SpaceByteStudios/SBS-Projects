@@ -8,5 +8,5 @@ struct MoneySystem {
 
   bool hasEnoughMoney(int neededMoney);
 
-  int money = 125;
+  int money = 25;
 };

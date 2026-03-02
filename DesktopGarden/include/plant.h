@@ -12,6 +12,7 @@ struct Plant {
   void updatePlant();
 
   Vector2 getGlobalPosition();
+  bool isGrown();
 
   int plantPosX;
   int plantPosY;
@@ -20,6 +21,7 @@ struct Plant {
   int currentStage = 0;
 
   float growthFactor = 1.0f;
+  float waterFactor = 1.0f;
 
   PlantType plantType;
   Field& field;

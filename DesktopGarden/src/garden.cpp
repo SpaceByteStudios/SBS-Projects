@@ -170,4 +170,26 @@ void Garden::updateGarden() {
       }
     }
   }
+
+  if (game.getState() == GameState::Idle && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    for (const std::unique_ptr<Field>& field : fields) {
+      if (!field->mouseIsOnField()) {
+        continue;
+      }
+
+      Vector2 fieldPos = field->getMouseField();
+      int index = fieldPos.y * field->fieldWidth + fieldPos.x;
+
+      std::optional<Plant>& plant = field->plants[index];
+
+      if (plant.has_value() && plant->isGrown()) {
+        int plantValue = plant->plantType.plantValue;
+
+        game.addMoney(plantValue);
+        ui.playMoneyAnimation(plantValue);
+
+        plant.reset();
+      }
+    }
+  }
 }
