@@ -89,7 +89,7 @@ void Shop::updateShop() {
     float sizeY = buttonsSize[i].y;
     Rectangle bounds = {buttonsPos[i].x - sizeX / 2, buttonsPos[i].y - sizeY / 2, sizeX, sizeY};
 
-    if (CheckCollisionPointRec(mousePos, bounds)) {
+    if (CheckCollisionPointRec(mousePos, bounds) && IsCursorOnScreen()) {
       if (!moneySystem.hasEnoughMoney(cost)) {
         buttonsSize[i] = Vector2(1.15 * 1.5f * TILE_SIZE, 1.15 * 1.5f * TILE_SIZE);
       }

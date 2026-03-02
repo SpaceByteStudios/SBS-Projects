@@ -27,10 +27,10 @@ Game::Game() {
 }
 
 void Game::init() {
-  plantsData->addType(PlantType{0, 2.0f, 1.0f, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
-  plantsData->addType(PlantType{1, 3.0f, 2.5f, 12, 20, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
-  plantsData->addType(PlantType{2, 1.0f, 1.5f, 20, 37, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
-  plantsData->addType(PlantType{3, 0.5f, 0.5f, 45, 100, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
+  plantsData->addType(PlantType{0, 2.0f, 0.9f, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
+  plantsData->addType(PlantType{1, 3.0f, 2.3f, 12, 20, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
+  plantsData->addType(PlantType{2, 1.0f, 1.3f, 20, 37, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
+  plantsData->addType(PlantType{3, 0.5f, 0.4f, 45, 100, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
 }
 
 void Game::run() {
@@ -43,6 +43,7 @@ void Game::run() {
     ui->updateUI();
 
     garden->drawGarden();
+    garden->drawGardenIcons();
 
     ui->drawShop();
     ui->drawButtons();

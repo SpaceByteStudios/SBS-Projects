@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "constants.h"
@@ -121,6 +122,19 @@ void Garden::drawGarden() {
 
   DrawTextureRec(treeAtlas, source, tree1Position, WHITE);
   DrawTextureRec(treeAtlas, source, tree2Position, WHITE);
+}
+
+void Garden::drawGardenIcons() {
+  for (const std::unique_ptr<Field>& field : fields) {
+    for (std::optional<Plant>& plant : field->plants) {
+      if (plant.has_value()) {
+        if (!field->isCellWatered(plant->plantPosX, plant->plantPosY)) {
+          Vector2 plantPos = plant->getGlobalPosition();
+          ui.drawWaterIcon(plantPos.x, plantPos.y);
+        }
+      }
+    }
+  }
 }
 
 void Garden::updateGarden() {

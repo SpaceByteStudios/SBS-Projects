@@ -37,7 +37,10 @@ struct UI {
 
   void drawShop();
   void drawButtons();
+
   void drawSelection();
+  void drawWaterIcon(int posX, int posY);
+
   void drawCursor();
   void drawMoney();
 
@@ -58,9 +61,11 @@ struct UI {
   Texture2D selectionTexture;
   Texture2D buttonsTexture;
   Texture2D cursorTexture;
+
   Texture2D wateringTexture;
   Texture2D seedsTexture;
   Texture2D moneyTexture;
+  Texture2D waterIconTexture;
 
   Font moneyDisplayFont;
   Texture2D moneyDisplayTexture;

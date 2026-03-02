@@ -1,6 +1,7 @@
 #pragma once
 
 #include "plantType.h"
+#include "raylib.h"
 
 struct Field;
 
@@ -10,11 +11,15 @@ struct Plant {
   void drawPlant();
   void updatePlant();
 
+  Vector2 getGlobalPosition();
+
   int plantPosX;
   int plantPosY;
 
   float growth = 0;
   int currentStage = 0;
+
+  float growthFactor = 1.0f;
 
   PlantType plantType;
   Field& field;

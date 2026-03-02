@@ -12,6 +12,7 @@ struct Garden {
   Garden(Game& game, UI& ui, PlantsData& plantsData);
 
   void drawGarden();
+  void drawGardenIcons();
   void updateGarden();
 
   int tilesRows = 0;

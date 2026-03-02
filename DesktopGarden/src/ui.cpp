@@ -1,6 +1,7 @@
 #include "ui.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -19,9 +20,11 @@ UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData) : game(game
   selectionTexture = LoadTexture("assets/sprites/ui/Selection.png");
   buttonsTexture = LoadTexture("assets/sprites/ui/Buttons.png");
   cursorTexture = LoadTexture("assets/sprites/ui/Cursor.png");
+
   wateringTexture = LoadTexture("assets/sprites/ui/Watering.png");
   seedsTexture = LoadTexture("assets/sprites/crop/Seeds.png");
   moneyTexture = LoadTexture("assets/sprites/ui/Money.png");
+  waterIconTexture = LoadTexture("assets/sprites/ui/WaterIcon.png");
 
   moneyDisplayFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
   SetTextureFilter(moneyDisplayFont.texture, TEXTURE_FILTER_POINT);
@@ -54,7 +57,7 @@ void UI::updateUI() {
     float sizeY = buttonsSize[i].y;
     Rectangle bounds = {buttonsPos[i].x - sizeX / 2, buttonsPos[i].y - sizeY / 2, sizeX, sizeY};
 
-    if (CheckCollisionPointRec(mousePos, bounds)) {
+    if (CheckCollisionPointRec(mousePos, bounds) && IsCursorOnScreen()) {
       buttonsSize[i] = Vector2(1.15 * buttonSize * TILE_SIZE, 1.15 * buttonSize * TILE_SIZE);
       hoversButton[i] = true;
     } else {
@@ -194,6 +197,16 @@ void UI::drawSelection() {
   Vector2 offset = {-TILE_SIZE, -TILE_SIZE};
 
   DrawTextureRec(selectionTexture, source, Vector2Add(position, offset), WHITE);
+}
+
+void UI::drawWaterIcon(int posX, int posY) {
+  float iconX = posX;
+  float iconY = posY;
+
+  iconY += -1.0f;
+  iconY += 0.1f * std::sin(GetTime());
+
+  DrawTexture(waterIconTexture, iconX * TILE_SIZE, iconY * TILE_SIZE, WHITE);
 }
 
 void UI::drawCursor() {
