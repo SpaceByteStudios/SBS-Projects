@@ -2,7 +2,9 @@
 
 #include <memory>
 
+#include "effects.h"
 #include "garden.h"
+#include "inventorySystem.h"
 #include "moneySystem.h"
 #include "plantsData.h"
 #include "ui.h"
@@ -25,11 +27,17 @@ class Game {
   void removeMoney(int amount);
   bool hasEnoughMoney(int neededAmount);
 
+  void addStock(int id, int amount);
+  void removeStock(int id, int amount);
+  int getStock(int id);
+
  private:
   std::unique_ptr<PlantsData> plantsData;
   std::unique_ptr<UI> ui;
   std::unique_ptr<Garden> garden;
   std::unique_ptr<MoneySystem> moneySystem;
+  std::unique_ptr<InventorySystem> inventorySystem;
+  std::unique_ptr<Effects> effects;
 
   GameState currentState = GameState::Idle;
 

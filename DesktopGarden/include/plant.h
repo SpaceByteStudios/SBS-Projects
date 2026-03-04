@@ -25,4 +25,7 @@ struct Plant {
 
   PlantType plantType;
   Field& field;
+
+  Shader plantShader;
+  int timeLoc;
 };

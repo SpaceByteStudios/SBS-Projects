@@ -3,7 +3,9 @@
 #include <iostream>
 #include <memory>
 
+#include "effects.h"
 #include "garden.h"
+#include "inventorySystem.h"
 #include "moneySystem.h"
 #include "plantType.h"
 #include "raylib.h"
@@ -21,6 +23,8 @@ void DrawDebugGrid(int screenWidth, int screenHeight, int gridSize, Color color)
 
 Game::Game() {
   moneySystem = std::make_unique<MoneySystem>();
+  inventorySystem = std::make_unique<InventorySystem>();
+  effects = std::make_unique<Effects>();
   plantsData = std::make_unique<PlantsData>();
   ui = std::make_unique<UI>(*this, *moneySystem, *plantsData);
   garden = std::make_unique<Garden>(*this, *ui, *plantsData);
@@ -30,7 +34,11 @@ void Game::init() {
   plantsData->addType(PlantType{0, 2.0f, 0.9f, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
   plantsData->addType(PlantType{1, 3.0f, 1.6f, 12, 20, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
   plantsData->addType(PlantType{2, 1.0f, 0.4f, 21, 37, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
-  plantsData->addType(PlantType{3, 0.5f, 0.2f, 50, 100, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
+  plantsData->addType(PlantType{3, 0.5f, 0.2f, 50, 125, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
+
+  plantsData->addType(PlantType{0, 200.0f, 0.9f, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
+  plantsData->addType(PlantType{1, 200.0f, 1.6f, 12, 20, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
+  plantsData->addType(PlantType{2, 200.0f, 0.4f, 21, 37, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
 }
 
 void Game::run() {
@@ -41,8 +49,10 @@ void Game::run() {
 
     garden->updateGarden();
     ui->updateUI();
+    effects->updateEffects();
 
     garden->drawGarden();
+    effects->drawClouds();
     garden->drawGardenIcons();
 
     ui->drawShop();
@@ -83,4 +93,16 @@ void Game::removeMoney(int amount) {
 
 bool Game::hasEnoughMoney(int neededAmount) {
   return moneySystem->hasEnoughMoney(neededAmount);
+}
+
+void Game::addStock(int id, int amount) {
+  inventorySystem->addStock(id, amount);
+}
+
+void Game::removeStock(int id, int amount) {
+  inventorySystem->removeStock(id, amount);
+}
+
+int Game::getStock(int id) {
+  return inventorySystem->getStock(id);
 }

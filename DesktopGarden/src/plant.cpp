@@ -16,6 +16,13 @@ Plant::Plant(int plantPosX, int plantPosY, PlantType plantType, Field& field) : 
 
   growthFactor = 0.85f + (float)rand() / RAND_MAX * 0.3f;
   waterFactor = 0.85f + (float)rand() / RAND_MAX * 0.3f;
+
+  plantShader = LoadShader("shaders/plant_sway.vs", "shaders/plant_sway.fs");
+  timeLoc = GetShaderLocation(plantShader, "time");
+
+  if (plantShader.id == 0) {
+    std::cout << "Shader failed to load!" << std::endl;
+  }
 }
 
 void Plant::drawPlant() {
@@ -42,7 +49,16 @@ void Plant::drawPlant() {
   Rectangle dest = {worldPos.x, worldPos.y, width * scale, height * scale};
   Vector2 origin = {(width * scale) / 2.0f, height * scale};
 
-  DrawTexturePro(plantType.plantTexture, plantSource, dest, origin, 0.0f, WHITE);
+  float time = GetTime();
+  SetShaderValue(plantShader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
+
+  if (currentStage > 1) {
+    BeginShaderMode(plantShader);
+    DrawTexturePro(plantType.plantTexture, plantSource, dest, origin, 0.0f, WHITE);
+    EndShaderMode();
+  } else {
+    DrawTexturePro(plantType.plantTexture, plantSource, dest, origin, 0.0f, WHITE);
+  }
 }
 
 void Plant::updatePlant() {

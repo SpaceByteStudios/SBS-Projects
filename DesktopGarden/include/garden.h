@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "field.h"
@@ -13,10 +14,17 @@ struct Garden {
 
   void drawGarden();
   void drawGardenIcons();
+
   void updateGarden();
+
+  bool canUpgrade(int level);
 
   int tilesRows = 0;
   int tilesColumns = 0;
+
+  int fieldsAmount = 1;
+
+  Vector2 fieldButtonPos;
 
   Texture2D grassTileset;
   Texture2D fenceTileset;
@@ -30,6 +38,8 @@ struct Garden {
   std::vector<int> propsFlipsMap;
 
   std::vector<std::unique_ptr<Field>> fields;
+
+  std::unordered_map<int, std::unordered_map<int, int>> upgradeCosts;
 
   Game& game;
   UI& ui;

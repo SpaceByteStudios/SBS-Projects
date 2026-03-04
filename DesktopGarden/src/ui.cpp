@@ -7,6 +7,7 @@
 #include <string>
 
 #include "constants.h"
+#include "field.h"
 #include "game.h"
 #include "moneySystem.h"
 #include "plantsData.h"
@@ -25,6 +26,7 @@ UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData) : game(game
   seedsTexture = LoadTexture("assets/sprites/crop/Seeds.png");
   moneyTexture = LoadTexture("assets/sprites/ui/Money.png");
   waterIconTexture = LoadTexture("assets/sprites/ui/WaterIcon.png");
+  fieldButtonsTexture = LoadTexture("assets/sprites/ui/FieldButtons.png");
 
   moneyDisplayFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
   SetTextureFilter(moneyDisplayFont.texture, TEXTURE_FILTER_POINT);
@@ -203,7 +205,7 @@ void UI::drawWaterIcon(int posX, int posY) {
   float iconX = posX;
   float iconY = posY;
 
-  iconY += -0.75f;
+  iconY += -1.0f;
   iconY += 0.1f * std::sin(GetTime());
 
   DrawTexture(waterIconTexture, iconX * TILE_SIZE, iconY * TILE_SIZE, WHITE);
@@ -324,4 +326,27 @@ void MoneyParticle::updateParticle() {
 
 bool MoneyParticle::lifetimeOver() {
   return timer >= totalLifetime;
+}
+
+bool UI::updateFieldButton(int posX, int posY) {
+  Vector2 mousePos = GetMousePosition();
+  Rectangle bounds = {posX * TILE_SIZE, posY * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE};
+
+  if (CheckCollisionPointRec(mousePos, bounds) && IsCursorOnScreen()) {
+    hoversFieldButton = true;
+  } else {
+    hoversFieldButton = false;
+  }
+
+  return hoversFieldButton;
+}
+
+void UI::drawFieldButton(int fieldButton, int posX, int posY, bool isActive) {
+  Rectangle source = {0, fieldButton * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE};
+  Vector2 position = {posX * TILE_SIZE, posY * TILE_SIZE};
+
+  Color tint = hoversFieldButton ? Color{230, 230, 230, 255} : WHITE;
+  tint = isActive ? tint : Color{128, 128, 128, 255};
+
+  DrawTextureRec(fieldButtonsTexture, source, position, tint);
 }

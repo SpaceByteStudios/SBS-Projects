@@ -1,8 +1,10 @@
 #include "garden.h"
 
 #include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 #include "constants.h"
@@ -38,12 +40,25 @@ Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui),
     }
   }
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < fieldsAmount; i++) {
     int fieldPosX = 5 + i * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
   }
 
-  // fields.push_back(std::make_unique<Field>(5, 2, 5, 5, plantsData));
+  const std::unique_ptr<Field>& frontField = fields[fieldsAmount - 1];
+
+  float posX = frontField->fieldPosX + frontField->fieldWidth / 2.0f - 1.0f;
+  float posY = frontField->fieldPosY + frontField->fieldHeight / 2.0f;
+
+  posX += 9.0f;
+
+  fieldButtonPos = {posX, posY};
+
+  upgradeCosts[0] = {{0, 10}};
+  upgradeCosts[1] = {{1, 20}};
+  upgradeCosts[2] = {{0, 20}, {1, 30}};
+  upgradeCosts[3] = {{2, 40}};
+  upgradeCosts[4] = {{1, 40}, {2, 50}};
 }
 
 void Garden::drawGarden() {
@@ -117,11 +132,13 @@ void Garden::drawGarden() {
   }
 
   Rectangle source = {3 * TILE_SIZE * 2, 0, TILE_SIZE * 2, TILE_SIZE * 3};
-  Vector2 tree1Position = {2 * TILE_SIZE, 0 * TILE_SIZE};
-  Vector2 tree2Position = {56 * TILE_SIZE, 0 * TILE_SIZE};
 
-  DrawTextureRec(treeAtlas, source, tree1Position, WHITE);
-  DrawTextureRec(treeAtlas, source, tree2Position, WHITE);
+  for (int i = 0; i < 7; i++) {
+    Vector2 treePos = {(2 + i * 9) * TILE_SIZE, 0 * TILE_SIZE};
+    DrawTextureRec(treeAtlas, source, treePos, WHITE);
+  }
+
+  ui.drawFieldButton(fieldsAmount - 1, fieldButtonPos.x, fieldButtonPos.y, canUpgrade(fieldsAmount - 1));
 }
 
 void Garden::drawGardenIcons() {
@@ -187,9 +204,61 @@ void Garden::updateGarden() {
 
         game.addMoney(plantValue);
         ui.playMoneyAnimation(plantValue);
+        game.addStock(plant->plantType.id, 1);
 
         plant.reset();
       }
     }
   }
+
+  if (fieldsAmount >= 6) {
+    return;
+  }
+
+  if (ui.updateFieldButton(fieldButtonPos.x, fieldButtonPos.y) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (!canUpgrade(fieldsAmount - 1)) {
+      return;
+    }
+
+    auto levelIt = upgradeCosts.find(fieldsAmount - 1);
+
+    for (const auto& cost : levelIt->second) {
+      int resourceId = cost.first;
+      int requiredAmount = cost.second;
+
+      game.removeStock(resourceId, requiredAmount);
+    }
+
+    int fieldPosX = 5 + fieldsAmount * 9;
+    fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
+    fieldsAmount += 1;
+
+    const std::unique_ptr<Field>& frontField = fields[fieldsAmount - 1];
+
+    float posX = frontField->fieldPosX + frontField->fieldWidth / 2.0f - 1.0f;
+    float posY = frontField->fieldPosY + frontField->fieldHeight / 2.0f;
+
+    posX += 9.0f;
+
+    fieldButtonPos = {posX, posY};
+  }
+}
+
+bool Garden::canUpgrade(int level) {
+  auto levelIt = upgradeCosts.find(level);
+
+  if (levelIt == upgradeCosts.end()) {
+    return false;
+  }
+
+  for (const auto& cost : levelIt->second) {
+    int resourceId = cost.first;
+    int requiredAmount = cost.second;
+
+    if (game.getStock(resourceId) < requiredAmount) {
+      return false;
+    }
+  }
+
+  return true;
 }

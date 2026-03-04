@@ -1,5 +1,4 @@
 #pragma once
-
 #include <memory>
 #include <vector>
 
@@ -44,6 +43,9 @@ struct UI {
   void drawCursor();
   void drawMoney();
 
+  bool updateFieldButton(int posX, int posY);
+  void drawFieldButton(int fieldButton, int posX, int posY, bool isActive);
+
   void playWaterAnimation();
   void playMoneyAnimation(int amount);
 
@@ -56,6 +58,8 @@ struct UI {
   std::vector<Vector2> buttonsPos;
   std::vector<Vector2> buttonsSize;
 
+  bool hoversFieldButton;
+
   Game& game;
 
   Texture2D selectionTexture;
@@ -66,6 +70,7 @@ struct UI {
   Texture2D seedsTexture;
   Texture2D moneyTexture;
   Texture2D waterIconTexture;
+  Texture2D fieldButtonsTexture;
 
   Font moneyDisplayFont;
   Texture2D moneyDisplayTexture;
