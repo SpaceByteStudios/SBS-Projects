@@ -81,6 +81,10 @@ void UI::updateUI() {
       continue;
     }
 
+    if (!menu->showUI) {
+      return;
+    }
+
     if (pressedButton[i]) {
       shop->isOpen = false;
 
@@ -158,10 +162,18 @@ void UI::updateUI() {
 }
 
 void UI::drawShop() {
-  shop->drawShop();
+  if (menu->showUI) {
+    shop->drawShop();
+  }
 }
 
 void UI::drawButtons() {
+  menu->drawMenu();
+
+  if (!menu->showUI) {
+    return;
+  }
+
   for (int i = 0; i < 3; i++) {
     if (i == 1 && game.getState() == GameState::Planting) {
       float tileIndexY = pressedButton[i] ? 1.0f : 0.0f;
@@ -191,8 +203,6 @@ void UI::drawButtons() {
 
     DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, tint);
   }
-
-  menu->drawMenu();
 }
 
 void UI::drawSelection() {
@@ -255,6 +265,10 @@ void UI::drawCursor() {
 }
 
 void UI::drawMoney() {
+  if (!menu->showUI) {
+    return;
+  }
+
   Vector2 displayPos = {28 * TILE_SIZE, 7 * TILE_SIZE};
 
   DrawTexture(moneyDisplayTexture, displayPos.x, displayPos.y, WHITE);
@@ -349,6 +363,10 @@ bool UI::updateFieldButton(int posX, int posY) {
 }
 
 void UI::drawFieldButton(int fieldButton, int posX, int posY, bool isActive) {
+  if (!menu->showUI) {
+    return;
+  }
+
   Rectangle source = {0, fieldButton * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE};
   Vector2 position = {posX * TILE_SIZE, posY * TILE_SIZE};
 

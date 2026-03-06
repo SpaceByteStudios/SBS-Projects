@@ -19,6 +19,8 @@ struct Menu {
   float buttonSize = 1.25f;
   float buttonSpacing = 0.25f;
 
+  bool showUI = true;
+
   std::vector<bool> pressedButton;
   std::vector<bool> hoversButton;
 

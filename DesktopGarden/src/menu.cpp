@@ -27,6 +27,10 @@ void Menu::updateMenu() {
   Vector2 mousePos = GetMousePosition();
 
   for (int i = 0; i < 4; i++) {
+    if (i != 3 && !showUI) {
+      continue;
+    }
+
     float sizeX = buttonsSize[i].x;
     float sizeY = buttonsSize[i].y;
     Rectangle bounds = {buttonsPos[i].x - sizeX / 2, buttonsPos[i].y - sizeY / 2, sizeX, sizeY};
@@ -51,19 +55,25 @@ void Menu::updateMenu() {
 
     if (pressedButton[i]) {
       std::fill(pressedButton.begin(), pressedButton.end(), false);
+      showUI = true;
     } else {
       std::fill(pressedButton.begin(), pressedButton.end(), false);
       pressedButton[i] = true;
+
+      showUI = true;
 
       switch (i) {
         case 0:
           CloseWindow();
           break;
         case 1:
+
           break;
         case 2:
+
           break;
         case 3:
+          showUI = false;
           break;
       }
     }
@@ -76,6 +86,14 @@ void Menu::drawMenu() {
   }
 
   for (int i = 0; i < 4; i++) {
+    if (i != 3 && !showUI) {
+      continue;
+    }
+
+    if (!showUI && !IsCursorOnScreen()) {
+      continue;
+    }
+
     float tileIndexY = pressedButton[i] ? 1.0f : 0.0f;
 
     Rectangle source = {i * TILE_SIZE, tileIndexY * TILE_SIZE, TILE_SIZE, TILE_SIZE};
