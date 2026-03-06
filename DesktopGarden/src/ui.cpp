@@ -9,14 +9,18 @@
 #include "constants.h"
 #include "field.h"
 #include "game.h"
+#include "inventorySystem.h"
+#include "menu.h"
 #include "moneySystem.h"
 #include "plantsData.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "shop.h"
 
-UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData) : game(game), moneySystem(moneySystem) {
+UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData, InventorySystem& inventorySystem)
+    : game(game), moneySystem(moneySystem) {
   shop = std::make_unique<Shop>(game, moneySystem, plantsData);
+  menu = std::make_unique<Menu>(game, inventorySystem, plantsData);
 
   selectionTexture = LoadTexture("assets/sprites/ui/Selection.png");
   buttonsTexture = LoadTexture("assets/sprites/ui/Buttons.png");
@@ -114,7 +118,7 @@ void UI::updateUI() {
             SetMousePosition(mousePos.x + mouseWaterOffset.x, mousePos.y + mouseWaterOffset.y);
             playingAnimation = false;
           }
-          game.setState(GameState::Settings);
+          game.setState(GameState::Menus);
           break;
       }
     }
@@ -136,6 +140,7 @@ void UI::updateUI() {
   }
 
   shop->updateShop();
+  menu->updateMenu();
 
   for (MoneyParticle& particle : moneyParticles) {
     particle.updateParticle();
@@ -186,6 +191,8 @@ void UI::drawButtons() {
 
     DrawTexturePro(buttonsTexture, source, dest, center, 0.0f, tint);
   }
+
+  menu->drawMenu();
 }
 
 void UI::drawSelection() {

@@ -7,7 +7,7 @@
 // #include "win_overlay.h"
 
 int main() {
-  // srand(time(nullptr));
+  srand(time(nullptr));
 
   SetTraceLogLevel(LOG_NONE);
 

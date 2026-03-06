@@ -97,13 +97,18 @@ void Effects::spawnCloud() {
 void Effects::drawClouds() {
   for (std::optional<Cloud>& cloud : clouds) {
     if (cloud.has_value()) {
-      Rectangle cloudSource = {cloud->id * TILE_SIZE * 3, 0.0f, TILE_SIZE * 3, TILE_SIZE * 2};
       Rectangle shadowSource = {cloud->id * TILE_SIZE * 3, 2 * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE * 2};
-
       Vector2 shadowPos = Vector2Add(cloud->cloudPos, {0.0f, cloud->shadowOffset});
 
-      DrawTextureRec(cloudsTexture, cloudSource, cloud->cloudPos, WHITE);
       DrawTextureRec(cloudsTexture, shadowSource, shadowPos, WHITE);
+    }
+  }
+
+  for (std::optional<Cloud>& cloud : clouds) {
+    if (cloud.has_value()) {
+      Rectangle cloudSource = {cloud->id * TILE_SIZE * 3, 0.0f, TILE_SIZE * 3, TILE_SIZE * 2};
+
+      DrawTextureRec(cloudsTexture, cloudSource, cloud->cloudPos, WHITE);
     }
   }
 }

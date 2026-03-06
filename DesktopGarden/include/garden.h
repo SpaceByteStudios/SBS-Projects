@@ -14,6 +14,7 @@ struct Garden {
 
   void drawGarden();
   void drawGardenIcons();
+  void drawHouse();
 
   void updateGarden();
 
@@ -30,6 +31,9 @@ struct Garden {
   Texture2D fenceTileset;
   Texture2D propsAtlas;
   Texture2D treeAtlas;
+
+  Texture2D houseTexture;
+  Texture2D mailTexture;
 
   const int fenceOffset = 24;
   const int propsOffset = 48;

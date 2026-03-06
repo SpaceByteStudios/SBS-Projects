@@ -9,7 +9,7 @@
 #include "plantsData.h"
 #include "ui.h"
 
-enum class GameState { Idle, Watering, Shopping, Planting, Settings };
+enum class GameState { Idle, Watering, Shopping, Planting, Menus };
 
 class Game {
  public:

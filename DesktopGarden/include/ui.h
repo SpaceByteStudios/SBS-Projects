@@ -2,6 +2,8 @@
 #include <memory>
 #include <vector>
 
+#include "inventorySystem.h"
+#include "menu.h"
 #include "moneySystem.h"
 #include "plantsData.h"
 #include "raylib.h"
@@ -30,7 +32,7 @@ struct MoneyParticle {
 };
 
 struct UI {
-  UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData);
+  UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData, InventorySystem& inventorySystem);
 
   void updateUI();
 
@@ -88,6 +90,7 @@ struct UI {
 
   MoneySystem& moneySystem;
   std::unique_ptr<Shop> shop;
+  std::unique_ptr<Menu> menu;
 
   std::vector<MoneyParticle> moneyParticles;
 };

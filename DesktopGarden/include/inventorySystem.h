@@ -9,6 +9,8 @@ struct InventorySystem {
   void removeStock(int id, int amount);
 
   int getStock(int id);
+  int getLifetimeStock(int id);
 
   std::vector<int> plantsAmount;
+  std::vector<int> lifeTimePlantsAmount;
 };

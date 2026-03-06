@@ -26,7 +26,7 @@ Game::Game() {
   inventorySystem = std::make_unique<InventorySystem>();
   effects = std::make_unique<Effects>();
   plantsData = std::make_unique<PlantsData>();
-  ui = std::make_unique<UI>(*this, *moneySystem, *plantsData);
+  ui = std::make_unique<UI>(*this, *moneySystem, *plantsData, *inventorySystem);
   garden = std::make_unique<Garden>(*this, *ui, *plantsData);
 }
 
@@ -52,6 +52,7 @@ void Game::run() {
     effects->updateEffects();
 
     garden->drawGarden();
+    garden->drawHouse();
     effects->drawClouds();
     garden->drawGardenIcons();
 
@@ -60,7 +61,7 @@ void Game::run() {
     ui->drawMoney();
     ui->drawCursor();
 
-    // DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
+    DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
 
     EndBlendMode();
     EndDrawing();

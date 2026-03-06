@@ -22,6 +22,9 @@ Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui),
   propsAtlas = LoadTexture("assets/sprites/Props.png");
   treeAtlas = LoadTexture("assets/sprites/Trees.png");
 
+  houseTexture = LoadTexture("assets/sprites/House.png");
+  mailTexture = LoadTexture("assets/sprites/Mail.png");
+
   propsMap.resize(tilesColumns * tilesRows, -1);
   propsFlipsMap.resize(tilesColumns * tilesRows, -1);
 
@@ -41,7 +44,7 @@ Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui),
   }
 
   for (int i = 0; i < fieldsAmount; i++) {
-    int fieldPosX = 5 + i * 9;
+    int fieldPosX = 7 + i * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
   }
 
@@ -134,7 +137,7 @@ void Garden::drawGarden() {
   Rectangle source = {3 * TILE_SIZE * 2, 0, TILE_SIZE * 2, TILE_SIZE * 3};
 
   for (int i = 0; i < 7; i++) {
-    Vector2 treePos = {(2 + i * 9) * TILE_SIZE, 0 * TILE_SIZE};
+    Vector2 treePos = {(4 + i * 9) * TILE_SIZE, 0 * TILE_SIZE};
     DrawTextureRec(treeAtlas, source, treePos, WHITE);
   }
 
@@ -152,6 +155,11 @@ void Garden::drawGardenIcons() {
       }
     }
   }
+}
+
+void Garden::drawHouse() {
+  DrawTexture(houseTexture, 0.25 * TILE_SIZE, 0, WHITE);
+  DrawTexture(mailTexture, 5 * TILE_SIZE, 3.75 * TILE_SIZE, WHITE);
 }
 
 void Garden::updateGarden() {
@@ -229,7 +237,7 @@ void Garden::updateGarden() {
       game.removeStock(resourceId, requiredAmount);
     }
 
-    int fieldPosX = 5 + fieldsAmount * 9;
+    int fieldPosX = 7 + fieldsAmount * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
     fieldsAmount += 1;
 
