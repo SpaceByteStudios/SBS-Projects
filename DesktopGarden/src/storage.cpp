@@ -28,7 +28,7 @@ void Storage::updateStorage() {
       int i = y * 2 + x;
 
       float iconPosX = 46.35f + x * 6.0f;
-      float iconPosY = 2.25f + y * 2.25f;
+      float iconPosY = 2.0f + y * 2.25f;
       Vector2 iconPos = {iconPosX * TILE_SIZE, iconPosY * TILE_SIZE};
 
       stockAmount[i] = inventorySystem.getStock(i);
@@ -56,7 +56,7 @@ void Storage::drawStorage() {
       int i = y * 2 + x;
 
       float iconPosX = 46.35f + x * 6.0f;
-      float iconPosY = 2.25f + y * 2.25f;
+      float iconPosY = 2.0f + y * 2.25f;
 
       Rectangle iconSource = {x * 48.0f, y * 48.0f, 48.0f, 48.0f};
       Vector2 iconPos = {iconPosX * TILE_SIZE, iconPosY * TILE_SIZE};

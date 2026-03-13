@@ -37,6 +37,7 @@ add_executable(
   src/menu.cpp
   src/storage.cpp
   src/effects.cpp
+  src/audioPlayer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)

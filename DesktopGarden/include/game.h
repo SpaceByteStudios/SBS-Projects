@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "audioPlayer.h"
 #include "effects.h"
 #include "garden.h"
 #include "inventorySystem.h"
@@ -38,6 +39,7 @@ class Game {
   std::unique_ptr<MoneySystem> moneySystem;
   std::unique_ptr<InventorySystem> inventorySystem;
   std::unique_ptr<Effects> effects;
+  std::unique_ptr<AudioPlayer> audioPlayer;
 
   GameState currentState = GameState::Idle;
 

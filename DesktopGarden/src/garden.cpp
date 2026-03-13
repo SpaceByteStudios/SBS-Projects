@@ -202,9 +202,7 @@ void Garden::updateGarden() {
         continue;
       }
 
-      if (game.getState() == GameState::Idle || game.getState() == GameState::Menus) {
-        game.setState(GameState::Idle);
-
+      if (game.getState() == GameState::Idle) {
         Vector2 fieldPos = field->getMouseField();
         int index = fieldPos.y * field->fieldWidth + fieldPos.x;
 

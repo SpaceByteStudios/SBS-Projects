@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 
+#include "audioPlayer.h"
 #include "effects.h"
 #include "garden.h"
 #include "inventorySystem.h"
@@ -28,6 +29,7 @@ Game::Game() {
   plantsData = std::make_unique<PlantsData>();
   ui = std::make_unique<UI>(*this, *moneySystem, *plantsData, *inventorySystem);
   garden = std::make_unique<Garden>(*this, *ui, *plantsData);
+  audioPlayer = std::make_unique<AudioPlayer>("assets/music");
 }
 
 void Game::init() {
@@ -60,6 +62,8 @@ void Game::run() {
     ui->drawButtons();
     ui->drawMoney();
     ui->drawCursor();
+
+    audioPlayer->updateMusic();
 
     // DrawDebugGrid(GetMonitorWidth(0), GetMonitorHeight(0), 32, BLACK);
 

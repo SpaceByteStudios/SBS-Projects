@@ -31,10 +31,14 @@ int main() {
   //  MakeWindowClickThrough(GetWindowHandle());
   SetTargetFPS(60);
 
+  InitAudioDevice();
+
   Game game;
 
   game.init();
   game.run();
+
+  CloseAudioDevice();
 
   CloseWindow();
   return 0;
