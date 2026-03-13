@@ -196,25 +196,29 @@ void Garden::updateGarden() {
     }
   }
 
-  if (game.getState() == GameState::Idle && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     for (const std::unique_ptr<Field>& field : fields) {
       if (!field->mouseIsOnField()) {
         continue;
       }
 
-      Vector2 fieldPos = field->getMouseField();
-      int index = fieldPos.y * field->fieldWidth + fieldPos.x;
+      if (game.getState() == GameState::Idle || game.getState() == GameState::Menus) {
+        game.setState(GameState::Idle);
 
-      std::optional<Plant>& plant = field->plants[index];
+        Vector2 fieldPos = field->getMouseField();
+        int index = fieldPos.y * field->fieldWidth + fieldPos.x;
 
-      if (plant.has_value() && plant->isGrown()) {
-        int plantValue = plant->plantType.plantValue;
+        std::optional<Plant>& plant = field->plants[index];
 
-        game.addMoney(plantValue);
-        ui.playMoneyAnimation(plantValue);
-        game.addStock(plant->plantType.id, 1);
+        if (plant.has_value() && plant->isGrown()) {
+          int plantValue = plant->plantType.plantValue;
 
-        plant.reset();
+          game.addMoney(plantValue);
+          ui.playMoneyAnimation(plantValue);
+          game.addStock(plant->plantType.id, 1);
+
+          plant.reset();
+        }
       }
     }
   }

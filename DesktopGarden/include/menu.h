@@ -1,8 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include "inventorySystem.h"
 #include "plantsData.h"
 #include "raylib.h"
+#include "storage.h"
 
 class Game;
 
@@ -28,4 +31,6 @@ struct Menu {
   std::vector<Vector2> buttonsSize;
 
   Texture2D menuButtonsTexture;
+
+  std::unique_ptr<Storage> storage;
 };

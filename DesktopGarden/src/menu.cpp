@@ -1,5 +1,7 @@
 #include "menu.h"
 
+#include <memory>
+
 #include "constants.h"
 #include "game.h"
 #include "raylib.h"
@@ -12,10 +14,12 @@ Menu::Menu(Game& game, InventorySystem& inventorySystem, PlantsData& plantsData)
   hoversButton.resize(4, false);
 
   for (int i = 0; i < 4; i++) {
-    Vector2 position = {(52.75f + i * (buttonSize + buttonSpacing)) * TILE_SIZE, 6.75f * TILE_SIZE};
+    Vector2 position = {(52.5f + i * (buttonSize + buttonSpacing)) * TILE_SIZE, 6.75f * TILE_SIZE};
     buttonsPos.push_back(position);
     buttonsSize.push_back(Vector2(buttonSize * TILE_SIZE, buttonSize * TILE_SIZE));
   }
+
+  storage = std::make_unique<Storage>(inventorySystem, plantsData);
 }
 
 void Menu::updateMenu() {
@@ -78,11 +82,17 @@ void Menu::updateMenu() {
       }
     }
   }
+
+  storage->updateStorage();
 }
 
 void Menu::drawMenu() {
   if (game.getState() != GameState::Menus) {
     return;
+  }
+
+  if (pressedButton[2]) {
+    storage->drawStorage();
   }
 
   for (int i = 0; i < 4; i++) {

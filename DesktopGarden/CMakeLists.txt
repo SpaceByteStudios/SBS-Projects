@@ -35,6 +35,7 @@ add_executable(
   src/inventorySystem.cpp
   src/shop.cpp
   src/menu.cpp
+  src/storage.cpp
   src/effects.cpp
 )
 

@@ -33,7 +33,7 @@ Game::Game() {
 void Game::init() {
   plantsData->addType(PlantType{0, 2.0f, 0.9f, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
   plantsData->addType(PlantType{1, 3.0f, 1.6f, 12, 20, 1, 1, LoadTexture("assets/sprites/crop/Blackberry.png")});
-  plantsData->addType(PlantType{2, 1.0f, 0.4f, 21, 37, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
+  plantsData->addType(PlantType{2, 1.0f, 0.6f, 21, 37, 1, 1, LoadTexture("assets/sprites/crop/Wheat.png")});
   plantsData->addType(PlantType{3, 0.5f, 0.2f, 50, 125, 1, 2, LoadTexture("assets/sprites/crop/Sunflower.png")});
 
   plantsData->addType(PlantType{0, 200.0f, 0.9f, 5, 8, 1, 1, LoadTexture("assets/sprites/crop/Strawberry.png")});
