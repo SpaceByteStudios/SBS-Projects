@@ -22,6 +22,8 @@ Menu::Menu(Game& game, InventorySystem& inventorySystem, PlantsData& plantsData)
 
   storage = std::make_unique<Storage>(inventorySystem, plantsData);
   settings = std::make_unique<Settings>(game);
+
+  buttonSFX = LoadSound("assets/sfx/Click.wav");
 }
 
 void Menu::updateMenu() {
@@ -58,6 +60,8 @@ void Menu::updateMenu() {
     if (!hoversButton[i]) {
       continue;
     }
+
+    game.playSFX(buttonSFX);
 
     if (pressedButton[i]) {
       std::fill(pressedButton.begin(), pressedButton.end(), false);

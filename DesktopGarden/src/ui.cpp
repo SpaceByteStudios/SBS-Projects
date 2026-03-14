@@ -32,6 +32,8 @@ UI::UI(Game& game, MoneySystem& moneySystem, PlantsData& plantsData, InventorySy
   waterIconTexture = LoadTexture("assets/sprites/ui/WaterIcon.png");
   fieldButtonsTexture = LoadTexture("assets/sprites/ui/FieldButtons.png");
 
+  buttonSFX = LoadSound("assets/sfx/Click.wav");
+
   moneyDisplayFont = LoadFontEx("assets/m6x11.ttf", 128, 0, 0);
   SetTextureFilter(moneyDisplayFont.texture, TEXTURE_FILTER_POINT);
   moneyDisplayTexture = LoadTexture("assets/sprites/ui/MoneyDisplay.png");
@@ -84,6 +86,8 @@ void UI::updateUI() {
     if (!menu->showUI) {
       return;
     }
+
+    game.playSFX(buttonSFX);
 
     if (pressedButton[i]) {
       shop->isOpen = false;

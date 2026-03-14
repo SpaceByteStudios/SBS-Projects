@@ -1,6 +1,7 @@
 #include "audioPlayer.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <random>
@@ -67,4 +68,8 @@ void AudioPlayer::updateMusic() {
 }
 
 void AudioPlayer::playSFX(Sound& sound) {
+  float randPitch = 0.9 + 0.2 * rand() / RAND_MAX;
+  SetSoundVolume(sound, sfxVolume);
+  SetSoundPitch(sound, randPitch);
+  PlaySound(sound);
 }

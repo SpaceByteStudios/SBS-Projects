@@ -114,3 +114,7 @@ int Game::getStock(int id) {
 void Game::updateVolume(float mVolume, float sVolume) {
   audioPlayer->updateVolume(mVolume, sVolume);
 }
+
+void Game::playSFX(Sound& sound) {
+  audioPlayer->playSFX(sound);
+}

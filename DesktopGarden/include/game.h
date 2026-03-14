@@ -33,6 +33,7 @@ class Game {
   int getStock(int id);
 
   void updateVolume(float mVolume, float sVolume);
+  void playSFX(Sound& sound);
 
  private:
   std::unique_ptr<PlantsData> plantsData;

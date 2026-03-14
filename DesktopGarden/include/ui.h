@@ -94,4 +94,6 @@ struct UI {
   std::unique_ptr<Menu> menu;
 
   std::vector<MoneyParticle> moneyParticles;
+
+  Sound buttonSFX;
 };

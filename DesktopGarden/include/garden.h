@@ -48,4 +48,9 @@ struct Garden {
   Game& game;
   UI& ui;
   PlantsData& plantsData;
+
+  Sound waterSFX;
+  Sound plantSFX;
+  Sound harvestSFX;
+  Sound buttonSFX;
 };

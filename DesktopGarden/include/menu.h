@@ -35,4 +35,6 @@ struct Menu {
 
   std::unique_ptr<Storage> storage;
   std::unique_ptr<Settings> settings;
+
+  Sound buttonSFX;
 };

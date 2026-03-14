@@ -25,6 +25,11 @@ Garden::Garden(Game& game, UI& ui, PlantsData& plantsData) : game(game), ui(ui),
   houseTexture = LoadTexture("assets/sprites/House.png");
   mailTexture = LoadTexture("assets/sprites/Mail.png");
 
+  waterSFX = LoadSound("assets/sfx/Watering.wav");
+  plantSFX = LoadSound("assets/sfx/Planting.wav");
+  harvestSFX = LoadSound("assets/sfx/Harvesting.wav");
+  buttonSFX = LoadSound("assets/sfx/Click.wav");
+
   propsMap.resize(tilesColumns * tilesRows, -1);
   propsFlipsMap.resize(tilesColumns * tilesRows, -1);
 
@@ -123,7 +128,7 @@ void Garden::drawGarden() {
   for (const std::unique_ptr<Field>& field : fields) {
     field->drawField();
 
-    if (game.getState() != GameState::Shopping) {
+    if (game.getState() != GameState::Shopping || game.getState() != GameState::Menus) {
       if (field->mouseIsOnField()) {
         ui.drawSelection();
       }
@@ -173,6 +178,7 @@ void Garden::updateGarden() {
         continue;
       }
 
+      game.playSFX(waterSFX);
       ui.playWaterAnimation();
       field->waterCell();
     }
@@ -189,6 +195,7 @@ void Garden::updateGarden() {
 
       if (game.hasEnoughMoney(plantCost) && field->isCellFree()) {
         game.removeMoney(plantCost);
+        game.playSFX(plantSFX);
         ui.playMoneyAnimation(-plantCost);
 
         field->plantSeed(plantID);
@@ -214,6 +221,7 @@ void Garden::updateGarden() {
           game.addMoney(plantValue);
           ui.playMoneyAnimation(plantValue);
           game.addStock(plant->plantType.id, 1);
+          game.playSFX(harvestSFX);
 
           plant.reset();
         }
@@ -238,6 +246,8 @@ void Garden::updateGarden() {
 
       game.removeStock(resourceId, requiredAmount);
     }
+
+    game.playSFX(buttonSFX);
 
     int fieldPosX = 7 + fieldsAmount * 9;
     fields.push_back(std::make_unique<Field>(fieldPosX, 2, 5, 5, plantsData));
