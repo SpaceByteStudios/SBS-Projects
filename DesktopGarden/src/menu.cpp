@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "game.h"
 #include "raylib.h"
+#include "settings.h"
 
 Menu::Menu(Game& game, InventorySystem& inventorySystem, PlantsData& plantsData)
     : game(game), inventorySystem(inventorySystem), plantsData(plantsData) {
@@ -20,6 +21,7 @@ Menu::Menu(Game& game, InventorySystem& inventorySystem, PlantsData& plantsData)
   }
 
   storage = std::make_unique<Storage>(inventorySystem, plantsData);
+  settings = std::make_unique<Settings>(game);
 }
 
 void Menu::updateMenu() {
@@ -83,12 +85,20 @@ void Menu::updateMenu() {
     }
   }
 
+  if (pressedButton[1]) {
+    settings->updateSettings();
+  }
+
   storage->updateStorage();
 }
 
 void Menu::drawMenu() {
   if (game.getState() != GameState::Menus) {
     return;
+  }
+
+  if (pressedButton[1]) {
+    settings->drawSettings();
   }
 
   if (pressedButton[2]) {

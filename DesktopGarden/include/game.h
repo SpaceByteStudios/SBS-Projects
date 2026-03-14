@@ -32,6 +32,8 @@ class Game {
   void removeStock(int id, int amount);
   int getStock(int id);
 
+  void updateVolume(float mVolume, float sVolume);
+
  private:
   std::unique_ptr<PlantsData> plantsData;
   std::unique_ptr<UI> ui;

@@ -13,8 +13,8 @@ struct AudioPlayer {
 
   void playSFX(Sound& sound);
 
-  float musicVolume = 0.2f;
-  float sfxVolume = 0.2f;
+  float musicVolume = 1.0f;
+  float sfxVolume = 1.0f;
 
   std::vector<std::string> songFiles;
   std::vector<Music> songs;

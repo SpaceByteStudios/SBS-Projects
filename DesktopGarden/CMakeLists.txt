@@ -36,6 +36,7 @@ add_executable(
   src/shop.cpp
   src/menu.cpp
   src/storage.cpp
+  src/settings.cpp
   src/effects.cpp
   src/audioPlayer.cpp
 )

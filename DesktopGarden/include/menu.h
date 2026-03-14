@@ -5,6 +5,7 @@
 #include "inventorySystem.h"
 #include "plantsData.h"
 #include "raylib.h"
+#include "settings.h"
 #include "storage.h"
 
 class Game;
@@ -33,4 +34,5 @@ struct Menu {
   Texture2D menuButtonsTexture;
 
   std::unique_ptr<Storage> storage;
+  std::unique_ptr<Settings> settings;
 };

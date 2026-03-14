@@ -19,8 +19,6 @@ AudioPlayer::AudioPlayer(const std::string& musicFolder) {
     return;
   }
 
-  std::cout << "Found " << songFiles.size() << " .wav files" << std::endl;
-
   std::random_device rd;
   std::mt19937 g(rd());
   std::shuffle(songFiles.begin(), songFiles.end(), g);

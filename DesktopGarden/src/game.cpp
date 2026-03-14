@@ -1,6 +1,5 @@
 #include "game.h"
 
-#include <iostream>
 #include <memory>
 
 #include "audioPlayer.h"
@@ -27,9 +26,9 @@ Game::Game() {
   inventorySystem = std::make_unique<InventorySystem>();
   effects = std::make_unique<Effects>();
   plantsData = std::make_unique<PlantsData>();
+  audioPlayer = std::make_unique<AudioPlayer>("assets/music");
   ui = std::make_unique<UI>(*this, *moneySystem, *plantsData, *inventorySystem);
   garden = std::make_unique<Garden>(*this, *ui, *plantsData);
-  audioPlayer = std::make_unique<AudioPlayer>("assets/music");
 }
 
 void Game::init() {
@@ -110,4 +109,8 @@ void Game::removeStock(int id, int amount) {
 
 int Game::getStock(int id) {
   return inventorySystem->getStock(id);
+}
+
+void Game::updateVolume(float mVolume, float sVolume) {
+  audioPlayer->updateVolume(mVolume, sVolume);
 }
